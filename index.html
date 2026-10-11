@@ -156,6 +156,10 @@ svg.chart{width:100%;height:auto;display:block}
 details summary{cursor:pointer;font-weight:600;list-style:none}
 details summary::-webkit-details-marker{display:none}
 .hint{font-size:12px;color:var(--mu);margin-top:4px}
+#auth{position:fixed;inset:0;z-index:35;display:none;align-items:center;justify-content:center;padding:20px;background:var(--hero) no-repeat,var(--bg2);background-size:100% 420px,auto}
+.aubox{width:100%;max-width:380px;background:var(--card);border-radius:28px;padding:26px 22px;box-shadow:var(--sh);border:1px solid var(--ln);text-align:center}
+.aubox h2{margin:6px 0 4px;font-size:26px;letter-spacing:-.02em}
+.aulogo{width:72px;height:72px;margin:0 auto;border-radius:22px;background:linear-gradient(135deg,var(--ac),#8fd3a8);display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 8px 20px rgba(47,163,107,.3)}
 @media (max-width:370px){.ring{width:140px;height:140px}.ring .big{font-size:26px}.mstat b{font-size:16px}}
 </style>
 </head>
@@ -182,6 +186,17 @@ details summary::-webkit-details-marker{display:none}
 "use strict";
 /* ============ Sabitler ============ */
 const KEY = "fittrack_v1";
+const DEFAULT_WORKER = "https://fit-track.semihcanyanar.workers.dev";
+// Firebase yapılandırması (Project settings → Your apps → Web). null ise uygulama sadece cihazda çalışır.
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDTzl2BT1boViRZm3gcOBAxFlPRTj-1dTs",
+  authDomain: "fit-track-8b38d.firebaseapp.com",
+  projectId: "fit-track-8b38d",
+  storageBucket: "fit-track-8b38d.firebasestorage.app",
+  messagingSenderId: "685218259700",
+  appId: "1:685218259700:web:c52085e9dd9226448874a1"
+};
+const FB_VER = "10.12.2";
 const MEALS = ["Kahvaltı", "Öğle", "Akşam", "Ara öğün"];
 const ACT = {
   hareketsiz: [1.2, "Hareketsiz (çoğunlukla oturarak)"],
@@ -212,20 +227,22 @@ Kurallar:
 - Samimi, net ve kısa yazarsın; "sen" diye hitap edersin.`;
 
 /* ============ Durum ============ */
-const defaults = () => ({ profile: null, settings: { workerUrl: "" }, targets: null, plan: null, days: {}, weights: [], recent: [] });
-let S = load();
+const defaults = () => ({ profile: null, settings: { workerUrl: DEFAULT_WORKER }, targets: null, plan: null, days: {}, weights: [], recent: [] });
+let storeKey = KEY;          // giriş yapınca kullanıcıya özel anahtar olur
+let S = FIREBASE_CONFIG ? defaults() : load();
 let view = "today";
 let curDate = ymd(new Date());
 let planDay = 0;
 let wRange = 90;
 const draft = { food: "", meal: guessMeal(), preview: null, manual: false, ex: "", exManual: false };
 
-function load() {
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) return Object.assign(defaults(), s); } catch (e) {}
+function load(k = storeKey) {
+  try { const s = JSON.parse(localStorage.getItem(k)); if (s) { const o = Object.assign(defaults(), s); if (!o.settings.workerUrl) o.settings.workerUrl = DEFAULT_WORKER; return o; } } catch (e) {}
   return defaults();
 }
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast("Kaydedilemedi: depolama dolu olabilir", 1); }
+  try { localStorage.setItem(storeKey, JSON.stringify(S)); } catch (e) { toast("Kaydedilemedi: depolama dolu olabilir", 1); }
+  Cloud.schedule();
 }
 
 /* ============ Yardımcılar ============ */
@@ -888,8 +905,10 @@ function renderProfile() {
   <div class="card"><details ${S.settings.workerUrl ? "" : "open"}><summary>⚙️ Ayarlar</summary>
     <label class="f"><span>Yapay zeka adresi (Cloudflare Worker URL)</span><input id="wurl" value="${esc(S.settings.workerUrl)}" placeholder="https://fit-track.xxx.workers.dev" autocapitalize="off" autocorrect="off"></label>
     <div class="row" style="margin-top:10px"><button class="grow" data-act="saveUrl">Kaydet</button><button class="grow" data-act="testAi">Bağlantıyı test et</button></div>
-    <h4>Verilerin</h4>
-    <p class="sm mu" style="margin-top:0">Tüm kayıtların sadece bu telefonda saklanır. Telefon değiştirirken yedek al.</p>
+    <h4>Hesap ve veriler</h4>
+    ${Cloud.user ? `<p class="sm" style="margin-top:0">☁️ <b>${esc(Cloud.user.email)}</b> olarak giriş yaptın. Kayıtların buluta kaydediliyor; başka cihazdan aynı hesapla girince hepsi gelir. <span class="mu">${esc(Cloud.statusText())}</span></p>
+      <button class="full" data-act="logout" style="margin-bottom:10px">Çıkış yap</button>`
+    : `<p class="sm mu" style="margin-top:0">Tüm kayıtların sadece bu cihazda saklanır. Cihaz değiştirirken yedek al.</p>`}
     <div class="row wrap"><button class="grow" data-act="export">Yedek al</button><button class="grow" data-act="import">Yedekten yükle</button></div>
     <input type="file" id="impFile" accept="application/json,.json" hidden>
     <button class="dan full" style="margin-top:10px;background:transparent" data-act="reset">Tüm verileri sil</button>
@@ -1001,7 +1020,9 @@ document.addEventListener("click", e => {
     },
     export: exportData,
     import: () => $("#impFile").click(),
-    reset: () => { if (confirm("Tüm kayıtların silinecek. Emin misin?") && confirm("Geri alınamaz. Siliyorum?")) { const u = S.settings.workerUrl; S = defaults(); S.settings.workerUrl = u; save(); go("profile"); } }
+    reset: () => { if (confirm("Tüm kayıtların silinecek" + (Cloud.user ? " (buluttakiler dahil)" : "") + ". Emin misin?") && confirm("Geri alınamaz. Siliyorum?")) { const u = S.settings.workerUrl; S = defaults(); S.settings.workerUrl = u; save(); go("profile"); } },
+    logout: () => { if (confirm("Çıkış yapılsın mı? Kayıtların bulutta kalır.")) Cloud.logout(); },
+    login: () => Cloud.auth("login"), signup: () => Cloud.auth("signup"), forgot: () => Cloud.auth("forgot"),
   };
   if (H[act]) { e.preventDefault(); H[act](); }
 });
@@ -1030,8 +1051,173 @@ function importData(file) {
   r.readAsText(file);
 }
 
+/* ============ Bulut (Firebase) ============ */
+const Cloud = {
+  fb: null, user: null, last: { meta: null, days: {} }, timer: null, pending: false, online: navigator.onLine, unsub: [],
+  statusText() { return !this.online ? "Çevrimdışı – bağlantı gelince eşitlenecek." : this.pending ? "Eşitleniyor…" : "Eşitlendi ✓"; },
+  meta(s = S) { const { days, ...m } = s; return JSON.parse(JSON.stringify(m)); },
+  clean(o) { return JSON.parse(JSON.stringify(o)); },
+  isEmptyDay(d) { return !d || (!d.foods?.length && !d.exercises?.length && !d.waterMl && !d.review); },
+
+  async init() {
+    if (!FIREBASE_CONFIG) { go(S.profile ? "today" : "profile"); return; }
+    showAuth("loading");
+    try {
+      const base = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
+      const [appM, authM, fsM] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
+      const app = appM.initializeApp(FIREBASE_CONFIG);
+      const auth = authM.getAuth(app);
+      await authM.setPersistence(auth, authM.indexedDBLocalPersistence).catch(() => {});
+      let db;
+      try { db = fsM.initializeFirestore(app, { localCache: fsM.persistentLocalCache() }); } catch (e) { db = fsM.getFirestore(app); }
+      this.fb = { authM, fsM, auth, db };
+      authM.onAuthStateChanged(auth, u => this.onUser(u));
+    } catch (e) {
+      // Firebase yüklenemezse (ör. ilk açılış çevrimdışı) son kullanıcının yerel verisiyle aç
+      const lastUid = localStorage.getItem("fittrack_last_uid");
+      if (lastUid) { storeKey = KEY + "_" + lastUid; S = load(); hideAuth(); go(S.profile ? "today" : "profile"); toast("Çevrimdışı açıldı; bağlantı gelince yeniden aç.", 1); }
+      else showAuth("login", "Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+    }
+    addEventListener("online", () => { this.online = true; this.flush(); });
+    addEventListener("offline", () => { this.online = false; });
+  },
+
+  async onUser(u) {
+    this.unsub.forEach(f => f()); this.unsub = [];
+    this.user = u;
+    if (!u) { S = defaults(); storeKey = KEY; showAuth("login"); return; }
+    localStorage.setItem("fittrack_last_uid", u.uid);
+    storeKey = KEY + "_" + u.uid;
+    S = load();                         // önce yerel önbellek: anında açılır
+    hideAuth(); go(S.profile ? "today" : "profile");
+    try { await this.pull(true); } catch (e) { console.warn(e); }
+    this.listen();
+  },
+
+  ref(...p) { const { fsM, db } = this.fb; return p.length % 2 ? fsM.collection(db, "users", this.user.uid, ...p) : fsM.doc(db, "users", this.user.uid, ...p); },
+
+  async pull(first) {
+    const { fsM } = this.fb;
+    const [mSnap, dSnap] = await Promise.all([fsM.getDoc(fsM.doc(this.fb.db, "users", this.user.uid)), fsM.getDocs(this.ref("days"))]);
+    const remoteDays = {}; dSnap.forEach(x => remoteDays[x.id] = x.data());
+    if (!mSnap.exists() && !dSnap.size) {
+      // Bulutta hiç veri yok: bu cihazdaki (giriş öncesi) verileri taşı
+      const legacy = load(KEY), mine = load();
+      const src = mine.profile || Object.keys(mine.days).length ? mine : legacy;
+      if (src.profile || Object.keys(src.days).length) { S = src; if (src === legacy) toast("Bu cihazdaki kayıtların hesabına aktarılıyor"); }
+      this.last = { meta: null, days: {} };
+      save(); await this.flush(); this.afterPull();
+    } else {
+      const m = mSnap.exists() ? mSnap.data() : {};
+      S = Object.assign(defaults(), m, { days: remoteDays });
+      if (!S.settings?.workerUrl) S.settings = { ...(S.settings || {}), workerUrl: DEFAULT_WORKER };
+      this.last.meta = JSON.stringify(this.meta());
+      this.last.days = {}; Object.entries(remoteDays).forEach(([k, v]) => this.last.days[k] = JSON.stringify(v));
+      try { localStorage.setItem(storeKey, JSON.stringify(S)); } catch (e) {}
+      this.afterPull();
+    }
+  },
+  afterPull() { if (view === "profile" && S.profile && !document.activeElement?.closest?.("#pf")) go("today"); else render(); },
+
+  listen() {
+    const { fsM } = this.fb;
+    // Diğer cihazlardan gelen değişiklikleri canlı al
+    this.unsub.push(fsM.onSnapshot(fsM.doc(this.fb.db, "users", this.user.uid), snap => {
+      if (snap.metadata.hasPendingWrites || !snap.exists()) return;
+      const str = JSON.stringify(snap.data());
+      if (str === this.last.meta) return;
+      this.last.meta = str; const days = S.days; S = Object.assign(defaults(), snap.data(), { days }); this.saveLocal(); this.softRender();
+    }));
+    this.unsub.push(fsM.onSnapshot(this.ref("days"), snap => {
+      let changed = false;
+      snap.docChanges().forEach(ch => {
+        if (ch.doc.metadata.hasPendingWrites) return;
+        const k = ch.doc.id;
+        if (ch.type === "removed") { if (S.days[k]) { delete S.days[k]; delete this.last.days[k]; changed = true; } return; }
+        const str = JSON.stringify(ch.doc.data());
+        if (str === this.last.days[k]) return;
+        this.last.days[k] = str; S.days[k] = ch.doc.data(); changed = true;
+      });
+      if (changed) { this.saveLocal(); this.softRender(); }
+    }));
+  },
+  saveLocal() { try { localStorage.setItem(storeKey, JSON.stringify(S)); } catch (e) {} },
+  softRender() { const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) return; render(); },
+
+  schedule() {
+    if (!this.user || !this.fb) return;
+    this.pending = true; clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.flush(), 700);
+  },
+  async flush() {
+    if (!this.user || !this.fb) return;
+    clearTimeout(this.timer);
+    const { fsM, db } = this.fb, uid = this.user.uid, ops = [];
+    const m = this.meta(), ms = JSON.stringify(m);
+    if (ms !== this.last.meta) { ops.push(fsM.setDoc(fsM.doc(db, "users", uid), m)); this.last.meta = ms; }
+    const keys = new Set([...Object.keys(S.days), ...Object.keys(this.last.days)]);
+    keys.forEach(k => {
+      const d = S.days[k];
+      if (this.isEmptyDay(d)) {
+        if (this.last.days[k] !== undefined) { ops.push(fsM.deleteDoc(fsM.doc(db, "users", uid, "days", k))); delete this.last.days[k]; }
+        return;
+      }
+      const c = this.clean(d), s = JSON.stringify(c);
+      if (s !== this.last.days[k]) { ops.push(fsM.setDoc(fsM.doc(db, "users", uid, "days", k), c)); this.last.days[k] = s; }
+    });
+    // Çevrimdışıyken yazmalar Firestore önbelleğinde kuyruğa girer, bağlantı gelince gönderilir
+    try { await Promise.all(ops); this.pending = false; }
+    catch (e) { console.warn(e); this.last.meta = null; toast("Buluta kaydedilemedi: " + (e.code || e.message), 1); }
+  },
+
+  async auth(mode) {
+    const { authM, auth } = this.fb || {};
+    if (!auth) return;
+    const email = $("#auEmail").value.trim(), pass = $("#auPass").value;
+    const err = m => { $("#auErr").textContent = m; };
+    err("");
+    try {
+      if (mode === "forgot") {
+        if (!email) return err("E-posta adresini yaz.");
+        await authM.sendPasswordResetEmail(auth, email); return err("Şifre sıfırlama bağlantısı e-postana gönderildi.");
+      }
+      if (!email || !pass) return err("E-posta ve şifre gir.");
+      busy(mode === "signup" ? "Hesap oluşturuluyor…" : "Giriş yapılıyor…");
+      if (mode === "signup") {
+        if (pass.length < 6) { busy(); return err("Şifre en az 6 karakter olmalı."); }
+        await authM.createUserWithEmailAndPassword(auth, email, pass);
+      } else await authM.signInWithEmailAndPassword(auth, email, pass);
+    } catch (e) {
+      const M = { "auth/invalid-credential": "E-posta veya şifre hatalı.", "auth/wrong-password": "Şifre hatalı.", "auth/user-not-found": "Bu e-postayla hesap yok. Hesap oluştur.",
+        "auth/email-already-in-use": "Bu e-postayla zaten hesap var. Giriş yap.", "auth/invalid-email": "Geçersiz e-posta adresi.", "auth/weak-password": "Şifre en az 6 karakter olmalı.",
+        "auth/too-many-requests": "Çok fazla deneme. Biraz bekle.", "auth/network-request-failed": "İnternet bağlantısı yok.", "auth/unauthorized-domain": "Bu adres Firebase'de yetkili değil (Authorized domains)." };
+      err(M[e.code] || e.message);
+    } finally { busy(); }
+  },
+  async logout() { await this.flush(); await this.fb.authM.signOut(this.fb.auth); }
+};
+
+function showAuth(mode, msg) {
+  let el = $("#auth");
+  if (!el) { el = document.createElement("div"); el.id = "auth"; document.body.appendChild(el); }
+  el.style.display = "flex";
+  el.innerHTML = mode === "loading"
+    ? `<div class="spin" style="border-color:var(--ac2);border-top-color:var(--ac)"></div>`
+    : `<div class="aubox">
+        <div class="aulogo">🥗</div><h2>Fit Track</h2><p class="mu sm" style="margin:0 0 14px">Beslenme programın ve kalori takibin, tüm cihazlarında.</p>
+        <input id="auEmail" type="email" placeholder="E-posta" autocomplete="username" autocapitalize="off">
+        <input id="auPass" type="password" placeholder="Şifre" autocomplete="current-password" style="margin-top:10px">
+        <div id="auErr" class="sm" style="color:var(--bad);min-height:20px;margin:8px 2px">${esc(msg || "")}</div>
+        <button class="pri full" data-act="login">Giriş yap</button>
+        <button class="full" data-act="signup" style="margin-top:8px">Hesap oluştur</button>
+        <button class="ghost full" data-act="forgot" style="margin-top:4px">Şifremi unuttum</button>
+      </div>`;
+}
+function hideAuth() { const el = $("#auth"); if (el) el.style.display = "none"; }
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "auPass") Cloud.auth("login"); });
+
 /* ============ Başlat ============ */
-go(S.profile ? "today" : "profile");
+Cloud.init();
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && view === "today") { const t = ymd(new Date()); if (curDate !== t && !S.days[curDate]?.foods?.length) { curDate = t; } renderToday(); }
 });
