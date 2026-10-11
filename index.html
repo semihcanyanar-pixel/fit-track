@@ -7,119 +7,156 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fit Track">
-<meta name="theme-color" content="#2e9d5b">
+<meta name="theme-color" content="#d9f2e3">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-512.png">
 <title>Fit Track</title>
 <style>
 :root{
-  --bg:#f3f5f2;--card:#ffffff;--tx:#17201a;--mu:#6b766e;--ln:#e2e7e1;--in:#f6f8f5;
-  --ac:#2e9d5b;--ac2:#e6f4eb;--warn:#d9822b;--bad:#d64545;
-  --p:#4f7cff;--c:#e0a72c;--f:#d65b8f;--sh:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.04);
+  --bg:#eef7f1;--bg2:#f8fcf9;--card:#ffffff;--tx:#15241b;--mu:#6a7a70;--ln:#e3ede6;--in:#f2f8f4;
+  --ac:#2fa36b;--ac-d:#1f8a57;--ac2:#e3f4ea;--sun:#f2c94c;--warn:#e08a2c;--bad:#dc4b4b;
+  --p:#4f7cff;--c:#f2b93b;--f:#e0679a;--w:#3aa7e0;
+  --sh:0 2px 6px rgba(31,94,60,.05),0 10px 30px rgba(31,94,60,.07);
+  --hero:linear-gradient(160deg,#d9f2e3 0%,#eef8f1 55%,#f8fcf9 100%);
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#0e1210;--card:#171d1a;--tx:#e8eee9;--mu:#8d9a92;--ln:#26302b;--in:#1f2723;
-  --ac:#3fbf72;--ac2:#1b2e22;--warn:#e6994a;--bad:#ec6464;--sh:none;
+  --bg:#0c1410;--bg2:#0c1410;--card:#15201a;--tx:#e6f0ea;--mu:#8b9d92;--ln:#22322a;--in:#1c2a22;
+  --ac:#3fc07e;--ac-d:#35a86d;--ac2:#1a3326;--warn:#eba155;--bad:#ef6a6a;--sh:none;
+  --hero:linear-gradient(160deg,#143222 0%,#0f1d16 60%,#0c1410 100%);
 }}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
-body{padding:env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom))}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;background:var(--hero) no-repeat,var(--bg2);background-size:100% 340px,auto;color:var(--tx);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Rounded","SF Pro Text",system-ui,sans-serif;padding:env(safe-area-inset-top) 0 calc(96px + env(safe-area-inset-bottom))}
 main{max-width:640px;margin:0 auto;padding:0 16px}
-header.top{max-width:640px;margin:0 auto;padding:14px 16px 6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-header.top h1{font-size:28px;margin:0;letter-spacing:-.02em}
+header.top{max-width:640px;margin:0 auto;padding:16px 16px 4px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header.top h1{font-size:28px;margin:0;letter-spacing:-.02em;line-height:1.15}
+header.top h1 small{display:block;font-size:15px;font-weight:600;color:var(--ac-d);letter-spacing:0;margin-top:2px}
+.avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--ac),#8fd3a8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;flex:none;box-shadow:0 4px 12px rgba(47,163,107,.3);border:3px solid var(--card)}
 .view{display:none}.view.on{display:block}
-.card{background:var(--card);border-radius:18px;padding:16px;margin:12px 0;box-shadow:var(--sh);border:1px solid var(--ln)}
-.card h3{margin:0 0 10px;font-size:17px}
+.card{background:var(--card);border-radius:24px;padding:18px;margin:14px 0;box-shadow:var(--sh);border:1px solid var(--ln)}
+.card h3{margin:0 0 12px;font-size:18px;letter-spacing:-.01em}
 .card h4{margin:14px 0 6px;font-size:15px}
+.sec{font-size:19px;font-weight:700;margin:22px 2px 10px;letter-spacing:-.01em}
 .mu{color:var(--mu)}.sm{font-size:13px}.b{font-weight:600}
 .row{display:flex;align-items:center;gap:10px}.sp{justify-content:space-between}.wrap{flex-wrap:wrap}
 .grow{flex:1;min-width:0}
-button{font:inherit;border:0;border-radius:12px;padding:11px 14px;background:var(--in);color:var(--tx);font-weight:600;cursor:pointer}
-button.pri{background:var(--ac);color:#fff}
-button.ghost{background:transparent;color:var(--ac);padding:8px 10px}
+button{font:inherit;border:0;border-radius:14px;padding:11px 14px;background:var(--in);color:var(--tx);font-weight:600;cursor:pointer}
+button.pri{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#fff;box-shadow:0 4px 12px rgba(47,163,107,.25)}
+button.ghost{background:transparent;color:var(--ac-d);padding:8px 10px;box-shadow:none}
 button.dan{color:var(--bad)}
 button.full{width:100%}
 button:disabled{opacity:.5}
-button.ic{padding:6px 10px;border-radius:10px;font-size:15px}
-input,select,textarea{font:inherit;font-size:16px;width:100%;background:var(--in);color:var(--tx);border:1px solid var(--ln);border-radius:12px;padding:11px 12px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--ac)}
+button.ic{padding:6px 11px;border-radius:12px;font-size:16px}
+input,select,textarea{font:inherit;font-size:16px;width:100%;background:var(--in);color:var(--tx);border:1px solid var(--ln);border-radius:14px;padding:11px 12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--ac);background:var(--card)}
 textarea{resize:vertical;min-height:74px}
 label.f{display:block;margin:12px 0 0}
 label.f>span{display:block;font-size:13px;color:var(--mu);margin:0 0 5px;font-weight:600}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.seg{display:flex;background:var(--in);border-radius:12px;padding:3px;gap:3px;overflow-x:auto}
-.seg button{flex:1;padding:8px 6px;font-size:14px;background:transparent;white-space:nowrap;border-radius:9px}
-.seg button.on{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);color:var(--ac)}
+.seg{display:flex;background:var(--in);border-radius:14px;padding:3px;gap:3px;overflow-x:auto}
+.seg button{flex:1;padding:8px 6px;font-size:14px;background:transparent;white-space:nowrap;border-radius:11px;box-shadow:none}
+.seg button.on{background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.1);color:var(--ac-d)}
+.seg.mini{display:inline-flex}.seg.mini button{padding:5px 10px;font-size:13px;flex:none}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{background:var(--ac2);color:var(--tx);border-radius:999px;padding:6px 11px;font-size:13px;font-weight:500}
+.chip{background:var(--ac2);color:var(--tx);border-radius:999px;padding:6px 11px;font-size:13px;font-weight:500;box-shadow:none}
 .chip small{color:var(--mu)}
 /* nav */
-nav.tabs{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--ln);display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:10}
-nav.tabs button{background:none;flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mu);padding:6px 0;font-weight:600}
-nav.tabs button svg{width:24px;height:24px}
-nav.tabs button.on{color:var(--ac)}
+nav.tabs{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--ln);border-radius:26px;display:flex;align-items:center;justify-content:space-around;padding:6px;z-index:10;box-shadow:0 8px 30px rgba(20,60,40,.14)}
+nav.tabs button{background:none;flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mu);padding:7px 0;font-weight:600;border-radius:18px;box-shadow:none}
+nav.tabs button svg{width:23px;height:23px}
+nav.tabs button.on{color:#fff;background:linear-gradient(135deg,var(--ac),var(--ac-d))}
+nav.tabs button.plus{flex:none;width:54px;height:54px;border-radius:50%;margin:-26px 4px 0;background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#fff;box-shadow:0 6px 16px rgba(47,163,107,.45);border:4px solid var(--bg2);justify-content:center;padding:0}
+nav.tabs button.plus svg{width:26px;height:26px}
 /* date bar */
-.datebar{display:flex;align-items:center;gap:6px}
-.datebar .d{flex:1;text-align:center;font-weight:600}
-/* summary */
-.sum{display:flex;align-items:center;gap:16px}
-.ring{position:relative;width:132px;height:132px;flex:none}
+.datebar{display:flex;align-items:center;gap:6px;margin-top:6px}
+.datebar .d{flex:1;text-align:center;font-weight:600;font-size:15px}
+.datebar button{background:color-mix(in srgb,var(--card) 70%,transparent)}
+/* progress */
+.prog h3{text-align:center;margin-bottom:6px}
+.pgrid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px}
+.pgrid .side{display:flex;flex-direction:column;gap:22px}
+.pgrid .side.r{text-align:right}
+.mstat span{display:block;font-size:13px;color:var(--mu);font-weight:600}
+.mstat b{font-size:18px;letter-spacing:-.01em}
+.mstat .v{white-space:nowrap}
+.mstat em{font-style:normal;font-size:11px;color:var(--mu);font-weight:500;margin-left:2px}
+.mstat .bar{height:5px;margin-top:4px}
+.ring{position:relative;width:168px;height:168px;flex:none}
 .ring svg{transform:rotate(-90deg)}
 .ring .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.ring .big{font-size:26px;font-weight:700;letter-spacing:-.02em}
-.left{font-size:20px;font-weight:700}
+.ring .ctr span{font-size:13px;color:var(--mu);font-weight:600}
+.ring .big{font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.remain{text-align:center;margin-top:10px;font-weight:600;font-size:15px}
+.formula{font-size:12px;color:var(--mu);text-align:center;margin-top:2px}
 .bar{height:7px;border-radius:9px;background:var(--in);overflow:hidden;margin-top:4px}
 .bar i{display:block;height:100%;border-radius:9px}
-.mac{margin-top:8px;font-size:13px}
-.formula{font-size:13px;color:var(--mu);margin-top:4px}
+/* meal cards */
+.mcards{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px;scrollbar-width:none}
+.mcards::-webkit-scrollbar{display:none}
+.mcard{flex:1 0 84px;min-width:84px;background:linear-gradient(170deg,#e6f6ec,#cdeedb);border-radius:20px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:600;font-size:14px;color:var(--tx);box-shadow:none;border:2px solid transparent}
+.mcard .em{font-size:30px;line-height:1.1}
+.mcard small{font-size:11px;color:var(--mu);font-weight:600}
+.mcard .add{margin-top:3px;background:#fff;color:var(--ac-d);border-radius:999px;padding:3px 12px;font-size:12px;font-weight:700}
+.mcard.on{border-color:var(--ac);background:linear-gradient(170deg,#d3f0de,#b3e4c6)}
+@media (prefers-color-scheme:dark){.mcard{background:linear-gradient(170deg,#1b3426,#163022)}.mcard.on{background:linear-gradient(170deg,#21452f,#1b3a28)}.mcard .add{background:var(--card)}}
 /* lists */
 .meal h4{display:flex;justify-content:space-between;margin:14px 0 4px}
-.item{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--ln)}
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--ln)}
 .item:first-of-type{border-top:0}
-.item .nm{flex:1;min-width:0}
-.item .nm small{display:block;color:var(--mu);font-size:12px}
-.kc{font-weight:700;white-space:nowrap;background:none;padding:4px 6px}
-.del{background:none;color:var(--mu);padding:4px 8px;font-size:18px}
+.fic{width:40px;height:40px;border-radius:12px;background:var(--ac2);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.item .nm{flex:1;min-width:0;font-weight:600}
+.item .nm small{display:block;color:var(--mu);font-size:12px;font-weight:500}
+.kc{font-weight:700;white-space:nowrap;background:none;padding:4px 6px;box-shadow:none}
+.del{background:none;color:var(--mu);padding:4px 8px;font-size:18px;box-shadow:none}
 .prev .item input[type=number]{width:84px;padding:6px 8px;text-align:right}
 .prev .item input[type=checkbox]{width:20px;height:20px;accent-color:var(--ac)}
 /* water */
+.wbar{height:12px;border-radius:9px;background:var(--in);overflow:hidden;margin:10px 0 6px}
+.wbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#7cc8ef,var(--w))}
 .glasses{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
-.glass{width:22px;height:28px;border:2px solid var(--p);border-top:0;border-radius:0 0 6px 6px;opacity:.35}
-.glass.on{background:var(--p);opacity:.85}
+.glass{width:20px;height:26px;border:2px solid var(--w);border-top:0;border-radius:0 0 6px 6px;opacity:.35}
+.glass.on{background:var(--w);opacity:.85}
+.wq{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.wq button{flex:1;padding:9px 6px;font-size:14px;background:color-mix(in srgb,var(--w) 12%,var(--card));color:var(--tx)}
 /* review */
 .rv-head{display:flex;gap:14px;align-items:flex-start}
-.score{flex:none;width:62px;height:62px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff}
+.score{flex:none;width:62px;height:62px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff}
 ul.l{margin:6px 0;padding-left:20px}ul.l li{margin:4px 0}
-.cut{background:var(--in);border-radius:12px;padding:10px 12px;margin:6px 0}
-.note{background:var(--ac2);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:8px}
-.warnbox{background:color-mix(in srgb,var(--warn) 15%,transparent);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:8px}
+.cut{background:var(--in);border-radius:14px;padding:10px 12px;margin:6px 0}
+.note{background:var(--ac2);border-radius:14px;padding:10px 12px;font-size:14px;margin-top:8px}
+.warnbox{background:color-mix(in srgb,var(--warn) 15%,transparent);border-radius:14px;padding:10px 12px;font-size:14px;margin-top:8px}
+.badge{display:inline-block;background:var(--warn);color:#fff;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;vertical-align:middle}
 /* plan */
 .tgt{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin-top:8px}
-.tgt div{background:var(--in);border-radius:12px;padding:8px 4px}
+.tgt div{background:var(--in);border-radius:14px;padding:8px 4px}
 .tgt b{display:block;font-size:18px}
 .tgt span{font-size:11px;color:var(--mu)}
 .pm{padding:10px 0;border-top:1px solid var(--ln)}
 .pm:first-child{border-top:0}
+.adj .big2{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 10px;font-size:14px;margin-top:8px}
+.kv span{color:var(--mu)}
 /* weight */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
-.stats div{background:var(--in);border-radius:12px;padding:8px 4px}
+.stats div{background:var(--in);border-radius:14px;padding:8px 4px}
 .stats b{display:block;font-size:18px}
 .stats span{font-size:11px;color:var(--mu)}
 svg.chart{width:100%;height:auto;display:block}
 /* misc */
 .empty{text-align:center;padding:26px 10px}
 .empty .e{font-size:44px}
-#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#1d2420;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:30;max-width:88vw;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#1d2420;color:#fff;padding:10px 16px;border-radius:14px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:30;max-width:88vw;text-align:center}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.err{background:var(--bad)}
-#busy{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:40;color:#fff;gap:12px;padding:20px;text-align:center}
+#busy{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:40;color:#fff;gap:12px;padding:20px;text-align:center;white-space:pre-line}
 #busy.on{display:flex}
 .spin{width:42px;height:42px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:s 1s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
 details summary{cursor:pointer;font-weight:600;list-style:none}
 details summary::-webkit-details-marker{display:none}
 .hint{font-size:12px;color:var(--mu);margin-top:4px}
+@media (max-width:370px){.ring{width:140px;height:140px}.ring .big{font-size:26px}.mstat b{font-size:16px}}
 </style>
 </head>
 <body>
@@ -132,8 +169,9 @@ details summary::-webkit-details-marker{display:none}
 </main>
 
 <nav class="tabs">
-  <button data-go="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l5 3"/></svg>Bugün</button>
+  <button data-go="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Bugün</button>
   <button data-go="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 2-2 6 0 8v10"/></svg>Program</button>
+  <button class="plus" data-act="quickAdd" aria-label="Yemek ekle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
   <button data-go="weight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>Kilo</button>
   <button data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Profil</button>
 </nav>
@@ -202,7 +240,17 @@ function ymd(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart
 function addDays(str, n) { const d = new Date(str + "T12:00:00"); d.setDate(d.getDate() + n); return ymd(d); }
 function trDate(str, opt) { return new Date(str + "T12:00:00").toLocaleDateString("tr-TR", opt || { weekday: "long", day: "numeric", month: "long" }); }
 function guessMeal() { const h = new Date().getHours(); return h < 11 ? "Kahvaltı" : h < 15 ? "Öğle" : h < 18 ? "Ara öğün" : h < 22 ? "Akşam" : "Ara öğün"; }
-function day(k) { if (!S.days[k]) S.days[k] = { foods: [], exercises: [], water: 0 }; const d = S.days[k]; d.foods ||= []; d.exercises ||= []; d.water ||= 0; return d; }
+function day(k) {
+  if (!S.days[k]) S.days[k] = { foods: [], exercises: [], waterMl: 0 };
+  const d = S.days[k]; d.foods ||= []; d.exercises ||= [];
+  if (d.waterMl == null) { d.waterMl = (d.water || 0) * 250; delete d.water; }
+  return d;
+}
+const GLASS = 250;
+const waterUnit = () => S.settings.waterUnit === "litre" ? "litre" : "bardak";
+const fmtL = ml => (ml / 1000).toLocaleString("tr-TR", { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + " L";
+function waterText(ml) { return waterUnit() === "litre" ? fmtL(ml) : `${r1(ml / GLASS).toLocaleString("tr-TR")} bardak`; }
+const MEAL_EMOJI = { "Kahvaltı": "🍳", "Öğle": "🥗", "Akşam": "🍲", "Ara öğün": "🍎" };
 function totals(d) {
   return d.foods.reduce((a, f) => ({ kcal: a.kcal + num(f.kcal), p: a.p + num(f.p), c: a.c + num(f.c), f: a.f + num(f.f) }), { kcal: 0, p: 0, c: 0, f: 0 });
 }
@@ -225,6 +273,74 @@ function dayTarget(date) {
   return { base, ex, total: base + ex };
 }
 
+/* ---- Uyarlamalı hedef: kayıtlara göre gerçek harcamayı tahmin et ---- */
+function linSlope(pts) { // pts: [{x: gün, y: kg}] → kg/gün
+  const n = pts.length, mx = pts.reduce((a, p) => a + p.x, 0) / n, my = pts.reduce((a, p) => a + p.y, 0) / n;
+  let nu = 0, de = 0; pts.forEach(p => { nu += (p.x - mx) * (p.y - my); de += (p.x - mx) ** 2; });
+  return de ? nu / de : 0;
+}
+function adaptive() {
+  if (!S.profile || !S.targets) return null;
+  const b = baseline(), tg = S.targets, today = ymd(new Date());
+  const WIN = 21, from = addDays(today, -WIN);
+  // Sadece "günü bitir" denmiş ya da 800 kcal üstü kayıtlı günleri say (yarım günler ortalamayı bozmasın)
+  const days = [];
+  for (let i = 1; i <= WIN; i++) {
+    const k = addDays(today, -i), d = S.days[k];
+    if (!d?.foods?.length) continue;
+    const kc = totals(d).kcal;
+    if (d.closed || kc >= 800) days.push({ k, kc, t: dayTarget(k), ex: d.exercises.reduce((a, e) => a + num(e.kcal), 0) });
+  }
+  const ws = sortedWeights().filter(w => w.date >= from);
+  const span = ws.length >= 2 ? (new Date(ws[ws.length - 1].date) - new Date(ws[0].date)) / 864e5 : 0;
+  const need = { days: 7, weights: 3, span: 10 };
+  const ready = days.length >= need.days && ws.length >= need.weights && span >= need.span;
+  const res = { ready, nDays: days.length, nW: ws.length, span: Math.round(span), need };
+  if (!ready) return res;
+
+  const avgIn = days.reduce((a, d) => a + d.kc, 0) / days.length;
+  const avgTarget = days.reduce((a, d) => a + d.t.total, 0) / days.length;
+  const avgEx = days.reduce((a, d) => a + d.ex, 0) / days.length;
+  const t0 = new Date(ws[0].date).getTime();
+  const slopeDay = linSlope(ws.map(w => ({ x: (new Date(w.date) - t0) / 864e5, y: w.kg })));
+  const weekly = slopeDay * 7;                         // kg/hafta (gerçekleşen)
+  const realTdee = avgIn - slopeDay * 7700;            // ortalama gerçek harcama (egzersiz dahil)
+  let goalWeekly = num(tg.haftalikHedefKg);            // kg/hafta (hedef, kayıp negatif)
+  const hk = num(S.profile.hedefKilo);
+  if (!goalWeekly && hk && Math.abs(hk - b.kg) > 1) goalWeekly = hk < b.kg ? (String(S.profile.ozel).startsWith("emzirme") ? -0.4 : -0.5) : 0.25;
+  const adherence = avgIn - avgTarget;                 // + ise hedefin üstünde yenmiş
+  const nursing = String(S.profile.ozel).startsWith("emzirme");
+  const maxLoss = nursing ? -0.5 : -Math.max(0.5, b.kg * 0.01);
+
+  let status, msg, suggest = null;
+  const ideal = Math.round((realTdee - avgEx + goalWeekly * 7700 / 7) / 10) * 10;
+  const clampStep = v => Math.max(tg.kcal - 250, Math.min(tg.kcal + 250, v));
+  if (adherence > 150) {
+    status = "uyum";
+    msg = `Son ${days.length} günde hedefin günde ortalama ${fmt(adherence)} kcal üstünde yemişsin. Hedefi değiştirmeden önce mevcut hedefe uymayı dene; sonuç büyük ihtimalle bundan.`;
+  } else if (weekly < maxLoss) {
+    status = "hizli";
+    suggest = clampStep(Math.max(ideal, tg.kcal + 100));
+    msg = `Haftada ${Math.abs(weekly).toFixed(2).replace(".", ",")} kg veriyorsun; bu ${nursing ? "emzirme döneminde" : "kas korumak için"} hızlı. Kaloriyi biraz artırmak daha güvenli.`;
+  } else if (Math.abs(weekly - goalWeekly) <= 0.15) {
+    status = "iyi";
+    msg = `Hedeflenen hızda ilerliyorsun (haftada ${weekly > 0 ? "+" : ""}${weekly.toFixed(2).replace(".", ",")} kg). Hedefi değiştirmeye gerek yok.`;
+  } else {
+    status = weekly > goalWeekly ? "yavas" : "fazla";
+    suggest = clampStep(ideal);
+    msg = weekly > goalWeekly
+      ? `Hedef haftada ${goalWeekly.toFixed(2).replace(".", ",")} kg iken gerçekleşen ${weekly > 0 ? "+" : ""}${weekly.toFixed(2).replace(".", ",")} kg. Gerçek harcaman tahminden düşük görünüyor; kaloriyi biraz azaltmak gerekiyor.`
+      : `Beklenenden hızlı ilerliyorsun (haftada ${weekly.toFixed(2).replace(".", ",")} kg, hedef ${goalWeekly.toFixed(2).replace(".", ",")} kg). Kaloriyi biraz artırabilirsin.`;
+  }
+  if (suggest != null) { suggest = Math.max(b.floor, Math.round(suggest / 10) * 10); if (Math.abs(suggest - tg.kcal) < 50) { suggest = null; if (status !== "hizli") status = "iyi"; } }
+  return { ...res, avgIn, avgTarget, avgEx, weekly, realTdee, goalWeekly, adherence, status, msg, suggest };
+}
+function adaptiveText() {
+  const a = adaptive();
+  if (!a?.ready) return "Uyarlamalı analiz için yeterli veri yok.";
+  return `Son ${a.nDays} günlük kayıt: ortalama alınan ${fmt(a.avgIn)} kcal; kilo değişimi haftada ${a.weekly.toFixed(2)} kg; kayıtlardan hesaplanan gerçek günlük harcama ≈ ${fmt(a.realTdee)} kcal (egzersiz dahil). Durum: ${a.msg}`;
+}
+
 /* ============ UI yardımcıları ============ */
 let tt;
 function toast(msg, err) { const t = $("#toast"); t.textContent = msg; t.className = "on" + (err ? " err" : ""); clearTimeout(tt); tt = setTimeout(() => t.className = "", err ? 4200 : 2200); }
@@ -234,7 +350,9 @@ function go(v) {
   view = v;
   document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.go === v));
-  $("#ttl").textContent = { today: "Fit Track", plan: "Program", weight: "Kilo", profile: "Profil" }[v];
+  const nm = (S.profile?.ad || "").trim().split(" ")[0];
+  const greet = (() => { const hh = new Date().getHours(); return hh < 6 ? "İyi geceler" : hh < 12 ? "Günaydın" : hh < 18 ? "Merhaba" : "İyi akşamlar"; })();
+  $("#ttl").innerHTML = v === "today" ? `${esc(greet)}${nm ? ", " + esc(nm) : ""}!<small>Devam et, iyi gidiyorsun 💪</small>` : { plan: "Program", weight: "Kilo", profile: "Profil" }[v];
   render();
   window.scrollTo(0, 0);
 }
@@ -299,7 +417,8 @@ function recentDaysSummary(fromDate, n = 7) {
 }
 
 /* ---- Program ---- */
-async function makePlan() {
+async function makePlan(fixedKcal) {
+  if (typeof fixedKcal !== "number") fixedKcal = null;
   if (!S.profile) { go("profile"); return toast("Önce profilini doldur", 1); }
   busy("Programın hazırlanıyor…\n(20-40 sn sürebilir)");
   try {
@@ -307,6 +426,8 @@ async function makePlan() {
 ${profileText()}
 
 EGZERSİZ GEÇMİŞİ (uygulamaya girilen): ${exerciseSummary()}
+KAYITLARA GÖRE GERÇEK DURUM: ${adaptiveText()}
+${fixedKcal ? `ZORUNLU: Günlük kalori hedefi ${fixedKcal} kcal olarak belirlendi (kayıtlara göre ayarlandı). hedefKalori alanına tam olarak ${fixedKcal} yaz ve programı buna göre kur.` : ""}
 
 GÖREV:
 1) Kişinin amacına ve durumuna uygun GÜNLÜK KALORİ HEDEFİNİ belirle. Bu hedef egzersiz HARİÇ olmalı; spor günlerinde yakılan kalori uygulama tarafından hedefe ayrıca eklenecek.
@@ -316,21 +437,23 @@ GÖREV:
 5) Spor yapılan günlerde nasıl beslenmesi gerektiğini kısaca açıkla.
 
 JSON ŞEMASI:
-{"hedefKalori":number,"protein":number,"karbonhidrat":number,"yag":number,"suLitre":number,
+{"hedefKalori":number,"hedefYon":"ver|koru|al","haftalikHedefKg":number (haftalık hedef kilo değişimi; kayıp için negatif, ör. -0.5; korumada 0),"protein":number,"karbonhidrat":number,"yag":number,"suLitre":number,
 "ozet":"2-3 cümlelik strateji","haftalikBeklenti":"gerçekçi haftalık/aylık beklenti","sporGunuNotu":"spor günü beslenmesi",
 "onemliNotlar":["..."],
 "gunler":[{"ad":"1. Gün","ogunler":[{"ogun":"Kahvaltı","icerik":"porsiyonlarıyla","kcal":number}],"toplamKcal":number}],
 "ipuclari":["..."],"uyari":"gerekliyse kısa sağlık uyarısı, yoksa boş string"}`;
     const r = await ai(SYS, prompt, 0.6);
     const b = baseline();
-    let kcal = Math.round(num(r.hedefKalori) || b.tdee), raised = false;
+    let kcal = fixedKcal || Math.round(num(r.hedefKalori) || b.tdee), raised = false;
     if (kcal < b.floor) { kcal = b.floor; raised = true; }
     S.targets = {
       kcal, protein: Math.round(num(r.protein)), carb: Math.round(num(r.karbonhidrat)), fat: Math.round(num(r.yag)),
       water: num(r.suLitre) || 2.5, ozet: r.ozet || "", haftalik: r.haftalikBeklenti || "", sporNot: r.sporGunuNotu || "",
       notlar: arr(r.onemliNotlar),
       uyari: [r.uyari, raised ? `Hedef, güvenli alt sınır olan ${b.floor} kcal'ye yükseltildi.` : ""].filter(Boolean).join(" "),
-      at: Date.now(), kg: b.kg
+      at: Date.now(), kg: b.kg,
+      yon: r.hedefYon || "", haftalikHedefKg: isFinite(+r.haftalikHedefKg) ? +r.haftalikHedefKg : 0,
+      history: S.targets?.history || []
     };
     S.plan = { gunler: arr(r.gunler), ipuclari: arr(r.ipuclari), at: Date.now() };
     planDay = 0; save(); toast("Programın hazır"); go("plan");
@@ -410,7 +533,7 @@ TARİH: ${curDate}
 BUGÜN YENENLER:
 ${foods}
 EGZERSİZ: ${ex}
-SU: ${d.water} bardak (250 ml)
+SU: ${fmtL(d.waterMl)}
 TOPLAM: ${fmt(tot.kcal)} kcal, protein ${fmt(tot.p)} g, karbonhidrat ${fmt(tot.c)} g, yağ ${fmt(tot.f)} g.
 FARK: ${tot.kcal - t.total > 0 ? "+" : ""}${fmt(tot.kcal - t.total)} kcal
 ÖNCEKİ GÜNLER: ${recentDaysSummary(curDate)}
@@ -429,7 +552,7 @@ JSON: {"puan":1-10,"baslik":"kısa başlık","ozet":"2-3 cümle","fazlaKalori":n
 /* ============ BUGÜN ============ */
 function renderToday() {
   const el = $("#v-today");
-  $("#hdr").innerHTML = "";
+  $("#hdr").innerHTML = S.profile ? `<div class="avatar" data-go="profile">${esc(((S.profile.ad || "").trim()[0] || "🙂").toLocaleUpperCase("tr-TR"))}</div>` : "";
   if (!S.profile) {
     el.innerHTML = `<div class="card empty"><div class="e">🥗</div><h3>Hoş geldin!</h3>
       <p class="mu">Önce kendini ve amacını tanıt. Sonra sana özel kalori hedefi ve beslenme programı hazırlayayım.</p>
@@ -438,12 +561,14 @@ function renderToday() {
   }
   const d = day(curDate), t = dayTarget(curDate), tot = totals(d), tg = S.targets;
   const diff = t.total - tot.kcal, ratio = t.total ? tot.kcal / t.total : 0;
-  const col = ratio <= 1 ? "var(--ac)" : ratio <= 1.1 ? "var(--warn)" : "var(--bad)";
-  const C = 2 * Math.PI * 56, dash = Math.min(ratio, 1) * C;
+  const over = ratio > 1;
+  const R = 70, C = 2 * Math.PI * R, dash = Math.min(ratio, 1) * C;
   const isToday = curDate === ymd(new Date());
-  const macro = (lbl, v, goal, c) => `<div class="mac"><div class="row sp"><span>${lbl}</span><span class="mu">${fmt(v)}${goal ? " / " + goal : ""} g</span></div>
-    <div class="bar"><i style="width:${goal ? Math.min(v / goal * 100, 100) : 0}%;background:${c}"></i></div></div>`;
-  const glassGoal = Math.round((tg?.water || 2.5) * 4);
+  const waterGoal = Math.round((tg?.water || 2.5) * 1000);
+  const ms = (lbl, v, goal, unit, col) => `<div class="mstat"><span>${lbl}</span><div class="v"><b>${v}</b><em>${goal ? "/" + goal + unit : unit}</em></div>
+    <div class="bar"><i style="width:${goal ? Math.min(num(v) / goal * 100, 100) : 0}%;background:${col}"></i></div></div>`;
+  const adv = adaptive();
+  const unit = waterUnit();
 
   let h = `
   <div class="datebar">
@@ -453,32 +578,38 @@ function renderToday() {
     ${isToday ? "" : `<button class="ic" data-act="today">Bugün</button>`}
   </div>
 
-  <div class="card">
-    <div class="sum">
+  <div class="card prog">
+    <h3>Günün özeti</h3>
+    <div class="pgrid">
+      <div class="side">${ms("Protein", fmt(tot.p), tg?.protein, " g", "var(--p)")}${ms("Yağ", fmt(tot.f), tg?.fat, " g", "var(--f)")}</div>
       <div class="ring">
-        <svg width="132" height="132" viewBox="0 0 132 132"><circle cx="66" cy="66" r="56" fill="none" stroke="var(--in)" stroke-width="12"/>
-        <circle cx="66" cy="66" r="56" fill="none" stroke="${col}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${dash} ${C}"/></svg>
-        <div class="ctr"><div class="big">${fmt(tot.kcal)}</div><div class="mu sm">/ ${fmt(t.total)} kcal</div></div>
+        <svg width="168" height="168" viewBox="0 0 168 168">
+          <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${over ? "#f0a24a" : "#2fa36b"}"/><stop offset="1" stop-color="${over ? "#dc4b4b" : "#f2c94c"}"/></linearGradient></defs>
+          <circle cx="84" cy="84" r="${R}" fill="none" stroke="var(--in)" stroke-width="16"/>
+          <circle cx="84" cy="84" r="${R}" fill="none" stroke="url(#rg)" stroke-width="16" stroke-linecap="round" stroke-dasharray="${dash} ${C}"/></svg>
+        <div class="ctr"><span>Kalori</span><div class="big">${fmt(tot.kcal)}</div><span>/ ${fmt(t.total)} kcal</span></div>
       </div>
-      <div class="grow">
-        <div class="left" style="color:${diff >= 0 ? "var(--ac)" : "var(--bad)"}">${diff >= 0 ? fmt(diff) + " kcal kaldı" : fmt(-diff) + " kcal fazla"}</div>
-        <div class="formula">Hedef ${fmt(t.base)}${t.ex ? ` + egzersiz ${fmt(t.ex)}` : ""}${!tg ? " (geçici)" : ""}</div>
-        ${macro("Protein", tot.p, tg?.protein, "var(--p)")}
-        ${macro("Karbonhidrat", tot.c, tg?.carb, "var(--c)")}
-        ${macro("Yağ", tot.f, tg?.fat, "var(--f)")}
-      </div>
+      <div class="side r">${ms("Karbonhidrat", fmt(tot.c), tg?.carb, " g", "var(--c)")}${ms("Su", (d.waterMl / 1000).toLocaleString("tr-TR", { maximumFractionDigits: 2 }), waterGoal / 1000, " L", "var(--w)")}</div>
     </div>
+    <div class="remain" style="color:${diff >= 0 ? "var(--ac-d)" : "var(--bad)"}">${diff >= 0 ? "Kalan: " + fmt(diff) + " kcal" : fmt(-diff) + " kcal fazla"}</div>
+    <div class="formula">Hedef ${fmt(t.base)}${t.ex ? ` + egzersiz ${fmt(t.ex)}` : ""}${!tg ? " (geçici)" : ""}</div>
     ${!tg ? `<div class="note">Kişisel hedefin henüz yok, şu an bakım kalorin gösteriliyor. <button class="ghost" data-act="makeplan">Program oluştur</button></div>` : ""}
+    ${adv?.ready && adv.suggest != null && isToday ? `<div class="note">📈 Kayıtlarına göre hedefinin <b>${fmt(adv.suggest)} kcal</b> olması öneriliyor. <button class="ghost" data-go="plan">İncele</button></div>` : ""}
   </div>
 
-  <div class="card">
-    <h3>Ne yedin?</h3>
-    <div class="seg">${MEALS.map(m => `<button data-act="meal" data-m="${m}" class="${draft.meal === m ? "on" : ""}">${m}</button>`).join("")}</div>
+  <div class="sec">Öğün ekle</div>
+  <div class="mcards">${MEALS.map(m => {
+    const k = d.foods.filter(f => f.meal === m).reduce((a, f) => a + num(f.kcal), 0);
+    return `<button class="mcard ${draft.meal === m ? "on" : ""}" data-act="meal" data-m="${m}"><span class="em">${MEAL_EMOJI[m]}</span>${m}<small>${k ? fmt(k) + " kcal" : "—"}</small><span class="add">Ekle</span></button>`;
+  }).join("")}</div>
+
+  <div class="card" id="addcard">
+    <h3>${MEAL_EMOJI[draft.meal]} ${esc(draft.meal)} için ne yedin?</h3>
     ${draft.manual ? `
-      <div class="row" style="margin-top:10px"><input id="mName" placeholder="Besin adı (ör. Elma)" class="grow"><input id="mKcal" type="number" inputmode="numeric" placeholder="kcal" style="width:90px"></div>
-      <div class="row" style="margin-top:10px"><button class="pri grow" data-act="addManual">Ekle</button><button data-act="toggleManual">Yapay zekayla hesapla</button></div>`
+      <div class="row"><input id="mName" placeholder="Besin adı (ör. Elma)" class="grow"><input id="mKcal" type="number" inputmode="numeric" placeholder="kcal" style="width:90px"></div>
+      <div class="row" style="margin-top:10px"><button class="pri grow" data-act="addManual">Ekle</button><button data-act="toggleManual">Yapay zekayla</button></div>`
     : `
-      <textarea data-draft="food" placeholder="ör. 2 haşlanmış yumurta, 1 dilim beyaz peynir, 5 zeytin, 2 dilim tam buğday ekmeği, şekersiz çay" style="margin-top:10px">${esc(draft.food)}</textarea>
+      <textarea id="foodTx" data-draft="food" placeholder="ör. 2 haşlanmış yumurta, 1 dilim beyaz peynir, 5 zeytin, 2 dilim tam buğday ekmeği">${esc(draft.food)}</textarea>
       <div class="row" style="margin-top:10px"><button class="pri grow" data-act="calcFood">✨ Kaloriyi hesapla</button><button data-act="toggleManual">Elle gir</button></div>`}
     ${S.recent.length ? `<div class="hint" style="margin:12px 0 6px">Son yediklerin · dokun, seçili öğüne ekle</div>
       <div class="chips">${S.recent.slice(0, 14).map((r, i) => `<button class="chip" data-act="recent" data-i="${i}">${esc(r.name)} <small>${r.kcal}</small></button>`).join("")}</div>` : ""}
@@ -494,37 +625,47 @@ function renderToday() {
       <div class="row" style="margin-top:12px"><button class="pri grow" data-act="confirmPrev">Öğüne ekle</button><button data-act="cancelPrev">Vazgeç</button></div></div>`;
   }
 
-  // Öğünler
+  // Yenenler
   const anyFood = d.foods.length;
-  h += `<div class="card"><h3>Öğünler</h3>${anyFood ? MEALS.map(m => {
+  h += `<div class="sec">${isToday ? "Bugün yediklerin" : "Yenenler"}</div><div class="card">${anyFood ? MEALS.map(m => {
     const fs = d.foods.filter(f => f.meal === m); if (!fs.length) return "";
-    return `<div class="meal"><h4><span>${m}</span><span class="mu">${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))} kcal</span></h4>
+    return `<div class="meal"><h4><span>${MEAL_EMOJI[m]} ${m}</span><span class="mu">${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))} kcal</span></h4>
       ${fs.map(f => `<div class="item"><div class="nm">${esc(f.name)}${f.amount ? `<small>${esc(f.amount)}</small>` : ""}</div>
-        <button class="kc" data-act="editFood" data-id="${f.id}">${f.kcal}</button><button class="del" data-act="delFood" data-id="${f.id}" aria-label="Sil">×</button></div>`).join("")}</div>`;
-  }).join("") : `<p class="mu sm">Henüz bir şey girilmedi.</p>`}</div>`;
+        <button class="kc" data-act="editFood" data-id="${f.id}">${f.kcal} kcal</button><button class="del" data-act="delFood" data-id="${f.id}" aria-label="Sil">×</button></div>`).join("")}</div>`;
+  }).join("") : `<p class="mu sm" style="margin:0">Henüz bir şey girilmedi. Yukarıdan bir öğün seç.</p>`}</div>`;
+
+  // Su
+  const glasses = Math.round(d.waterMl / GLASS), gGoal = Math.round(waterGoal / GLASS);
+  h += `<div class="card"><div class="row sp"><h3 style="margin:0">💧 Su</h3>
+      <div class="seg mini"><button data-act="wunit" data-u="bardak" class="${unit === "bardak" ? "on" : ""}">Bardak</button><button data-act="wunit" data-u="litre" class="${unit === "litre" ? "on" : ""}">Litre</button></div></div>
+    <div class="row sp" style="margin-top:10px"><b style="font-size:20px">${waterText(d.waterMl)}</b><span class="mu sm">hedef ${waterText(waterGoal)}</span></div>
+    <div class="wbar"><i style="width:${Math.min(d.waterMl / waterGoal * 100, 100)}%"></i></div>
+    ${unit === "bardak" ? `
+      <div class="glasses">${Array.from({ length: Math.max(gGoal, glasses) }, (_, i) => `<div class="glass ${i < glasses ? "on" : ""}"></div>`).join("")}</div>
+      <div class="wq"><button data-act="water" data-ml="-250">− 1 bardak</button><button data-act="water" data-ml="250">+ 1 bardak</button></div>
+      <div class="hint">1 bardak = 250 ml</div>`
+    : `
+      <div class="wq"><button data-act="water" data-ml="250">+0,25 L</button><button data-act="water" data-ml="500">+0,5 L</button><button data-act="water" data-ml="1000">+1 L</button><button data-act="water" data-ml="-250">−0,25 L</button></div>
+      <div class="row" style="margin-top:10px"><input id="wL" type="number" inputmode="decimal" step="0.1" placeholder="Toplam litre (ör. 1,8)" class="grow"><button data-act="setWater">Ayarla</button></div>`}
+  </div>`;
 
   // Egzersiz
-  h += `<div class="card"><h3>Spor / antrenman</h3>
+  h += `<div class="card"><h3>🏋️ Spor / antrenman</h3>
     ${d.exercises.map(e => `<div class="item"><div class="nm">${esc(e.desc)}${e.ozet ? `<small>${esc(e.ozet)}</small>` : ""}</div>
       <span class="kc">−${e.kcal}</span><button class="del" data-act="delEx" data-id="${e.id}" aria-label="Sil">×</button></div>`).join("")}
     ${draft.exManual ? `
       <div class="row" style="margin-top:10px"><input id="exName" placeholder="ör. Koşu" class="grow"><input id="exKcal" type="number" inputmode="numeric" placeholder="kcal" style="width:90px"></div>
-      <div class="row" style="margin-top:10px"><button class="pri grow" data-act="addExManual">Ekle</button><button data-act="toggleEx">Tarif ederek gir</button></div>`
-    : `<textarea data-draft="ex" placeholder="ör. 10 dk ısınma, 4x10 squat 60 kg, 3x12 bench press 50 kg, 20 dk orta tempo yürüyüş bandı">${esc(draft.ex)}</textarea>
+      <div class="row" style="margin-top:10px"><button class="pri grow" data-act="addExManual">Ekle</button><button data-act="toggleEx">Tarif et</button></div>`
+    : `<textarea data-draft="ex" placeholder="ör. 10 dk ısınma, 4x10 squat 60 kg, 3x12 bench press 50 kg, 20 dk yürüyüş bandı">${esc(draft.ex)}</textarea>
       <div class="row" style="margin-top:10px"><button class="pri grow" data-act="calcEx">✨ Yakılan kaloriyi hesapla</button><button data-act="toggleEx">Kcal gir</button></div>`}
-    <div class="hint">Yakılan kalori bugünkü hedefine eklenir ve programın hazırlanırken dikkate alınır.</div>
+    <div class="hint">Yakılan kalori bugünkü hedefine eklenir ve program hazırlanırken dikkate alınır.</div>
   </div>`;
-
-  // Su
-  h += `<div class="card"><div class="row sp"><h3 style="margin:0">Su</h3><div class="row"><button class="ic" data-act="water" data-n="-1">−</button>
-    <b>${d.water} / ${glassGoal} bardak</b><button class="ic" data-act="water" data-n="1">+</button></div></div>
-    <div class="glasses">${Array.from({ length: Math.max(glassGoal, d.water) }, (_, i) => `<div class="glass ${i < d.water ? "on" : ""}"></div>`).join("")}</div></div>`;
 
   // Değerlendirme
   const rv = d.review;
   if (rv) h += reviewCard(rv, d);
-  else h += `<div class="card"><h3>Gün sonu</h3><p class="mu sm">Bugün başka bir şey yemeyeceksen günü bitir; toplamı hesaplayıp hedefine göre değerlendireyim, fazlalık varsa neleri çıkarman gerektiğini söyleyeyim.</p>
-    <button class="pri full" data-act="review" ${anyFood ? "" : "disabled"}>🌙 Günü bitir ve değerlendir</button></div>`;
+  else h += `<div class="card"><h3>🌙 Gün sonu</h3><p class="mu sm">Bugün başka bir şey yemeyeceksen günü bitir; toplamı hesaplayıp hedefine göre değerlendireyim, fazlalık varsa neleri çıkarman gerektiğini söyleyeyim.</p>
+    <button class="pri full" data-act="review" ${anyFood ? "" : "disabled"}>Günü bitir ve değerlendir</button></div>`;
 
   el.innerHTML = h;
 }
@@ -581,6 +722,7 @@ function renderPlan() {
     ${tg.haftalik ? `<div class="note"><b>Beklenti:</b> ${esc(tg.haftalik)}</div>` : ""}
     ${tg.uyari ? `<div class="warnbox">${esc(tg.uyari)}</div>` : ""}
   </div>
+  ${adaptiveCard()}
 
   <div class="card">
     <h3>Örnek günler</h3>
@@ -594,6 +736,38 @@ function renderPlan() {
   ${arr(tg.notlar).length ? `<div class="card"><h3>Önemli notlar</h3><ul class="l">${arr(tg.notlar).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
   ${arr(pl.ipuclari).length ? `<div class="card"><h3>İpuçları</h3><ul class="l">${arr(pl.ipuclari).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
   <p class="sm mu" style="text-align:center;margin:16px 8px">Bu program tavsiye niteliğindedir; sağlık sorunun varsa doktoruna veya diyetisyenine danış.</p>`;
+}
+
+function adaptiveCard() {
+  const a = adaptive(), tg = S.targets;
+  const hist = arr(tg.history).slice(-3).reverse();
+  const histHtml = hist.length ? `<h4>Geçmiş ayarlamalar</h4>${hist.map(x => `<div class="item"><div class="nm">${esc(new Date(x.at).toLocaleDateString("tr-TR"))}</div><span class="mu">${fmt(x.from)} → <b>${fmt(x.to)}</b> kcal</span></div>`).join("")}` : "";
+  if (!a?.ready) {
+    const step = (ok, txt) => `<li>${ok ? "✅" : "⬜"} ${txt}</li>`;
+    return `<div class="card adj"><h3>📈 Haftalık kontrol</h3>
+      <p class="sm mu" style="margin-top:0">Yediklerin ve kilon kaydedildikçe gerçek kalori harcamanı hesaplayıp hedefini otomatik olarak önereceğim. Kilo vermiyorsan azaltma, çok hızlı veriyorsan artırma önerisi gelir.</p>
+      <ul class="l" style="list-style:none;padding-left:0">
+        ${step(a.nDays >= a.need.days, `En az ${a.need.days} gün tam kayıt (şu an ${a.nDays})`)}
+        ${step(a.nW >= a.need.weights, `Son 3 haftada en az ${a.need.weights} tartı (şu an ${a.nW})`)}
+        ${step(a.span >= a.need.span, `Tartılar arası en az ${a.need.span} gün (şu an ${a.span})`)}
+      </ul><div class="hint">İpucu: Haftada 2-3 kez, sabah aç karnına tartıl. Günü bitirmeyi unutma.</div>${histHtml}</div>`;
+  }
+  const col = { iyi: "var(--ac-d)", uyum: "var(--warn)", hizli: "var(--bad)", yavas: "var(--warn)", fazla: "var(--warn)" }[a.status];
+  const icon = { iyi: "✅", uyum: "🎯", hizli: "⚠️", yavas: "🐢", fazla: "🚀" }[a.status];
+  return `<div class="card adj"><h3>📈 Haftalık kontrol</h3>
+    <p style="margin:0;color:${col};font-weight:600">${icon} ${esc(a.msg)}</p>
+    <div class="kv">
+      <span>Ortalama alınan</span><b>${fmt(a.avgIn)} kcal</b>
+      <span>Ortalama hedef</span><b>${fmt(a.avgTarget)} kcal</b>
+      <span>Kilo değişimi</span><b>${a.weekly > 0 ? "+" : ""}${a.weekly.toFixed(2).replace(".", ",")} kg/hafta</b>
+      <span>Hedeflenen</span><b>${a.goalWeekly > 0 ? "+" : ""}${a.goalWeekly.toFixed(2).replace(".", ",")} kg/hafta</b>
+      <span>Gerçek harcama (tahmini)</span><b>${fmt(a.realTdee)} kcal</b>
+    </div>
+    ${a.suggest != null ? `<div class="note" style="margin-top:12px"><div class="row sp"><span>Önerilen yeni hedef</span><span class="big2">${fmt(a.suggest)} <small class="sm mu">kcal</small></span></div>
+      <div class="sm mu">Şu anki: ${fmt(tg.kcal)} kcal · Değişim bir seferde en fazla 250 kcal.</div>
+      <div class="row" style="margin-top:10px"><button class="pri grow" data-act="applyAdj" data-v="${a.suggest}">Hedefi güncelle</button><button data-act="applyAdj" data-v="${a.suggest}" data-plan="1">Güncelle + yeni program</button></div></div>` : ""}
+    <div class="hint" style="margin-top:8px">Son ${a.nDays} günlük kayda ve ${a.nW} tartıya göre hesaplandı.${String(S.profile.ozel).startsWith("emzirme") || S.profile.ozel === "lohusa" ? " Doğum sonrası ödem atımı ilk haftalarda kiloyu olduğundan hızlı düşürebilir." : " Kısa vadeli su tutulması sonucu etkileyebilir."}</div>
+    ${histHtml}</div>`;
 }
 
 /* ============ KİLO ============ */
@@ -741,6 +915,13 @@ function saveProfile(form) {
   } else { toast("Kaydedildi"); renderProfile(); }
 }
 
+function focusAdd(kb) {
+  setTimeout(() => {
+    $("#addcard")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (kb) ($("#foodTx") || $("#mName"))?.focus({ preventScroll: true });
+  }, 50);
+}
+
 /* ============ Olaylar ============ */
 document.addEventListener("submit", e => { if (e.target.id === "pf") { e.preventDefault(); saveProfile(e.target); } });
 document.addEventListener("input", e => {
@@ -758,10 +939,20 @@ document.addEventListener("click", e => {
   const H = {
     day: () => { curDate = addDays(curDate, +a.dataset.n); draft.preview = null; renderToday(); },
     today: () => { curDate = ymd(new Date()); renderToday(); },
-    meal: () => { draft.meal = a.dataset.m; if (draft.preview) draft.preview.meal = a.dataset.m; renderToday(); },
+    meal: () => { draft.meal = a.dataset.m; if (draft.preview) draft.preview.meal = a.dataset.m; renderToday(); focusAdd(); },
+    quickAdd: () => { if (view !== "today") go("today"); else renderToday(); focusAdd(true); },
+    wunit: () => { S.settings.waterUnit = a.dataset.u; save(); renderToday(); },
+    setWater: () => { const v = num($("#wL").value); if (v < 0 || v > 10) return toast("Geçerli bir litre gir", 1); d().waterMl = Math.round(v * 1000); save(); renderToday(); },
+    applyAdj: () => {
+      const v = Math.round(num(a.dataset.v)); if (!v || !S.targets) return;
+      const tg = S.targets; tg.history = [...arr(tg.history), { at: Date.now(), from: tg.kcal, to: v }];
+      const k = v / tg.kcal; tg.carb = Math.round(tg.carb * (1 + (k - 1) * 1.4)); tg.fat = Math.round(tg.fat * (1 + (k - 1) * 0.6)); // proteini koru, farkı karb/yağdan al
+      tg.kcal = v; tg.at = Date.now(); save();
+      if (a.dataset.plan) makePlan(v); else { toast(`Yeni hedef: ${fmt(v)} kcal`); renderPlan(); }
+    },
     toggleManual: () => { draft.manual = !draft.manual; renderToday(); },
     toggleEx: () => { draft.exManual = !draft.exManual; renderToday(); },
-    calcFood, calcEx: calcExercise, review: reviewDay, makeplan: makePlan,
+    calcFood, calcEx: calcExercise, review: reviewDay, makeplan: () => makePlan(),
     addManual: () => {
       const n = $("#mName").value.trim(), k = num($("#mKcal").value);
       if (!n || !k) return toast("Ad ve kalori gir", 1);
@@ -788,7 +979,7 @@ document.addEventListener("click", e => {
       if (!k) return toast("Yakılan kaloriyi gir", 1);
       d().exercises.push({ id: uid(), desc: n, kcal: k }); save(); renderToday(); toast("Hedefine eklendi");
     },
-    water: () => { const D = d(); D.water = Math.max(0, D.water + +a.dataset.n); save(); renderToday(); },
+    water: () => { const D = d(); D.waterMl = Math.max(0, D.waterMl + +a.dataset.ml); save(); renderToday(); },
     clearReview: () => { const D = d(); D.review = null; D.closed = false; save(); renderToday(); },
     pday: () => { planDay = +a.dataset.i; renderPlan(); },
     wr: () => { wRange = +a.dataset.v; renderWeight(); },
