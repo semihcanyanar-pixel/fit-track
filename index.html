@@ -377,15 +377,26 @@ function render() { ({ today: renderToday, plan: renderPlan, weight: renderWeigh
 
 /* ============ Yapay zeka ============ */
 async function ai(system, prompt, temperature = 0.4) {
-  const url = (S.settings.workerUrl || "").trim();
-  if (!url) throw new Error("Önce Profil → Ayarlar'dan yapay zeka adresini (Worker URL) gir.");
-  let r;
-  try {
-    r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system, prompt, temperature }) });
-  } catch (e) { throw new Error("Bağlantı kurulamadı. İnternetini ve Worker adresini kontrol et."); }
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok || d.error) throw new Error(d.error || "Hata: " + r.status);
-  return parseJSON(d.text);
+  const url = (S.settings.workerUrl || DEFAULT_WORKER).trim();
+  const busyTx = $("#busyTx").textContent;
+  const waits = [0, 3000, 7000];          // yoğunlukta otomatik 2 kez daha dene
+  let lastErr;
+  for (let i = 0; i < waits.length; i++) {
+    if (waits[i]) {
+      $("#busyTx").textContent = `Yapay zeka yoğun, tekrar deneniyor (${i + 1}/${waits.length})…`;
+      await new Promise(r => setTimeout(r, waits[i]));
+    }
+    let r;
+    try {
+      r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system, prompt, temperature }) });
+    } catch (e) { lastErr = new Error("Bağlantı kurulamadı. İnternetini kontrol et."); continue; }
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && !d.error) { $("#busyTx").textContent = busyTx; return parseJSON(d.text); }
+    lastErr = new Error(d.error || "Hata: " + r.status);
+    const retryable = d.kind === "busy" || /503|high demand|yoğun/i.test(d.error || "") || r.status >= 500 && d.kind !== "quota" && d.kind !== "error";
+    if (!retryable) break;
+  }
+  throw new Error(lastErr.message + " Yazdığın metin silinmedi; istersen 'Elle gir' ile de ekleyebilirsin.");
 }
 function parseJSON(t) {
   t = String(t || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
