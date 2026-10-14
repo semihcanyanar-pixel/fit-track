@@ -180,7 +180,7 @@ details summary::-webkit-details-marker{display:none}
   <button data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Profil</button>
 </nav>
 <div id="toast"></div>
-<div id="busy"><div class="spin"></div><div id="busyTx"></div></div>
+<div id="busy"><div class="spin"></div><div id="busyTx"></div><button id="busyCancel" style="background:rgba(255,255,255,.18);color:#fff;margin-top:6px">Vazgeç</button></div>
 
 <script>
 "use strict";
@@ -361,7 +361,8 @@ function adaptiveText() {
 /* ============ UI yardımcıları ============ */
 let tt;
 function toast(msg, err) { const t = $("#toast"); t.textContent = msg; t.className = "on" + (err ? " err" : ""); clearTimeout(tt); tt = setTimeout(() => t.className = "", err ? 4200 : 2200); }
-function busy(msg) { $("#busy").className = msg ? "on" : ""; $("#busyTx").textContent = msg || ""; }
+function busy(msg) { $("#busy").className = msg ? "on" : ""; $("#busyTx").textContent = msg || ""; $("#busyCancel").style.display = "none"; if (msg) setTimeout(() => { if ($("#busy").className === "on" && aiCtl) $("#busyCancel").style.display = ""; }, 5000); }
+document.addEventListener("click", e => { if (e.target.id === "busyCancel" && aiCtl) aiCtl.abort("user"); });
 
 function go(v) {
   view = v;
@@ -376,27 +377,31 @@ function go(v) {
 function render() { ({ today: renderToday, plan: renderPlan, weight: renderWeight, profile: renderProfile })[view](); }
 
 /* ============ Yapay zeka ============ */
-async function ai(system, prompt, temperature = 0.4) {
+let aiCtl = null;
+async function ai(system, prompt, temperature = 0.4, mode = "fast") {
   const url = (S.settings.workerUrl || DEFAULT_WORKER).trim();
-  const busyTx = $("#busyTx").textContent;
-  const waits = [0, 3000, 7000];          // yoğunlukta otomatik 2 kez daha dene
-  let lastErr;
-  for (let i = 0; i < waits.length; i++) {
-    if (waits[i]) {
-      $("#busyTx").textContent = `Yapay zeka yoğun, tekrar deneniyor (${i + 1}/${waits.length})…`;
-      await new Promise(r => setTimeout(r, waits[i]));
+  const label = $("#busyTx").textContent;
+  const t0 = Date.now();
+  const tick = setInterval(() => { const s = Math.round((Date.now() - t0) / 1000); if (s >= 4) $("#busyTx").textContent = `${label} ${s} sn`; }, 1000);
+  aiCtl = new AbortController();
+  const hardStop = setTimeout(() => aiCtl.abort(), mode === "deep" ? 80000 : 30000);
+  try {
+    for (let i = 0; i < 2; i++) {               // yoğunlukta sadece 1 kez daha dene
+      let r, d;
+      try {
+        r = await fetch(url, { method: "POST", signal: aiCtl.signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system, prompt, temperature, mode }) });
+        d = await r.json().catch(() => ({}));
+      } catch (e) {
+        if (aiCtl?.signal.aborted) throw new Error(aiCtl.signal.reason === "user" ? "İptal edildi." : "Yapay zeka çok geç yanıt verdi.");
+        throw new Error("Bağlantı kurulamadı. İnternetini kontrol et.");
+      }
+      if (r.ok && !d.error) return parseJSON(d.text);
+      if (d.kind === "busy" && i === 0 && Date.now() - t0 < (mode === "deep" ? 40000 : 12000)) { await new Promise(res => setTimeout(res, 1500)); continue; }
+      throw new Error(d.error || "Hata: " + r.status);
     }
-    let r;
-    try {
-      r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system, prompt, temperature }) });
-    } catch (e) { lastErr = new Error("Bağlantı kurulamadı. İnternetini kontrol et."); continue; }
-    const d = await r.json().catch(() => ({}));
-    if (r.ok && !d.error) { $("#busyTx").textContent = busyTx; return parseJSON(d.text); }
-    lastErr = new Error(d.error || "Hata: " + r.status);
-    const retryable = d.kind === "busy" || /503|high demand|yoğun/i.test(d.error || "") || r.status >= 500 && d.kind !== "quota" && d.kind !== "error";
-    if (!retryable) break;
-  }
-  throw new Error(lastErr.message + " Yazdığın metin silinmedi; istersen 'Elle gir' ile de ekleyebilirsin.");
+  } catch (e) {
+    throw new Error(e.message + (e.message === "İptal edildi." ? "" : " Yazdığın metin silinmedi; tekrar dene ya da 'Elle gir'i kullan."));
+  } finally { clearInterval(tick); clearTimeout(hardStop); aiCtl = null; }
 }
 function parseJSON(t) {
   t = String(t || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
@@ -470,7 +475,7 @@ JSON ŞEMASI:
 "onemliNotlar":["..."],
 "gunler":[{"ad":"1. Gün","ogunler":[{"ogun":"Kahvaltı","icerik":"porsiyonlarıyla","kcal":number}],"toplamKcal":number}],
 "ipuclari":["..."],"uyari":"gerekliyse kısa sağlık uyarısı, yoksa boş string"}`;
-    const r = await ai(SYS, prompt, 0.6);
+    const r = await ai(SYS, prompt, 0.6, "deep");
     const b = baseline();
     let kcal = fixedKcal || Math.round(num(r.hedefKalori) || b.tdee), raised = false;
     if (kcal < b.floor) { kcal = b.floor; raised = true; }
@@ -570,7 +575,7 @@ GÖREV: Günü kişinin amacına göre değerlendir.
 - Hedef aşıldıysa (fazlaKalori > 0): BUGÜN YENENLER arasından, çıkarılması/azaltılması hem daha sağlıklı olacak hem de fazlalığı kapatacak besinleri seç. Seçtiklerinin kcal toplamı fazlalığa yakın olsun. Her biri için yerine ne yenebileceğini yaz. Besin değeri yüksek ve amaca hizmet eden besinleri (ör. protein kaynakları, emzirenler için süt artırıcılar) çıkarma.
 - Hedefin belirgin altında kalındıysa bunun riskini (kas kaybı, süt azalması vb.) belirt.
 - Makro dengesini, su ve öğün düzenini yorumla.
-JSON: {"puan":1-10,"baslik":"kısa başlık","ozet":"2-3 cümle","fazlaKalori":number,"cikarilacaklar":[{"besin":"string","kcal":number,"neden":"string","yerine":"string"}],"iyiler":["..."],"gelistirilecekler":["..."],"eksikler":["ör. protein, lif, su"],"yarinIcin":"somut öneri"}`, 0.5);
+JSON: {"puan":1-10,"baslik":"kısa başlık","ozet":"2-3 cümle","fazlaKalori":number,"cikarilacaklar":[{"besin":"string","kcal":number,"neden":"string","yerine":"string"}],"iyiler":["..."],"gelistirilecekler":["..."],"eksikler":["ör. protein, lif, su"],"yarinIcin":"somut öneri"}`, 0.5, "deep");
     d.review = { ...r, at: Date.now(), sig: daySig(d) };
     d.closed = true; save(); renderToday();
     setTimeout(() => $("#review")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
