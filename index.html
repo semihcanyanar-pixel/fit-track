@@ -396,7 +396,8 @@ async function ai(system, prompt, temperature = 0.4, mode = "fast") {
         throw new Error("Bağlantı kurulamadı. İnternetini kontrol et.");
       }
       if (r.ok && !d.error) return parseJSON(d.text);
-      if (d.kind === "busy" && i === 0 && Date.now() - t0 < (mode === "deep" ? 40000 : 12000)) { await new Promise(res => setTimeout(res, 1500)); continue; }
+      if (d.detail) console.warn("AI:", d.detail);
+      if (d.kind === "busy" && i === 0 && Date.now() - t0 < (mode === "deep" ? 30000 : 8000)) { await new Promise(res => setTimeout(res, 1500)); continue; }
       throw new Error(d.error || "Hata: " + r.status);
     }
   } catch (e) {
@@ -1031,7 +1032,13 @@ document.addEventListener("click", e => {
     testAi: async () => {
       S.settings.workerUrl = $("#wurl").value.trim(); save();
       busy("Bağlantı deneniyor…");
-      try { const r = await ai("Sadece JSON döndür.", 'Şunu döndür: {"durum":"tamam"}', 0); toast(r.durum ? "Bağlantı çalışıyor ✓" : "Yanıt geldi ✓"); }
+      try {
+        const t = Date.now();
+        const res = await fetch((S.settings.workerUrl || DEFAULT_WORKER).trim(), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: "Sadece JSON döndür.", prompt: 'Şunu döndür: {"durum":"tamam"}', temperature: 0, mode: "fast" }) });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok || d.error) throw new Error((d.error || "Hata " + res.status) + (d.detail ? " — " + d.detail.slice(0, 200) : ""));
+        toast(`Bağlantı çalışıyor ✓ (${String(d.model).replace("@cf/meta/", "").replace("-instruct-fp8-fast", "")}${d.fallback ? ", yedek" : ""}, ${((Date.now() - t) / 1000).toFixed(1)} sn)`);
+      }
       catch (e) { toast(e.message, 1); } finally { busy(); }
     },
     export: exportData,
