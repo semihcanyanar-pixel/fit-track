@@ -139,6 +139,11 @@ nav.tabs button.plus svg{width:28px;height:28px}
 .item .nm small{display:block;color:var(--mu);font-size:12px;font-weight:600;margin-top:1px}
 .kc{font-weight:800;white-space:nowrap;background:none;padding:4px 4px;box-shadow:none;font-size:14px;color:var(--tx)}
 .del{background:none;color:var(--mu);padding:4px 6px;font-size:18px;box-shadow:none}
+.mrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--ln);cursor:pointer;user-select:none}
+.mrow:first-child{border-top:0;padding-top:2px}
+.mrow b{font-size:15px}.mrow small{display:block;color:var(--mu);font-size:12px;font-weight:600}
+.mrow .mk{font-size:14px;white-space:nowrap}.mrow .chev{color:var(--mu);font-size:20px;width:14px;text-align:center}
+.mbody{margin:0 0 4px 50px}.mbody .item:first-child{padding-top:4px}
 .mgrp{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--mu);margin:14px 0 4px;text-transform:uppercase;letter-spacing:.04em}
 .mgrp:first-child{margin-top:0}
 .prev .item input[type=number]{width:84px;padding:7px 9px;text-align:right}
@@ -609,6 +614,7 @@ ${schema}`;
   } catch (e) { toast(e.message, 1); } finally { busy(); }
 }
 function addFoods(items, meal) {
+  if (typeof openMeals !== "undefined") openMeals.add(meal);
   const d = day(curDate);
   items.forEach(i => {
     const f = { id: uid(), meal, name: i.name, amount: i.amount || "", kcal: Math.round(num(i.kcal)), p: r1(i.p), c: r1(i.c), f: r1(i.f) };
@@ -779,9 +785,13 @@ function renderToday() {
   const anyFood = d.foods.length;
   h += `<div class="sec">${isToday ? "Bugün yediklerin" : "Yenenler"}${anyFood ? `<small>${fmt(tot.kcal)} kcal</small>` : ""}</div><div class="card">${anyFood ? MEALS.map(m => {
     const fs = d.foods.filter(f => f.meal === m); if (!fs.length) return "";
-    return `<div class="mgrp"><span>${MEAL_EMOJI[m]} ${m}</span><span>${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))} kcal</span></div>
-      ${fs.map(f => `<div class="item"><div class="fic">${foodEmoji(f.name)}</div><div class="nm">${esc(f.name)}${f.amount ? `<small>${esc(f.amount)}</small>` : ""}</div>
-        <button class="kc" data-act="editFood" data-id="${f.id}">${f.kcal} kcal</button><button class="del" data-act="delFood" data-id="${f.id}" aria-label="Sil">×</button></div>`).join("")}`;
+    const open = openMeals.has(m);
+    return `<div class="mrow" data-act="mtog" data-m="${m}" role="button" aria-expanded="${open}">
+        <span class="fic" style="background:${MEAL_TINT[m]};width:38px;height:38px;font-size:18px">${MEAL_EMOJI[m]}</span>
+        <span class="grow"><b>${m}</b><small>${fs.length} kalem</small></span>
+        <b class="mk">${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))} kcal</b><span class="chev">${open ? "⌃" : "›"}</span></div>
+      ${open ? `<div class="mbody">${fs.map(f => `<div class="item"><div class="fic">${foodEmoji(f.name)}</div><div class="nm">${esc(f.name)}${f.amount ? `<small>${esc(f.amount)}</small>` : ""}</div>
+        <button class="kc" data-act="editFood" data-id="${f.id}">${f.kcal} kcal</button><button class="del" data-act="delFood" data-id="${f.id}" aria-label="Sil">×</button></div>`).join("")}</div>` : ""}`;
   }).join("") : `<p class="mu sm" style="margin:0">Henüz bir şey girilmedi. Yukarıdan bir öğün seç.</p>`}</div>`;
 
   // Su
@@ -842,6 +852,7 @@ function reviewCard(rv, d) {
 
 /* ============ PROGRAM ============ */
 let adjOpen = false;
+const openMeals = new Set();   // "Bugün yediklerin"de açık olan öğünler
 function ogunToMeal(s) { const n = String(s || "").toLocaleLowerCase("tr-TR"); return n.includes("kahvalt") ? "Kahvaltı" : n.includes("öğle") || n.includes("ogle") ? "Öğle" : n.includes("akşam") || n.includes("aksam") ? "Akşam" : "Ara öğün"; }
 function renderPlan() {
   const el = $("#v-plan");
@@ -1212,6 +1223,7 @@ document.addEventListener("click", e => {
     photo: () => $("#photoIn").click(),
     clearPhoto: () => { draft.photo = null; renderToday(); },
     toggleAdj: () => { adjOpen = !adjOpen; renderPlan(); },
+    mtog: () => { const m = a.dataset.m; openMeals.has(m) ? openMeals.delete(m) : openMeals.add(m); renderToday(); },
     ate: () => {
       const pl = S.plan, tg = S.targets, g = arr(pl?.gunler)[planDay], o = arr(g?.ogunler)[+a.dataset.o]; if (!o) return;
       const kc = Math.round(num(o.kcal)), m = ogunToMeal(o.ogun), k = tg?.kcal ? kc / tg.kcal : 0;
