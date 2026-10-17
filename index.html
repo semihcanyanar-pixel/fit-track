@@ -26,6 +26,14 @@
   --tint-y:rgba(245,158,11,.14);--tint-g:rgba(16,185,129,.13);--tint-p:rgba(236,72,153,.12);--tint-b:rgba(59,130,246,.12);--tint-v:rgba(139,92,246,.12);--tint-c:rgba(14,165,233,.13);
   color-scheme:light;
 }
+/* ===== Açık tema vurgu renkleri (Zümrüt varsayılan) ===== */
+:root[data-theme="light"][data-accent="mercan"]{--ac:#f97316;--ac-d:#ea580c;--ac2:rgba(249,115,22,.13);--acTx:#c2410c;--g1:#fb923c;--g2:#f43f5e;--btn:linear-gradient(135deg,#fb923c,#f43f5e);--btnSh:0 8px 20px rgba(244,63,94,.28)}
+:root[data-theme="light"][data-accent="okyanus"]{--ac:#0ea5e9;--ac-d:#2563eb;--ac2:rgba(14,165,233,.13);--acTx:#0369a1;--g1:#38bdf8;--g2:#6366f1;--btn:linear-gradient(135deg,#0ea5e9,#4f46e5);--btnSh:0 8px 20px rgba(79,70,229,.28)}
+:root[data-theme="light"][data-accent="lavanta"]{--ac:#8b5cf6;--ac-d:#7c3aed;--ac2:rgba(139,92,246,.13);--acTx:#6d28d9;--g1:#a78bfa;--g2:#ec4899;--btn:linear-gradient(135deg,#8b5cf6,#d946ef);--btnSh:0 8px 20px rgba(139,92,246,.30)}
+.swatches{display:flex;gap:10px;margin-left:auto}
+.sw{width:32px;height:32px;border-radius:50%;padding:0;box-shadow:none;position:relative;border:3px solid var(--card);outline:2px solid transparent;transition:outline-color .15s}
+.sw.on{outline-color:var(--tx)}
+.sw.on:after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800}
 /* ===== Tema: Aurora (koyu, elle seçilir) ===== */
 :root[data-theme="dark"]{
   --bg:#0d0b1e;--card:rgba(255,255,255,.06);--card2:rgba(255,255,255,.08);--in:rgba(255,255,255,.07);--ln:rgba(255,255,255,.10);
@@ -1111,6 +1119,7 @@ function appSettingsHtml() {
   return `<div class="grp">Uygulama</div>
   <div class="card lst" style="margin-top:0">
     <div class="lrow"><span class="ic" style="background:var(--tint-v)">${dark ? "🌙" : "☀️"}</span>Görünüm<div class="seg" style="margin-left:auto;width:150px"><button data-act="theme" data-t="light" class="${dark ? "" : "on"}">Açık</button><button data-act="theme" data-t="dark" class="${dark ? "on" : ""}">Koyu</button></div></div>
+    ${dark ? "" : `<div class="lrow"><span class="ic" style="background:var(--ac2)">🎨</span>Vurgu rengi<div class="swatches">${ACCENTS.map(([k, n, g]) => `<button class="sw ${(S.settings.accent || "zumrut") === k ? "on" : ""}" style="background:${g}" data-act="accent" data-a="${k}" aria-label="${n}" title="${n}"></button>`).join("")}</div></div>`}
     <div class="lrow"><span class="ic" style="background:var(--tint-c)">💧</span>Su birimi<div class="seg" style="margin-left:auto;width:150px"><button data-act="wunit" data-u="bardak" class="${waterUnit() === "bardak" ? "on" : ""}">Bardak</button><button data-act="wunit" data-u="litre" class="${waterUnit() === "litre" ? "on" : ""}">Litre</button></div></div>
     <button class="lrow" data-act="sheet" data-k="ai"><span class="ic" style="background:var(--tint-g)">✨</span>Yapay zeka<span class="v">Bağlantı testi</span><span class="ch">›</span></button>
     <button class="lrow" data-act="sheet" data-k="hesap"><span class="ic" style="background:var(--tint-b)">☁️</span>Hesap<span class="v">${Cloud.user ? esc(Cloud.user.email) : "Sadece bu cihaz"}</span><span class="ch">›</span></button>
@@ -1164,9 +1173,19 @@ function saveProfilePart(form) {
 }
 
 /* ---- Tema ---- */
+const ACCENTS = [
+  ["zumrut", "Zümrüt", "linear-gradient(135deg,#10b981,#059669)"],
+  ["mercan", "Mercan", "linear-gradient(135deg,#fb923c,#f43f5e)"],
+  ["okyanus", "Okyanus", "linear-gradient(135deg,#0ea5e9,#4f46e5)"],
+  ["lavanta", "Lavanta", "linear-gradient(135deg,#8b5cf6,#d946ef)"]
+];
 function applyTheme() {
-  const dark = S.settings?.theme === "dark" || (!S.profile && localStorage.getItem("fittrack_theme") === "dark");
+  let ls = {}; try { ls = { t: localStorage.getItem("fittrack_theme"), a: localStorage.getItem("fittrack_accent") }; } catch (e) {}
+  const dark = S.settings?.theme ? S.settings.theme === "dark" : ls.t === "dark";
+  const accent = S.settings?.accent || ls.a || "zumrut";
   document.documentElement.dataset.theme = dark ? "dark" : "light";
+  document.documentElement.dataset.accent = accent;
+  try { localStorage.setItem("fittrack_accent", accent); } catch (e) {}
   document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#0d0b1e" : "#f6f4ef");
   try { localStorage.setItem("fittrack_theme", dark ? "dark" : "light"); } catch (e) {}
 }
@@ -1234,6 +1253,7 @@ document.addEventListener("click", e => {
     wstep: () => { wStep = Math.max(30, Math.min(350, Math.round((wStep + num(a.dataset.n)) * 10) / 10)); renderWeight(); },
     wtype: () => { const v = prompt("Kilo (kg)", String(wStep).replace(".", ",")); if (v === null) return; const n = r1(v); if (n < 30 || n > 350) return toast("Geçerli bir kilo gir", 1); wStep = n; renderWeight(); },
     theme: () => { S.settings.theme = a.dataset.t; save(); applyTheme(); renderProfile(); },
+    accent: () => { S.settings.accent = a.dataset.a; save(); applyTheme(); renderProfile(); toast(ACCENTS.find(x => x[0] === a.dataset.a)?.[1] + " seçildi"); },
     sheet: () => openSheet(a.dataset.k),
     closeSheet,
     meal: () => { draft.meal = a.dataset.m; if (draft.preview) draft.preview.meal = a.dataset.m; renderToday(); focusAdd(); },
@@ -1304,7 +1324,7 @@ document.addEventListener("click", e => {
     },
     export: exportData,
     import: () => $("#impFile").click(),
-    reset: () => { if (confirm("Tüm kayıtların silinecek" + (Cloud.user ? " (buluttakiler dahil)" : "") + ". Emin misin?") && confirm("Geri alınamaz. Siliyorum?")) { const st = S.settings; S = defaults(); S.settings = { ...S.settings, workerUrl: st.workerUrl, theme: st.theme }; save(); go("profile"); } },
+    reset: () => { if (confirm("Tüm kayıtların silinecek" + (Cloud.user ? " (buluttakiler dahil)" : "") + ". Emin misin?") && confirm("Geri alınamaz. Siliyorum?")) { const st = S.settings; S = defaults(); S.settings = { ...S.settings, workerUrl: st.workerUrl, theme: st.theme, accent: st.accent }; save(); go("profile"); } },
     logout: () => { if (confirm("Çıkış yapılsın mı? Kayıtların bulutta kalır.")) Cloud.logout(); },
     login: () => Cloud.auth("login"), signup: () => Cloud.auth("signup"), forgot: () => Cloud.auth("forgot"),
   };
