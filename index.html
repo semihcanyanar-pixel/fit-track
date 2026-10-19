@@ -415,7 +415,9 @@ function adaptive() {
     const k = addDays(today, -i), d = S.days[k];
     if (!d?.foods?.length) continue;
     const kc = totals(d).kcal;
-    if (d.closed || kc >= 800) days.push({ k, kc, t: dayTarget(k), ex: d.exercises.reduce((a, e) => a + num(e.kcal), 0) });
+    const ex = d.exercises.reduce((a, e) => a + num(e.kcal), 0);
+    // Uyum, ŞU ANKİ hedefe göre ölçülür (eski/hatalı hedefler yanıltmasın)
+    if (d.closed || kc >= 800) days.push({ k, kc, t: { total: dayTarget(k).base + ex }, ex });
   }
   const ws = sortedWeights().filter(w => w.date >= from);
   const span = ws.length >= 2 ? (new Date(ws[ws.length - 1].date) - new Date(ws[0].date)) / 864e5 : 0;
@@ -442,7 +444,9 @@ function adaptive() {
   const slopeSm = linSlope(sm.map(w => ({ x: (new Date(w.date) - t0) / 864e5, y: w.kg })));
   const slopeDay = nW >= 4 ? slopeSm : (slopeRaw + slopeSm) / 2;
   const weekly = slopeDay * 7;
-  const realTdee = avgIn - slopeDay * 7700;
+  // Gerçek harcama: kayıtlardan hesaplanır ama mantıksız uçlara (ör. ödem/su kaybı) karşı bakım kalorisinin %70-140'ı ile sınırlanır
+  const maint = S.targets?.calc?.maint || b.tdee;
+  const realTdee = Math.max(maint * 0.7, Math.min(maint * 1.4, avgIn - slopeDay * 7700));
   let goalWeekly = num(tg.haftalikHedefKg);
   const hk = num(S.profile.hedefKilo);
   if (!goalWeekly && hk && Math.abs(hk - b.kg) > 1) goalWeekly = hk < b.kg ? (String(S.profile.ozel).startsWith("emzirme") ? -0.4 : -0.5) : 0.25;
@@ -458,10 +462,14 @@ function adaptive() {
   if (adherence > 150) {
     status = "uyum";
     msg = `Son ${nDays} günde hedefin günde ortalama ${fmt(adherence)} kcal üstünde yemişsin. Hedefi değiştirmeden önce mevcut hedefe uymayı dene; sonuç büyük ihtimalle bundan.`;
+  } else if (adherence < -150) {
+    status = "uyum";
+    msg = (weekly < maxLoss ? `Haftada ${Math.abs(weekly).toFixed(2).replace(".", ",")} kg veriyorsun; bu hızlı. Ama sebebi hedefin düşük olması değil: ` : "")
+      + `Son ${nDays} günde hedefinin günde ortalama ${fmt(-adherence)} kcal altında yemişsin (ortalama ${fmt(avgIn)} kcal). Hedefi değiştirmek yerine önce hedefe yaklaşmayı dene.`;
   } else if (weekly < maxLoss) {
     status = "hizli";
     msg = `Haftada ${Math.abs(weekly).toFixed(2).replace(".", ",")} kg veriyor görünüyorsun; bu ${nursing ? "emzirme döneminde" : "kas korumak için"} hızlı.` + (conf === "low" ? " Birkaç tartı daha bunu netleştirecek." : " Kaloriyi biraz artırmak daha güvenli.");
-    if (conf !== "low") suggest = clampStep(Math.max(ideal, tg.kcal + 100));
+    if (conf !== "low" && ideal > tg.kcal) suggest = clampStep(ideal);   // öneri gerçek harcamaya göre; mevcut hedefe eklenmez
   } else if (Math.abs(weekly - goalWeekly) <= 0.15) {
     status = "iyi";
     msg = `Hedeflenen hızda ilerliyorsun (haftada ${f2(weekly)} kg). Hedefi değiştirmeye gerek yok.`;
@@ -477,6 +485,10 @@ function adaptive() {
         : `Beklenenden hızlı ilerliyorsun (haftada ${f2(weekly)} kg, hedef ${f2(goalWeekly)} kg). Kaloriyi biraz artırabilirsin.`;
     }
   }
+  // Aynı hafta içinde art arda ayarlama yapılmasın (etkisini görmek için zaman tanı)
+  const lastAdj = arr(tg.history).filter(x => x.note === "Haftalık kontrol önerisi").pop();
+  const sinceAdj = lastAdj ? (Date.now() - lastAdj.at) / 864e5 : 99;
+  if (suggest != null && sinceAdj < 7) { suggest = null; msg += ` Son ayarlama ${sinceAdj < 1 ? "bugün" : Math.floor(sinceAdj) + " gün önce"} yapıldı; yeni öneri için etkisini görmeyi bekle (${Math.ceil(7 - sinceAdj)} gün).`; }
   if (suggest != null) { suggest = Math.max(b.floor, Math.round(suggest / 10) * 10); if (Math.abs(suggest - tg.kcal) < 50) { suggest = null; if (status !== "hizli") status = "iyi"; } }
   return { ...res, avgIn, avgTarget, avgEx, weekly, realTdee, goalWeekly, adherence, status, msg, suggest, step };
 }
@@ -502,7 +514,7 @@ function go(v) {
   render();
   window.scrollTo(0, 0);
 }
-function render() { applyTheme(); ({ today: renderToday, plan: renderPlan, weight: renderWeight, profile: renderProfile, chef: renderChef })[view](); }
+function render() { applyTheme(); migrateTargets(); ({ today: renderToday, plan: renderPlan, weight: renderWeight, profile: renderProfile, chef: renderChef })[view](); }
 
 /* ============ Yapay zeka ============ */
 let aiCtl = null;
@@ -578,48 +590,110 @@ function recentDaysSummary(fromDate, n = 7) {
   return out.length ? out.join("; ") : "Önceki günlere ait kayıt yok.";
 }
 
+/* ---- Hedef hesabı (formül, yapay zekadan bağımsız) ---- */
+function profileSig(p = S.profile) {
+  return JSON.stringify(["cinsiyet", "yas", "boy", "aktivite", "ozel", "amac", "sure", "sporSiklik", "sporSiddet", "hedefKilo"].map(k => String(p?.[k] ?? "")));
+}
+function clampWeekly(w, p = S.profile) {
+  const b = baseline(p); w = num(w);
+  if (p.ozel === "hamile") return 0;
+  if (w < 0) { const min = String(p.ozel).startsWith("emzirme") ? -0.5 : -Math.min(1, Math.max(0.5, b.kg * 0.01)); return Math.max(min, Math.min(-0.1, w)); }
+  if (w > 0) return Math.min(0.5, Math.max(0.1, w));
+  return 0;
+}
+function computeTargets(weekly, kcalOverride) {
+  const p = S.profile, b = baseline();
+  const fact = ACT[p.aktivite]?.[0] || 1.3;
+  const maint = Math.round(b.bmr * fact + b.extra);
+  const delta = Math.round(weekly * 7700 / 7);
+  let formula = Math.round((maint + delta) / 10) * 10, floored = false;
+  if (formula < b.floor) { formula = b.floor; floored = true; }
+  const kcal = kcalOverride ? Math.max(b.floor, Math.round(kcalOverride)) : formula;
+  const nursing = String(p.ozel).startsWith("emzirme");
+  const refKg = b.bmi > 30 ? Math.min(b.kg, 25 * Math.pow(num(p.boy) / 100, 2) * 1.1) : b.kg;   // obezite durumunda proteini şişirmemek için
+  const protein = Math.round(refKg * (weekly < 0 ? 1.9 : weekly > 0 ? 1.8 : 1.6) + (nursing ? 20 : 0));
+  const fat = Math.round(kcal * 0.28 / 9);
+  const carb = Math.max(50, Math.round((kcal - protein * 4 - fat * 9) / 4));
+  const water = Math.round((b.kg * 0.035 + (nursing ? 0.7 : 0)) * 10) / 10;
+  return { kcal, protein, carb, fat, water, calc: { bmr: b.bmr, fact, extra: b.extra, maint, delta, formula, floored, kg: b.kg } };
+}
+// Stratejiyi (yön + haftalık hız) yapay zekaya sor; profil değişmediyse önceki strateji kullanılır
+async function getStrategy(force) {
+  const sig = profileSig(), old = S.targets?.strategy;
+  if (!force && old && old.sig === sig) return old;
+  let r;
+  try { r = await ai(SYS, `KİŞİ BİLGİLERİ:
+${profileText()}
+GÖREV: Kişinin amacına ve durumuna göre kilo stratejisini belirle. Sadece yönü ve güvenli haftalık hızı seç; kaloriyi hesaplama.
+Kurallar: kilo vermek için -0.25 ile -0.75 kg/hafta (emzirmede en fazla -0.5), korumak için 0, kas kazanmak için +0.1 ile +0.3. "Kas kaybetmeden yağlanmadan bir dönemi geçirmek" gibi amaçlar koruma ya da çok hafif açıktır (0 ile -0.25).
+JSON: {"hedefYon":"ver|koru|al","haftalikHedefKg":number,"gerekce":"tek cümle"}`, 0, "fast"); }
+  catch (e) {   // yapay zeka cevap vermezse: hedef kiloya göre basit strateji
+    const hk = num(S.profile.hedefKilo), kg = baseline().kg;
+    r = hk && hk < kg - 1 ? { hedefYon: "ver", haftalikHedefKg: -0.5 } : hk && hk > kg + 1 ? { hedefYon: "al", haftalikHedefKg: 0.2 } : { hedefYon: "koru", haftalikHedefKg: 0 };
+  }
+  return { sig, yon: r.hedefYon || "koru", weekly: clampWeekly(r.haftalikHedefKg), why: r.gerekce || "", at: Date.now() };
+}
+function applyTargets(strategy, override) {
+  const prev = S.targets || {};
+  const t = computeTargets(strategy.weekly, override?.kcal);
+  S.targets = { ...prev, ...t, v2: true, strategy, override: override || null, yon: strategy.yon, haftalikHedefKg: strategy.weekly, kg: t.calc.kg, at: Date.now(), history: arr(prev.history) };
+  return S.targets;
+}
+// Eski (yapay zekanın belirlediği) hedefleri formüle taşı
+function migrateTargets() {
+  if (!S.profile || !S.targets || S.targets.v2) return;
+  const old = S.targets.kcal;
+  const w = clampWeekly(S.targets.haftalikHedefKg ?? 0);
+  applyTargets({ sig: profileSig(), yon: S.targets.yon || (w < 0 ? "ver" : w > 0 ? "al" : "koru"), weekly: w, why: "", at: Date.now() }, null);
+  if (old && old !== S.targets.kcal) S.targets.history.push({ at: Date.now(), from: old, to: S.targets.kcal, note: "Formüle geçiş" });
+  save();
+}
+
 /* ---- Program ---- */
-async function makePlan(fixedKcal) {
-  if (typeof fixedKcal !== "number") fixedKcal = null;
+let manualKcal = null;
+function setTargetKcal(v, note, withPlan) {
+  const tg = S.targets; if (!v || !tg) return;
+  if (!tg.strategy) migrateTargets();
+  const old = tg.kcal;
+  const formula = computeTargets(S.targets.strategy.weekly).kcal;
+  applyTargets(S.targets.strategy, v === formula ? null : { kcal: v, note, at: Date.now() });
+  S.targets.history.push({ at: Date.now(), from: old, to: S.targets.kcal, note });
+  manualKcal = null; save();
+  if (withPlan) makePlan(); else { toast(`Yeni hedef: ${fmt(S.targets.kcal)} kcal`); renderPlan(); }
+}
+async function makePlan() {
   if (!S.profile) { go("profile"); return toast("Önce profilini doldur", 1); }
   busy("Programın hazırlanıyor…\n(20-40 sn sürebilir)");
   try {
+    const sig = profileSig();
+    const keepOverride = S.targets?.override && S.targets?.strategy?.sig === sig ? S.targets.override : null;
+    const strategy = await getStrategy(false);
+    const tg = applyTargets(strategy, keepOverride);
     const prompt = `KİŞİ BİLGİLERİ:
 ${profileText()}
 
 EGZERSİZ GEÇMİŞİ (uygulamaya girilen): ${exerciseSummary()}
 KAYITLARA GÖRE GERÇEK DURUM: ${adaptiveText()}
-${fixedKcal ? `ZORUNLU: Günlük kalori hedefi ${fixedKcal} kcal olarak belirlendi (kayıtlara göre ayarlandı). hedefKalori alanına tam olarak ${fixedKcal} yaz ve programı buna göre kur.` : ""}
+
+SABİT HEDEFLER (uygulama hesapladı, DEĞİŞTİRME): günlük ${tg.kcal} kcal (egzersiz hariç), protein ${tg.protein} g, karbonhidrat ${tg.carb} g, yağ ${tg.fat} g, su ${tg.water} L. Strateji: ${strategy.yon}, haftada ${strategy.weekly} kg.
 
 GÖREV:
-1) Kişinin amacına ve durumuna uygun GÜNLÜK KALORİ HEDEFİNİ belirle. Bu hedef egzersiz HARİÇ olmalı; spor günlerinde yakılan kalori uygulama tarafından hedefe ayrıca eklenecek.
-2) Protein, karbonhidrat, yağ (gram) ve su (litre) hedeflerini belirle. Kas korumak/kazanmak amaçsa proteini yeterli tut.
-3) Tavsiye niteliğinde, birbirinden farklı 3 örnek gün içeren bir beslenme programı hazırla. Her günde tercih edilen öğün sayısı kadar öğün olsun, içerikler porsiyonlarıyla (gram/adet/kaşık) yazılsın, öğün kalorileri ve gün toplamı hedefe yakın olsun.
-4) Kişinin tercih ettiği yemekler amaca uygunsa programa dahil et; uygun değilse daha uygun bir versiyonunu kullan (ipuçlarında belirt).
-5) Spor yapılan günlerde nasıl beslenmesi gerektiğini kısaca açıkla.
+1) Bu hedeflere uygun, tavsiye niteliğinde, birbirinden farklı 3 örnek gün içeren bir beslenme programı hazırla. Her günde tercih edilen öğün sayısı kadar öğün olsun, içerikler porsiyonlarıyla (gram/adet/kaşık) yazılsın, öğün kalorileri ve gün toplamı hedefe yakın olsun.
+2) Kişinin tercih ettiği yemekler amaca uygunsa programa dahil et; uygun değilse daha uygun bir versiyonunu kullan (ipuçlarında belirt).
+3) Spor yapılan günlerde nasıl beslenmesi gerektiğini kısaca açıkla.
+${NUTRI_REF}
 
 JSON ŞEMASI:
-{"hedefKalori":number,"hedefYon":"ver|koru|al","haftalikHedefKg":number (haftalık hedef kilo değişimi; kayıp için negatif, ör. -0.5; korumada 0),"protein":number,"karbonhidrat":number,"yag":number,"suLitre":number,
-"ozet":"2-3 cümlelik strateji","haftalikBeklenti":"gerçekçi haftalık/aylık beklenti","sporGunuNotu":"spor günü beslenmesi",
+{"ozet":"2-3 cümlelik strateji","haftalikBeklenti":"gerçekçi haftalık/aylık beklenti","sporGunuNotu":"spor günü beslenmesi",
 "onemliNotlar":["..."],
 "gunler":[{"ad":"1. Gün","ogunler":[{"ogun":"Kahvaltı","icerik":"porsiyonlarıyla","kcal":number}],"toplamKcal":number}],
 "ipuclari":["..."],"uyari":"gerekliyse kısa sağlık uyarısı, yoksa boş string"}`;
     const r = await ai(SYS, prompt, 0.6, "deep");
-    const b = baseline();
-    let kcal = fixedKcal || Math.round(num(r.hedefKalori) || b.tdee), raised = false;
-    if (kcal < b.floor) { kcal = b.floor; raised = true; }
-    S.targets = {
-      kcal, protein: Math.round(num(r.protein)), carb: Math.round(num(r.karbonhidrat)), fat: Math.round(num(r.yag)),
-      water: num(r.suLitre) || 2.5, ozet: r.ozet || "", haftalik: r.haftalikBeklenti || "", sporNot: r.sporGunuNotu || "",
-      notlar: arr(r.onemliNotlar),
-      uyari: [r.uyari, raised ? `Hedef, güvenli alt sınır olan ${b.floor} kcal'ye yükseltildi.` : ""].filter(Boolean).join(" "),
-      at: Date.now(), kg: b.kg,
-      yon: r.hedefYon || "", haftalikHedefKg: isFinite(+r.haftalikHedefKg) ? +r.haftalikHedefKg : 0,
-      history: S.targets?.history || []
-    };
+    Object.assign(S.targets, { ozet: r.ozet || "", haftalik: r.haftalikBeklenti || "", sporNot: r.sporGunuNotu || "", notlar: arr(r.onemliNotlar),
+      uyari: [r.uyari, tg.calc.floored ? `Hedef, güvenli alt sınır olan ${baseline().floor} kcal'ye yükseltildi.` : ""].filter(Boolean).join(" ") });
     S.plan = { gunler: arr(r.gunler), ipuclari: arr(r.ipuclari), at: Date.now() };
     planDay = 0; save(); toast("Programın hazır"); go("plan");
-  } catch (e) { toast(e.message, 1); } finally { busy(); }
+  } catch (e) { save(); toast(e.message, 1); render(); } finally { busy(); }
 }
 
 /* ---- Besin hesaplama ---- */
@@ -961,7 +1035,11 @@ function renderPlan() {
   if (!a?.ready) mini = { ic: "📊", tint: "var(--tint-b)", t: "Haftalık kontrol", s: `Veri toplanıyor · ${a?.need || "biraz daha veri"}`, pill: "" };
   else if (a.suggest != null) mini = { ic: "📈", tint: "var(--tint-y)", t: "Haftalık kontrol", s: `Hedefin ${fmt(a.suggest)} kcal olması öneriliyor`, pill: `<span class="pillx warn">İncele</span>` };
   else if (a.conf === "low") mini = { ic: "🔎", tint: "var(--tint-b)", t: "Haftalık kontrol", s: a.status === "uyum" ? "Hedefin biraz üstünde gidiyorsun" : a.status === "iyi" ? "Şimdilik hedefle uyumlu görünüyor" : "İlk eğilim görünmeye başladı", pill: `<span class="pillx ok" style="background:var(--tint-b);color:var(--p)">${CL.low}</span>` };
-  else mini = { ic: a.status === "uyum" ? "🎯" : "✅", tint: a.status === "uyum" ? "var(--tint-y)" : "var(--tint-g)", t: "Haftalık kontrol", s: a.status === "uyum" ? "Önce mevcut hedefe uymaya odaklan" : "Hedeflenen hızda ilerliyorsun", pill: `<span class="pillx ${a.status === "uyum" ? "warn" : "ok"}">${a.status === "uyum" ? "Uyum" : "İyi"}</span>` };
+  else {
+    const ok = a.status === "iyi";
+    const sub = { uyum: a.adherence < 0 ? "Hedefinin çok altında yiyorsun" : "Hedefinin üstünde yiyorsun", hizli: "Kilo kaybı hızlı", yavas: "Hedefin gerisinde ilerliyorsun", fazla: "Beklenenden hızlı ilerliyorsun", iyi: "Hedeflenen hızda ilerliyorsun" }[a.status];
+    mini = { ic: ok ? "✅" : a.status === "uyum" ? "🎯" : "⚠️", tint: ok ? "var(--tint-g)" : "var(--tint-y)", t: "Haftalık kontrol", s: sub, pill: `<span class="pillx ${ok ? "ok" : "warn"}">${ok ? "İyi" : a.status === "uyum" ? "Uyum" : "Dikkat"}</span>` };
+  }
 
   el.innerHTML = `
   <div class="sub mu sm" style="margin:-2px 4px 0;font-weight:600">${esc((S.profile.amac || "").slice(0, 60))}${(S.profile.amac || "").length > 60 ? "…" : ""} · ${new Date(tg.at).toLocaleDateString("tr-TR", { day: "numeric", month: "long" })}</div>
@@ -971,7 +1049,18 @@ function renderPlan() {
       ${wk ? `<span class="pillx ${wk < 0 ? "ok" : "warn"}">${wk > 0 ? "+" : ""}${String(wk).replace(".", ",")} kg/hafta</span>` : ""}</div>
     <div class="stack"><i style="flex:${pk};background:var(--p)"></i><i style="flex:${ck};background:var(--c)"></i><i style="flex:${fk};background:var(--f)"></i></div>
     <div class="leg"><span><i style="background:var(--p)"></i>Protein <em>${tg.protein} g</em></span><span><i style="background:var(--c)"></i>Karb. <em>${tg.carb} g</em></span><span><i style="background:var(--f)"></i>Yağ <em>${tg.fat} g</em></span></div>
-    <div class="tiles in"><div><b>${fmt(b.tdee)}</b><span>bakım kcal</span></div><div><b>${String(tg.water).replace(".", ",")} L</b><span>su</span></div><div><b>+spor</b><span>hedefe eklenir</span></div></div>
+    ${tg.calc ? `<h4 style="margin-top:16px">🧮 Bu hedef nasıl hesaplandı?</h4>
+    <div class="kv">
+      <span>Bazal metabolizma (BMR)</span><b>${fmt(tg.calc.bmr)} kcal</b>
+      <span>× Günlük hareket (${esc((ACT[S.profile.aktivite]?.[1] || "").split(" (")[0].toLocaleLowerCase("tr-TR"))})</span><b>× ${String(tg.calc.fact).replace(".", ",")}</b>
+      ${tg.calc.extra ? `<span>+ ${esc(SPECIAL[S.profile.ozel] || "Özel durum")}</span><b>+${fmt(tg.calc.extra)} kcal</b>` : ""}
+      <span>= Bakım kalorisi (spor hariç)</span><b>${fmt(tg.calc.maint)} kcal</b>
+      <span>Haftalık hedef ${tg.strategy.weekly > 0 ? "+" : ""}${String(tg.strategy.weekly).replace(".", ",")} kg</span><b style="color:var(--acTx)">${tg.calc.delta > 0 ? "+" : tg.calc.delta < 0 ? "−" : ""}${fmt(Math.abs(tg.calc.delta))} kcal</b>
+      ${tg.calc.floored ? `<span>Güvenli alt sınır</span><b>${fmt(tg.calc.formula)} kcal</b>` : ""}
+      ${tg.override && tg.kcal !== tg.calc.formula ? `<span>Formül sonucu</span><b>${fmt(tg.calc.formula)} kcal</b><span style="color:var(--warn);font-weight:700">${esc(tg.override.note || "Elle ayarlandı")}</span><b style="color:var(--warn)">${tg.kcal - tg.calc.formula > 0 ? "+" : "−"}${fmt(Math.abs(tg.kcal - tg.calc.formula))} kcal</b>` : ""}
+      <span style="font-weight:800;color:var(--tx)">Günlük hedef</span><b style="font-size:16px">${fmt(tg.kcal)} kcal</b>
+    </div>
+    <div class="hint">Spor yaptığın günlerde yakılan kalori bu hedefe ayrıca eklenir. Profilin değişmedikçe bu sayı sabit kalır; "Yenile" sadece örnek günleri yeniler.${tg.strategy.why ? " Strateji: " + esc(tg.strategy.why) : ""}</div>` : ""}
     ${tg.ozet ? `<p style="margin:14px 0 0">${esc(tg.ozet)}</p>` : ""}
     ${tg.haftalik ? `<div class="note"><b>Beklenti:</b> ${esc(tg.haftalik)}</div>` : ""}
     ${tg.uyari ? `<div class="warnbox">${esc(tg.uyari)}</div>` : ""}
@@ -1001,13 +1090,19 @@ function confBar(a) {
     <div class="bar" style="height:8px"><i style="width:${Math.max(pct, 4)}%;background:var(--btn)"></i></div></div>`;
 }
 const CONF_NOTE = `<div class="hint" style="margin-top:10px">ℹ️ Veri girişi arttıkça tahminler daha güvenilir ve net hâle gelir. Düzenli kayıt ve haftada 2-3 tartı en iyi sonucu verir.</div>`;
+function manualBox() {
+  const tg = S.targets, v = manualKcal ?? tg.kcal;
+  return `<div class="note" style="margin-top:12px"><div class="row sp"><span style="font-weight:700">Hedefi elle ayarla</span><span><span style="font-size:22px;font-weight:800">${fmt(v)}</span> <small class="sm mu">kcal</small></span></div>
+    <div class="btns"><button data-act="mstep" data-n="-50">− 50</button><button class="pri grow" data-act="msave" ${v === tg.kcal ? "disabled" : ""}>Kaydet</button><button data-act="mstep" data-n="50">+ 50</button></div>
+    <div class="sm mu" style="margin-top:6px">Öneri yönü durumuna göre belirlenir; elle her iki yöne de değiştirebilirsin.${tg.override ? ` <button class="ghost" style="padding:2px 0" data-act="mreset">Formüle dön (${fmt(tg.calc?.formula || 0)})</button>` : ""}</div></div>`;
+}
 function adaptiveDetail(a) {
   const tg = S.targets;
   const hist = arr(tg.history).slice(-3).reverse();
-  const histHtml = hist.length ? `<h4>Geçmiş ayarlamalar</h4>${hist.map(x => `<div class="item"><div class="nm">${esc(new Date(x.at).toLocaleDateString("tr-TR"))}</div><span class="mu">${fmt(x.from)} → <b>${fmt(x.to)}</b> kcal</span></div>`).join("")}` : "";
+  const histHtml = hist.length ? `<h4>Geçmiş ayarlamalar</h4>${hist.map(x => `<div class="item"><div class="nm">${esc(new Date(x.at).toLocaleDateString("tr-TR"))}${x.note ? `<small>${esc(x.note)}</small>` : ""}</div><span class="mu">${fmt(x.from)} → <b>${fmt(x.to)}</b> kcal</span></div>`).join("")}` : "";
   if (!a?.ready) {
     return `<div style="margin-top:12px"><p class="sm" style="margin:0">Yediklerin ve kilon kaydedildikçe gerçek kalori harcamanı hesaplayıp gidişatını göstereceğim. İlk ön tahmin için <b>${esc(a?.need || "biraz daha veri")}</b> yeterli.</p>
-      ${confBar(a)}${CONF_NOTE}${histHtml}</div>`;
+      ${confBar(a)}${manualBox()}${CONF_NOTE}${histHtml}</div>`;
   }
   const col = { iyi: "var(--acTx)", uyum: "var(--warn)", hizli: "var(--bad)", yavas: "var(--warn)", fazla: "var(--warn)" }[a.status];
   return `<div style="margin-top:12px">
@@ -1025,6 +1120,7 @@ function adaptiveDetail(a) {
       <div class="sm mu">Şu anki: ${fmt(tg.kcal)} kcal · ${a.conf === "high" ? "Değişim bir seferde en fazla 250 kcal." : "Güven orta olduğu için küçük adım (en fazla 100 kcal)."}</div>
       <div class="btns"><button class="pri grow" data-act="applyAdj" data-v="${a.suggest}">Hedefi güncelle</button><button data-act="applyAdj" data-v="${a.suggest}" data-plan="1">+ Yeni program</button></div></div>` : ""}
     <div class="hint">Son ${a.nDays} günlük kayda ve ${a.nW} tartıya göre hesaplandı.${String(S.profile.ozel).startsWith("emzirme") || S.profile.ozel === "lohusa" ? " Doğum sonrası ödem atımı ilk haftalarda kiloyu olduğundan hızlı düşürebilir." : " Kısa vadeli su tutulması sonucu etkileyebilir."}</div>
+    ${a.suggest == null ? manualBox() : ""}
     ${CONF_NOTE}${histHtml}</div>`;
 }
 
@@ -1506,13 +1602,10 @@ document.addEventListener("click", e => {
     quickAdd: () => { if (view !== "today") go("today"); else renderToday(); focusAdd(true); },
     wunit: () => { S.settings.waterUnit = a.dataset.u; save(); render(); },
     setWater: () => { const v = num($("#wL").value); if (v < 0 || v > 10) return toast("Geçerli bir litre gir", 1); d().waterMl = Math.round(v * 1000); save(); renderToday(); },
-    applyAdj: () => {
-      const v = Math.round(num(a.dataset.v)); if (!v || !S.targets) return;
-      const tg = S.targets; tg.history = [...arr(tg.history), { at: Date.now(), from: tg.kcal, to: v }];
-      const k = v / tg.kcal; tg.carb = Math.round(tg.carb * (1 + (k - 1) * 1.4)); tg.fat = Math.round(tg.fat * (1 + (k - 1) * 0.6)); // proteini koru, farkı karb/yağdan al
-      tg.kcal = v; tg.at = Date.now(); save();
-      if (a.dataset.plan) makePlan(v); else { toast(`Yeni hedef: ${fmt(v)} kcal`); renderPlan(); }
-    },
+    applyAdj: () => setTargetKcal(Math.round(num(a.dataset.v)), "Haftalık kontrol önerisi", !!a.dataset.plan),
+    mstep: () => { manualKcal = Math.max(baseline().floor, (manualKcal ?? S.targets.kcal) + num(a.dataset.n)); renderPlan(); },
+    msave: () => { if (manualKcal != null && manualKcal !== S.targets.kcal) setTargetKcal(manualKcal, "Elle ayarlandı"); manualKcal = null; },
+    mreset: () => { const tg = S.targets; if (!tg?.strategy) return; const old = tg.kcal; applyTargets(tg.strategy, null); tg.history.push({ at: Date.now(), from: old, to: tg.kcal, note: "Formüle dönüldü" }); manualKcal = null; save(); renderPlan(); toast(`Formül hedefi: ${fmt(tg.kcal)} kcal`); },
     toggleManual: () => { draft.manual = !draft.manual; renderToday(); },
     toggleEx: () => { draft.exManual = !draft.exManual; renderToday(); },
     calcFood, calcEx: calcExercise, review: reviewDay, makeplan: () => makePlan(),
