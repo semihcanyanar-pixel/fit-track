@@ -154,6 +154,7 @@ nav.tabs button.plus svg{width:28px;height:28px}
 .mbody{margin:0 0 4px 50px}.mbody .item:first-child{padding-top:4px}
 .mgrp{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--mu);margin:14px 0 4px;text-transform:uppercase;letter-spacing:.04em}
 .mgrp:first-child{margin-top:0}
+.prev .calc{color:var(--acTx)!important;font-weight:700!important}
 .prev .item input[type=number]{width:84px;padding:7px 9px;text-align:right}
 .prev .item input[type=checkbox]{width:22px;height:22px;accent-color:var(--ac);flex:none}
 /* su */
@@ -213,6 +214,29 @@ svg.chart{width:100%;height:auto;display:block;margin-top:10px}
 .lrow .ic{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none}
 .lrow .v{margin-left:auto;color:var(--mu);font-weight:600;font-size:13px;text-align:right;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lrow .ch{color:var(--mu);font-size:20px;margin-left:2px;flex:none}
+/* başlık butonu, şef ekranı, künye */
+.hbtn{width:46px;height:46px;border-radius:15px;padding:0;background:var(--card);border:1px solid var(--ln);color:var(--acTx);box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;backdrop-filter:var(--glass)}
+.hbtn svg{width:23px;height:23px}
+nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.choice button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:12px;border-radius:18px;background:var(--card2);border:2px solid transparent;box-shadow:none}
+.choice button span{font-size:22px}.choice button b{font-size:13.5px;line-height:1.25}.choice button small{font-size:11.5px;color:var(--mu);font-weight:600;line-height:1.3}
+.choice button.on{border-color:var(--ac);background:var(--ac2)}
+.ing{list-style:none;padding:0;margin:6px 0}
+.ing li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--ln);font-weight:600;font-size:14.5px}
+.ing li:first-child{border-top:0}
+.ing li span{width:24px;height:24px;border-radius:8px;background:var(--ac2);color:var(--acTx);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none}
+.ing li.miss span{background:var(--tint-y);color:var(--warn)}
+.ing li em{margin-left:auto;font-style:normal;color:var(--mu);font-weight:600;font-size:13px;text-align:right}
+.steps{margin:6px 0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;position:relative;padding:8px 0 8px 36px;font-size:14.5px;line-height:1.45}
+.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:24px;height:24px;border-radius:50%;background:var(--btn);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.recipe h4{margin:18px 0 4px;font-size:15px}
+.snr{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--ln);font-size:14px}
+.snr:first-child{border-top:0}
+.snr span{color:var(--mu);font-weight:600;flex:none}
+.snr b{text-align:right;font-weight:700}
+.snr b small{display:block;font-size:11.5px;color:var(--warn);font-weight:700;margin-top:2px}
 /* alt panel (sheet) */
 #sheet{position:fixed;inset:0;z-index:30;display:none}
 #sheet.on{display:block}
@@ -249,12 +273,13 @@ svg.chart{width:100%;height:auto;display:block;margin-top:10px}
   <section id="v-plan" class="view"></section>
   <section id="v-weight" class="view"></section>
   <section id="v-profile" class="view"></section>
+  <section id="v-chef" class="view"></section>
 </main>
 
 <nav class="tabs">
   <button data-go="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Bugün</button>
   <button data-go="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 2-2 6 0 8v10"/></svg>Program</button>
-  <button class="plus" data-act="quickAdd" aria-label="Yemek ekle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button class="plus" data-go="chef" aria-label="Ne pişirsem?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><path d="M6 17h12"/></svg></button>
   <button data-go="weight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>Kilo</button>
   <button data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Profil</button>
 </nav>
@@ -309,7 +334,7 @@ Kurallar:
 - Samimi, net ve kısa yazarsın; "sen" diye hitap edersin.`;
 
 /* ============ Durum ============ */
-const defaults = () => ({ profile: null, settings: { workerUrl: DEFAULT_WORKER }, targets: null, plan: null, days: {}, weights: [], recent: [] });
+const defaults = () => ({ profile: null, settings: { workerUrl: DEFAULT_WORKER }, targets: null, plan: null, days: {}, weights: [], recent: [], history: [], recipes: [] });
 let storeKey = KEY;          // giriş yapınca kullanıcıya özel anahtar olur
 let S = FIREBASE_CONFIG ? defaults() : load();
 let view = "today";
@@ -323,6 +348,7 @@ function load(k = storeKey) {
   return defaults();
 }
 function save() {
+  recordHistory();
   try { localStorage.setItem(storeKey, JSON.stringify(S)); } catch (e) { toast("Kaydedilemedi: depolama dolu olabilir", 1); }
   Cloud.schedule();
 }
@@ -471,11 +497,11 @@ function go(v) {
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.go === v));
   const nm = (S.profile?.ad || "").trim().split(" ")[0];
   const greet = (() => { const hh = new Date().getHours(); return hh < 6 ? "İyi geceler" : hh < 12 ? "Günaydın" : hh < 18 ? "Merhaba" : "İyi akşamlar"; })();
-  $("#ttl").innerHTML = v === "today" ? `${esc(greet)}${nm ? ", " + esc(nm) : ""}<small>${S.profile ? "Bugün de hedefine bir adım daha 💪" : "Fit Track'e hoş geldin"}</small>` : { plan: "Programın", weight: "Kilo", profile: S.profile ? "Profil" : "Seni tanıyalım" }[v];
+  $("#ttl").innerHTML = v === "today" ? `${esc(greet)}${nm ? ", " + esc(nm) : ""}<small>${S.profile ? "Bugün de hedefine bir adım daha 💪" : "Fit Track'e hoş geldin"}</small>` : { plan: "Programın", weight: "Kilo", profile: S.profile ? "Profil" : "Seni tanıyalım", chef: "Ne pişirsem?<small>Mutfağındakilerle, kalan makrolarına uygun tarif</small>" }[v];
   render();
   window.scrollTo(0, 0);
 }
-function render() { applyTheme(); ({ today: renderToday, plan: renderPlan, weight: renderWeight, profile: renderProfile })[view](); }
+function render() { applyTheme(); ({ today: renderToday, plan: renderPlan, weight: renderWeight, profile: renderProfile, chef: renderChef })[view](); }
 
 /* ============ Yapay zeka ============ */
 let aiCtl = null;
@@ -596,25 +622,67 @@ JSON ŞEMASI:
 }
 
 /* ---- Besin hesaplama ---- */
+// Sık kullanılan besinlerin 100 g değerleri (kcal / protein / karb / yağ). Yapay zekaya referans olarak verilir.
+const NUTRI_REF = `REFERANS DEĞERLER (100 g başına: kcal / protein g / karbonhidrat g / yağ g):
+Pirinç ÇİĞ 360/7/79/0,6 · Pirinç pilavı/haşlanmış PİŞMİŞ 130/2,7/28/0,3 (tereyağlı pilav ~170)
+Bulgur ÇİĞ 342/12/76/1,3 · Bulgur PİŞMİŞ 83/3/19/0,2 · Makarna ÇİĞ 360/13/74/1,5 · Makarna HAŞLANMIŞ 158/6/31/0,9
+Yulaf ezmesi 380/13/66/7 · Mercimek ÇİĞ 352/24/60/1 · Mercimek PİŞMİŞ 116/9/20/0,4 · Nohut PİŞMİŞ 164/9/27/2,6 · Kuru fasulye PİŞMİŞ 127/9/23/0,5
+Tavuk göğüs ÇİĞ 120/23/0/2,6 · Tavuk göğüs PİŞMİŞ 165/31/0/3,6 · Tavuk but PİŞMİŞ 209/26/0/11
+Hindi göğüs ÇİĞ 114/24/0/1,5 · Hindi göğüs PİŞMİŞ 135/30/0/1 · Hindi füme/jambon 105/18/3/2
+Dana kıyma (%20 yağlı) ÇİĞ 254/17/0/20 · Dana bonfile PİŞMİŞ 220/29/0/11 · Köfte PİŞMİŞ ~260/18/6/18
+Somon PİŞMİŞ 206/22/0/12 · Ton balığı konserve (süzülmüş) 116/26/0/1 · Levrek/çipura PİŞMİŞ 125/24/0/3
+Yumurta 1 adet (50 g) 72/6,3/0,4/4,8 · Yumurta beyazı 1 adet 17/3,6/0,2/0
+Beyaz peynir 260/17/2/21 · Kaşar 360/26/2/28 · Lor 98/12/3/4 · Süt (tam) 61/3,2/4,8/3,3 · Yoğurt (tam) 61/3,5/4,7/3,3 · Süzme yoğurt 97/9/4/5 · Kefir 55/3,3/4/2
+Ekmek beyaz 265/9/49/3,2 (1 dilim ~25-30 g) · Tam buğday ekmeği 247/13/41/3,4 · Lavaş 290/8/56/3
+Zeytinyağı 1 yemek kaşığı (13 g) 117 kcal · 1 tatlı kaşığı (5 g) 45 kcal · Tereyağı 10 g 72 kcal · Zeytin 1 adet ~5-7 kcal
+Patates PİŞMİŞ 87/2/20/0,1 · Muz 89/1,1/23/0,3 · Elma 52/0,3/14/0,2 · Hurma 1 adet ~20-23 · Badem 579/21/22/50 · Ceviz 654/15/14/65 · Fıstık ezmesi 588/25/20/50 · Bal 1 tatlı kaşığı ~21`;
+const FOOD_RULES = `HESAPLAMA KURALLARI (çok önemli):
+- Her kalem için önce gramı belirle ("gram"), sonra 100 g değerini ("kcal100") yaz, kaloriyi gram × kcal100 / 100 olarak hesapla. Makroları da aynı oranla hesapla.
+- Kişi ÇİĞ ağırlık verdiyse (ör. "150 g çiğ pirinçten yapıldı") ÇİĞ değerleri kullan. Pişmiş ağırlık ya da porsiyon verdiyse PİŞMİŞ değerleri kullan. "durum" alanına "çiğ" ya da "pişmiş" yaz.
+- Pişirmede kullanılan yağı ayrı bir kalem olarak yaz (kişi belirttiyse ya da yemek türü gerektiriyorsa makul miktarda).
+- Adet/kaşık/dilim verilen besinleri grama çevir (yumurta 50 g, ekmek dilimi 25-30 g, yemek kaşığı yağ 13 g).
+- Referans tabloda olan besinlerde tablodaki değerleri kullan.`;
+
+// Yapay zekanın çarpım hatalarını düzelt: gram × kcal100 ile tutarlı değilse yeniden hesapla
+function fixItem(i) {
+  const g = num(i.gram), k100 = num(i.kcal100);
+  let kcal = num(i.kcal), p = num(i.protein), c = num(i.karbonhidrat), f = num(i.yag), fixed = false;
+  if (g > 0 && k100 > 0) {
+    const calc = g * k100 / 100;
+    if (!kcal || Math.abs(kcal - calc) / calc > 0.08) {
+      const k = kcal ? calc / kcal : 0;
+      if (k) { p *= k; c *= k; f *= k; }
+      kcal = calc; fixed = true;
+    }
+  }
+  return { kcal: Math.round(kcal), p: r1(p), c: r1(c), f: r1(f), fixed };
+}
+
 async function calcFood() {
   const txt = draft.food.trim(), ph = draft.photo;
   if (!txt && !ph) return toast("Ne yediğini yaz ya da fotoğraf ekle", 1);
   busy(ph ? "Fotoğraf inceleniyor…" : "Kalori hesaplanıyor…");
-  const schema = `JSON: {"kalemler":[{"ad":"string","miktar":"string","kcal":number,"protein":number,"karbonhidrat":number,"yag":number}],"not":"önemli bir belirsizlik varsa kısa not, yoksa boş"}`;
+  const schema = `JSON: {"kalemler":[{"ad":"string","miktar":"kişinin anlayacağı miktar, ör. 150 g çiğ / 1 kase","gram":number,"durum":"çiğ|pişmiş|-","kcal100":number,"kcal":number,"protein":number,"karbonhidrat":number,"yag":number}],"not":"önemli bir belirsizlik varsa kısa not, yoksa boş"}`;
   const prompt = ph
     ? `Kişi "${draft.meal}" öğününde yediği yemeğin fotoğrafını gönderdi.${txt ? `\nKişinin notu: """${txt}"""` : ""}
 Fotoğraftaki her yiyecek ve içeceği tanı, ayrı kalem olarak yaz. Porsiyonu tabak, kase, kaşık, ekmek dilimi gibi görünen ölçülere göre tahmin et; Türkiye'deki standart porsiyonları esas al. Görünmeyen yağ/sos için makul bir varsayım yap ve bunu "not" alanında kısaca belirt. Kişinin notu fotoğrafla çelişirse nota öncelik ver. Fotoğrafta yiyecek yoksa kalemler boş liste olsun.
+${FOOD_RULES}
+${NUTRI_REF}
 ${schema}`
     : `Kişi "${draft.meal}" öğününde şunları yediğini yazdı:
 """${txt}"""
-Her besini ayrı kalem olarak ayır. Miktar yazılmadıysa Türkiye'deki standart orta porsiyonu varsay. Pişirme yöntemini (yağda kızartma, zeytinyağlı vb.) hesaba kat. Kalori ve makroları gerçekçi tahmin et.
+Her besini ayrı kalem olarak ayır. Miktar yazılmadıysa Türkiye'deki standart orta porsiyonu varsay. Pişirme yöntemini (yağda kızartma, zeytinyağlı vb.) hesaba kat.
+${FOOD_RULES}
+${NUTRI_REF}
 ${schema}`;
   try {
-    const r = await ai(SYS, prompt, 0.2, "fast", ph ? { mime: ph.mime, data: ph.data } : null);
-    const items = arr(r.kalemler).map(i => ({
-      id: uid(), name: String(i.ad || "Besin"), amount: String(i.miktar || ""), kcal: Math.round(num(i.kcal)),
-      p: r1(i.protein), c: r1(i.karbonhidrat), f: r1(i.yag), on: true
-    }));
+    const r = await ai(SYS, prompt, 0, "fast", ph ? { mime: ph.mime, data: ph.data } : null);
+    const items = arr(r.kalemler).map(i => {
+      const v = fixItem(i);
+      const g = num(i.gram), k100 = num(i.kcal100);
+      return { id: uid(), name: String(i.ad || "Besin"), amount: String(i.miktar || (g ? g + " g" : "")), kcal: v.kcal, p: v.p, c: v.c, f: v.f, on: true,
+        calc: g && k100 ? `${Math.round(g)} g${i.durum && i.durum !== "-" ? " " + i.durum : ""} × ${Math.round(k100)} kcal/100 g` : "", fixed: v.fixed };
+    });
     if (!items.length) throw new Error(ph ? "Fotoğrafta yiyecek bulunamadı. Daha yakından çek ya da not ekle." : "Besin bulunamadı, biraz daha açık yaz.");
     draft.preview = { meal: draft.meal, items, note: r.not || "", photoUrl: ph?.url || "" };
     renderToday();
@@ -709,7 +777,7 @@ function mondayOf(ds) { const d = new Date(ds + "T12:00:00"); const wd = (d.getD
 /* ============ BUGÜN ============ */
 function renderToday() {
   const el = $("#v-today");
-  $("#hdr").innerHTML = S.profile ? `<div class="avatar" data-go="profile">${esc(((S.profile.ad || "").trim()[0] || "🙂").toLocaleUpperCase("tr-TR"))}</div>` : "";
+  $("#hdr").innerHTML = S.profile ? `<button class="hbtn" data-act="snap" aria-label="Günün künyesi" title="Günün künyesi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 4.5V3.5h6v1"/><path d="M9 10h6M9 14h6M9 18h3"/></svg></button>` : "";
   if (!S.profile) {
     el.innerHTML = `<div class="card empty"><div class="e">🥗</div><h3>Hoş geldin!</h3>
       <p class="mu">Önce kendini ve amacını tanıt. Sonra sana özel kalori hedefi ve beslenme programı hazırlayayım.</p>
@@ -783,7 +851,7 @@ function renderToday() {
     h += `<div class="card prev" id="prev"><h3>Kontrol et · ${esc(p.meal)}</h3>
       ${p.photoUrl ? `<div class="ph"><img src="${p.photoUrl}" alt=""></div>` : ""}
       ${p.items.map((it, i) => `<div class="item"><input type="checkbox" data-pi="${i}" ${it.on ? "checked" : ""}>
-        <div class="nm">${esc(it.name)}<small>${esc(it.amount)} · P ${it.p} · K ${it.c} · Y ${it.f}</small></div>
+        <div class="nm">${esc(it.name)}<small>${esc(it.amount)} · P ${it.p} · K ${it.c} · Y ${it.f}</small>${it.calc ? `<small class="calc">${esc(it.calc)}${it.fixed ? " · hesap düzeltildi" : ""}</small>` : ""}</div>
         <input type="number" inputmode="numeric" data-pk="${i}" value="${it.kcal}"></div>`).join("")}
       ${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}
       <div class="btns"><button class="pri grow" data-act="confirmPrev">Öğüne ekle</button><button data-act="cancelPrev">Vazgeç</button></div></div>`;
@@ -1207,6 +1275,167 @@ async function pickPhoto(file) {
   } catch (e) { toast(e.message || "Fotoğraf okunamadı", 1); } finally { busy(); }
 }
 
+/* ============ Ayar geçmişi (Günün künyesi) ============ */
+const SNAP_P = ["amac", "sure", "aktivite", "sporSeviye", "sporSiklik", "sporSiddet", "sporTur", "ogunSayisi", "ozel", "hedefKilo", "kilo", "alerji"];
+const SNAP_T = ["kcal", "protein", "carb", "fat", "water", "haftalikHedefKg"];
+function snapshotNow() {
+  const pick = (o, ks) => o ? Object.fromEntries(ks.filter(k => o[k] !== undefined && o[k] !== "").map(k => [k, o[k]])) : null;
+  return { at: Date.now(), p: pick(S.profile, SNAP_P), t: pick(S.targets, SNAP_T) };
+}
+function recordHistory() {
+  if (!S.profile) return;
+  S.history = arr(S.history);
+  const s = snapshotNow(), last = S.history[S.history.length - 1];
+  if (last && JSON.stringify(last.p) === JSON.stringify(s.p) && JSON.stringify(last.t) === JSON.stringify(s.t)) return;
+  S.history.push(s);
+  if (S.history.length > 200) S.history.splice(0, S.history.length - 200);
+}
+function snapshotFor(date) {
+  const end = new Date(date + "T23:59:59").getTime(), h = arr(S.history);
+  let s = null; for (const x of h) if (x.at <= end) s = x;
+  return s ? { s, approx: false } : h.length ? { s: h[0], approx: true } : { s: snapshotNow(), approx: true };
+}
+function openSnapSheet(date) {
+  const { s, approx } = snapshotFor(date), cur = snapshotNow();
+  const p = s.p || {}, t = s.t || {}, d = S.days[date];
+  const ex = (d?.exercises || []).reduce((a, e) => a + num(e.kcal), 0);
+  const w = sortedWeights().filter(x => x.date <= date).pop();
+  const spor = +p.sporSiklik ? `Haftada ${p.sporSiklik} gün · ${({ hafif: "hafif", orta: "orta", yogun: "yoğun" })[p.sporSiddet] || ""}${p.sporTur ? " · " + p.sporTur : ""}` : "Spor yok / yapamıyor";
+  const diff = (a, b) => b !== undefined && String(a ?? "") !== String(b ?? "");
+  const row = (lbl, val, changed, now) => `<div class="snr"><span>${lbl}</span><b>${esc(val || "—")}${changed ? `<small>Şimdi: ${esc(now || "—")}</small>` : ""}</b></div>`;
+  const cp = cur.p || {}, ct = cur.t || {};
+  const sporNow = +cp.sporSiklik ? `Haftada ${cp.sporSiklik} gün · ${({ hafif: "hafif", orta: "orta", yogun: "yoğun" })[cp.sporSiddet] || ""}${cp.sporTur ? " · " + cp.sporTur : ""}` : "Spor yok / yapamıyor";
+  const changes = [diff(p.amac, cp.amac), diff(t.kcal, ct.kcal), diff(spor, sporNow), diff(p.ogunSayisi, cp.ogunSayisi), diff(p.ozel, cp.ozel), diff(p.sure, cp.sure)].filter(Boolean).length;
+  const sh = $("#sheet");
+  sh.innerHTML = `<div class="bd" data-act="closeSheet"></div><div class="pn" role="dialog" aria-modal="true"><div class="grab"></div>
+    <div class="sh"><b>📋 Günün künyesi</b><button class="x" data-act="closeSheet" aria-label="Kapat">×</button></div>
+    <p class="sm mu" style="margin:0 0 4px;font-weight:600">${esc(trDate(date, { weekday: "long", day: "numeric", month: "long", year: "numeric" }))}</p>
+    <p class="sm" style="margin:0 0 12px">Bu gün geçerli olan ayarların. Kalori hedefin ve değerlendirmeler bunlara göre yapıldı.</p>
+    ${approx ? `<div class="warnbox" style="margin:0 0 12px">Bu tarihten önce kayıtlı ayar geçmişi yok; bilinen en eski ayarlar gösteriliyor.</div>` : ""}
+    ${changes ? `<div class="note" style="margin:0 0 12px">🔄 Bu günden sonra <b>${changes}</b> ayarın değişti. Değişenlerin altında güncel değer yazıyor.</div>` : ""}
+    <div class="card" style="margin:0 0 12px;padding:6px 16px">
+      ${row("🔥 Günlük kalori hedefi", t.kcal ? fmt(t.kcal) + " kcal" + (ex ? ` (+${fmt(ex)} egzersiz)` : "") : "Henüz program yoktu", diff(t.kcal, ct.kcal), ct.kcal ? fmt(ct.kcal) + " kcal" : "")}
+      ${row("🥩 Protein / Karb. / Yağ", t.protein ? `${t.protein} / ${t.carb} / ${t.fat} g` : "", diff(`${t.protein}/${t.carb}/${t.fat}`, `${ct.protein}/${ct.carb}/${ct.fat}`), ct.protein ? `${ct.protein} / ${ct.carb} / ${ct.fat} g` : "")}
+      ${row("💧 Su hedefi", t.water ? String(t.water).replace(".", ",") + " L" : "", diff(t.water, ct.water), ct.water ? String(ct.water).replace(".", ",") + " L" : "")}
+      ${row("📉 Haftalık hedef", t.haftalikHedefKg ? `${t.haftalikHedefKg > 0 ? "+" : ""}${String(t.haftalikHedefKg).replace(".", ",")} kg` : "", diff(t.haftalikHedefKg, ct.haftalikHedefKg), ct.haftalikHedefKg ? `${String(ct.haftalikHedefKg).replace(".", ",")} kg` : "")}
+    </div>
+    <div class="card" style="margin:0 0 12px;padding:6px 16px">
+      ${row("🎯 Amaç", p.amac, diff(p.amac, cp.amac), cp.amac)}
+      ${row("⏳ Süre", p.sure, diff(p.sure, cp.sure), cp.sure)}
+      ${row("🏋️ Spor", spor, diff(spor, sporNow), sporNow)}
+      ${row("🚶 Günlük hareket", ACT[p.aktivite]?.[1], diff(p.aktivite, cp.aktivite), ACT[cp.aktivite]?.[1])}
+      ${row("🍽️ Öğün sayısı", p.ogunSayisi ? p.ogunSayisi + " öğün" : "", diff(p.ogunSayisi, cp.ogunSayisi), cp.ogunSayisi + " öğün")}
+      ${row("🤱 Özel durum", SPECIAL[p.ozel] || "Yok", diff(p.ozel, cp.ozel), SPECIAL[cp.ozel] || "Yok")}
+      ${row("⚖️ O günkü kilo", w ? String(w.kg).replace(".", ",") + " kg" + (w.date !== date ? ` (${trDate(w.date, { day: "numeric", month: "short" })})` : "") : "", false)}
+      ${row("🏁 Hedef kilo", p.hedefKilo ? String(p.hedefKilo).replace(".", ",") + " kg" : "", diff(p.hedefKilo, cp.hedefKilo), cp.hedefKilo ? String(cp.hedefKilo).replace(".", ",") + " kg" : "")}
+    </div>
+    <p class="hint" style="text-align:center">Ayarların en son ${esc(new Date(s.at).toLocaleString("tr-TR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }))} itibarıyla</p>
+  </div>`;
+  sh.className = "on";
+}
+
+/* ============ NE PİŞİRSEM? ============ */
+const chef = { meal: null, last: null, loading: false, result: null };
+function chefDefaults() {
+  if (!chef.meal) chef.meal = guessMeal();
+  if (chef.last == null) { const h = new Date().getHours(); chef.last = (chef.meal === "Akşam" && h >= 18) || h >= 21; }
+}
+function remainingToday() {
+  const t = ymd(new Date()), d = day(t), tot = totals(d), tg = S.targets, tt = dayTarget(t);
+  return { tot, kcal: tt.total - tot.kcal, p: (tg?.protein || 0) - tot.p, c: (tg?.carb || 0) - tot.c, f: (tg?.fat || 0) - tot.f, tt, d };
+}
+function renderChef() {
+  const el = $("#v-chef");
+  $("#hdr").innerHTML = "";
+  if (!S.profile) { el.innerHTML = `<div class="card empty"><div class="e">👨‍🍳</div><p class="mu">Tarif önerisi için önce profilini doldur.</p><button class="pri full" data-go="profile">Profile git</button></div>`; return; }
+  chefDefaults();
+  const r = remainingToday(), tg = S.targets;
+  const neg = v => v < 0;
+  const tile = (v, u, l, col) => `<div><b style="color:${neg(v) ? "var(--bad)" : col}">${neg(v) ? "−" : ""}${fmt(Math.abs(v))}${u}</b><span>${l}</span></div>`;
+  const res = chef.result;
+  let h = `
+  <div class="card">
+    <div class="row sp"><b style="font-size:15px">Bugün kalan</b><span class="mu sm" style="font-weight:600">${fmt(r.tot.kcal)} / ${fmt(r.tt.total)} kcal yendi</span></div>
+    <div class="tiles in" style="grid-template-columns:repeat(4,1fr)">${tile(r.kcal, "", "kcal", "var(--acTx)")}${tg ? tile(r.p, "g", "protein", "var(--p)") + tile(r.c, "g", "karb.", "var(--c)") + tile(r.f, "g", "yağ", "var(--f)") : ""}</div>
+  </div>
+
+  <div class="sec">Hangi öğün için?</div>
+  <div class="meals">${MEALS.map(m => `<button class="mealc ${chef.meal === m ? "on" : ""}" data-act="cmeal" data-m="${m}"><span class="e" style="background:${MEAL_TINT[m]}">${MEAL_EMOJI[m]}</span>${MEAL_SHORT[m]}<small>${(k => k ? fmt(k) : "—")(r.d.foods.filter(f => f.meal === m).reduce((a, f) => a + num(f.kcal), 0))}</small></button>`).join("")}</div>
+
+  <div class="card">
+    <b style="font-size:15px">Bugünün son öğünü mü?</b>
+    <div class="choice">
+      <button class="${chef.last ? "on" : ""}" data-act="clast" data-v="1"><span>🌙</span><b>Evet, son öğünüm</b><small>Kalan makroları bu öğünle tamamla</small></button>
+      <button class="${chef.last ? "" : "on"}" data-act="clast" data-v="0"><span>🍎</span><b>Sonra bir şey daha yiyeceğim</b><small>Sonraki öğüne pay bırak</small></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="addh"><span class="e" style="background:var(--ac2)">🧺</span><b>Mutfağında neler var?</b></div>
+    <textarea id="pantry" rows="3" placeholder="ör. tavuk göğüs, bulgur, domates, biber, yoğurt, yumurta, ıspanak">${esc(S.settings.pantry || "")}</textarea>
+    <div class="hint">Tuz, baharat ve az miktar yağın olduğu varsayılır. Listeni bir dahaki sefere hatırlarım.</div>
+    <button class="pri full" style="margin-top:12px" data-act="recipe">✨ Bana tarif öner</button>
+  </div>`;
+
+  if (res) {
+    const owned = new Set(arr(res.malzemeler).filter(m => m.var !== false).map(m => m.ad));
+    h += `<div class="card recipe" id="recipe">
+      <div class="row" style="align-items:flex-start;gap:12px"><div class="fic" style="width:52px;height:52px;font-size:26px;background:${MEAL_TINT[res.meal] || "var(--ac2)"}">${foodEmoji(res.ad)}</div>
+        <div class="grow"><b style="font-size:18px;line-height:1.25;display:block">${esc(res.ad)}</b>
+        <div class="chips" style="margin-top:8px">${res.sure ? `<span class="pillx ok">⏱ ${esc(res.sure)} dk</span>` : ""}<span class="pillx ok">🔥 ${fmt(res.kcal)} kcal</span><span class="pillx ok">${MEAL_EMOJI[res.meal]} ${esc(res.meal)}${res.last ? " · son öğün" : ""}</span></div></div></div>
+      <div class="tiles in" style="grid-template-columns:repeat(3,1fr)"><div><b style="color:var(--p)">${fmt(res.p)} g</b><span>protein</span></div><div><b style="color:var(--c)">${fmt(res.c)} g</b><span>karb.</span></div><div><b style="color:var(--f)">${fmt(res.f)} g</b><span>yağ</span></div></div>
+      ${res.neden ? `<div class="note"><b>Neden bu tarif?</b> ${esc(res.neden)}</div>` : ""}
+      <h4>🧺 Malzemeler</h4>
+      <ul class="ing">${arr(res.malzemeler).map(m => `<li class="${m.var === false ? "miss" : ""}"><span>${m.var === false ? "＋" : "✓"}</span>${esc(m.ad)}<em>${esc(m.miktar || "")}</em></li>`).join("")}</ul>
+      ${arr(res.malzemeler).some(m => m.var === false) ? `<div class="hint">＋ işaretliler listende yoktu; isteğe bağlı.</div>` : ""}
+      <h4>👨‍🍳 Hazırlanışı</h4>
+      <ol class="steps">${arr(res.adimlar).map(s => `<li>${esc(s)}</li>`).join("")}</ol>
+      ${res.ipucu ? `<div class="warnbox">💡 ${esc(res.ipucu)}</div>` : ""}
+      ${res.sonra ? `<div class="note">🍎 <b>Sonrası için:</b> ${esc(res.sonra)}</div>` : ""}
+      <div class="btns"><button class="pri grow" data-act="recipeAte" ${res.added ? "disabled" : ""}>${res.added ? "✓ Eklendi" : `✓ Yedim, ${esc(MEAL_SHORT[res.meal])} öğününe ekle`}</button><button data-act="recipe" data-again="1" aria-label="Başka tarif">↻</button></div>
+    </div>`;
+  }
+  const past = arr(S.recipes).filter(x => !res || x.id !== res.id).slice(0, 5);
+  if (past.length) h += `<div class="sec">Son tariflerin</div><div class="card">${past.map(x => `<div class="item" data-act="openRecipe" data-id="${x.id}" style="cursor:pointer"><div class="fic">${foodEmoji(x.ad)}</div><div class="nm">${esc(x.ad)}<small>${MEAL_EMOJI[x.meal] || ""} ${esc(x.meal)} · ${esc(new Date(x.at).toLocaleDateString("tr-TR", { day: "numeric", month: "short" }))}</small></div><b class="kc">${fmt(x.kcal)} kcal</b><span class="mu" style="font-size:20px">›</span></div>`).join("")}</div>`;
+  el.innerHTML = h;
+}
+async function makeRecipe(again) {
+  const pantry = ($("#pantry")?.value || "").trim();
+  if (!pantry) return toast("Mutfağında neler olduğunu yaz", 1);
+  S.settings.pantry = pantry; save();
+  chefDefaults();
+  const r = remainingToday(), tg = S.targets, p = S.profile;
+  const eaten = MEALS.map(m => { const fs = r.d.foods.filter(f => f.meal === m); return fs.length ? `${m}: ${fs.map(f => `${f.name} (${f.kcal} kcal)`).join(", ")}` : ""; }).filter(Boolean).join("\n") || "Bugün henüz bir şey yenmedi.";
+  const prev = again && chef.result ? `\nÖNCEKİ ÖNERİ: "${chef.result.ad}" — farklı bir tarif öner.` : "";
+  const budget = chef.last
+    ? `Bu, BUGÜNÜN SON ÖĞÜNÜ. Kalan kaloriyi aşmadan (en fazla kalan kcal kadar) ve özellikle eksik kalan proteini mümkün olduğunca kapatacak şekilde planla. Kalan kalori çok azsa ya da hedef aşıldıysa hafif, yüksek proteinli ve düşük kalorili bir seçenek öner ve bunu "neden" alanında belirt.`
+    : `Bu öğünden SONRA kişi en az bir öğün daha yiyecek. Kalan kalorinin tamamını kullanma; ${chef.meal === "Ara öğün" ? "ara öğün için kalan kalorinin en fazla ~%25'i (genelde 150-300 kcal)" : "bu öğün için kalan kalorinin yaklaşık %55-70'i"} kadar planla ve sonraki öğüne pay bırak. "sonra" alanında sonraki öğün için kısa bir öneri ver.`;
+  busy("Tarifin hazırlanıyor…");
+  try {
+    const out = await ai(SYS, `KİŞİ: ${p.cinsiyet}, ${p.yas} yaş, ${latestWeight() || p.kilo} kg. Amaç: ${p.amac}
+Özel durum: ${SPECIAL[p.ozel] || "Yok"} · Alerji/intolerans: ${p.alerji || "yok"} · Sevmedikleri: ${p.sevmedik || "-"} · Tercihleri: ${p.tercih || "-"} · Sağlık: ${p.saglik || "-"}
+GÜNLÜK HEDEF: ${fmt(r.tt.total)} kcal (egzersiz dahil)${tg ? `, protein ${tg.protein} g, karbonhidrat ${tg.carb} g, yağ ${tg.fat} g` : ""}
+BUGÜN YENENLER:
+${eaten}
+BUGÜN KALAN: ${fmt(r.kcal)} kcal, protein ${fmt(r.p)} g, karbonhidrat ${fmt(r.c)} g, yağ ${fmt(r.f)} g (negatif değer = hedef aşıldı)
+ÖĞÜN: ${chef.meal}
+${budget}
+MUTFAKTA OLANLAR: """${pantry}"""${prev}
+
+GÖREV: Sadece mutfakta olan malzemelerle (tuz, karabiber, baharatlar, su ve az miktar sıvı yağ her evde var sayılır) bu öğün için en mantıklı, pratik ve lezzetli TEK bir tarif öner. Gerekirse listede olmayan en fazla 1-2 küçük malzemeyi isteğe bağlı olarak ekleyebilirsin ("var": false). Alerji ve sevmediklerine kesinlikle uy. Miktarları gram/adet/kaşık olarak tek porsiyon için yaz. Kalori ve makroları malzemelerin gramajından hesapla.
+${NUTRI_REF}
+JSON: {"ad":"tarif adı","sure":number (dakika),"kcal":number,"protein":number,"karbonhidrat":number,"yag":number,"malzemeler":[{"ad":"string","miktar":"string","var":true}],"adimlar":["kısa adım", "..."],"neden":"bu tarifin kalan makrolara/amaca neden uygun olduğu, 1-2 cümle","ipucu":"varsa kısa ipucu","sonra":"son öğün değilse sonraki öğün için kısa öneri, değilse boş"}`, 0.7, "fast");
+    const res = { id: uid(), at: Date.now(), meal: chef.meal, last: !!chef.last, ad: String(out.ad || "Tarif"), sure: num(out.sure) || "", kcal: Math.round(num(out.kcal)),
+      p: r1(out.protein), c: r1(out.karbonhidrat), f: r1(out.yag), malzemeler: arr(out.malzemeler).slice(0, 20), adimlar: arr(out.adimlar).slice(0, 12),
+      neden: out.neden || "", ipucu: out.ipucu || "", sonra: chef.last ? "" : (out.sonra || "") };
+    if (!res.adimlar.length) throw new Error("Tarif oluşturulamadı, tekrar dene.");
+    chef.result = res;
+    S.recipes = [res, ...arr(S.recipes)].slice(0, 15); save();
+    renderChef();
+    setTimeout(() => $("#recipe")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+  } catch (e) { toast(e.message, 1); } finally { busy(); }
+}
+
 function focusAdd(kb) {
   setTimeout(() => {
     $("#addcard")?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1242,6 +1471,18 @@ document.addEventListener("click", e => {
     photo: () => $("#photoIn").click(),
     clearPhoto: () => { draft.photo = null; renderToday(); },
     toggleAdj: () => { adjOpen = !adjOpen; renderPlan(); },
+    snap: () => openSnapSheet(curDate),
+    cmeal: () => { chef.meal = a.dataset.m; const h = new Date().getHours(); chef.last = (chef.meal === "Akşam" && h >= 18) || h >= 21; renderChef(); },
+    clast: () => { chef.last = a.dataset.v === "1"; renderChef(); },
+    recipe: () => makeRecipe(!!a.dataset.again),
+    recipeAte: () => {
+      const r = chef.result; if (!r || r.added) return;
+      const t = ymd(new Date()), D = day(t); openMeals.add(r.meal);
+      D.foods.push({ id: uid(), meal: r.meal, name: r.ad, amount: "1 porsiyon · tarif", kcal: r.kcal, p: r.p, c: r.c, f: r.f });
+      r.added = true; const sv = arr(S.recipes).find(x => x.id === r.id); if (sv) sv.added = true;
+      save(); renderChef(); toast(`${r.meal} öğününe ${fmt(r.kcal)} kcal eklendi`);
+    },
+    openRecipe: () => { const x = arr(S.recipes).find(y => y.id === a.dataset.id); if (x) { chef.result = x; chef.meal = x.meal; chef.last = x.last; renderChef(); setTimeout(() => $("#recipe")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); } },
     mtog: () => { const m = a.dataset.m; openMeals.has(m) ? openMeals.delete(m) : openMeals.add(m); renderToday(); },
     ate: () => {
       const pl = S.plan, tg = S.targets, g = arr(pl?.gunler)[planDay], o = arr(g?.ogunler)[+a.dataset.o]; if (!o) return;
