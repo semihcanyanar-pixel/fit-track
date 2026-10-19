@@ -151,6 +151,7 @@ nav.tabs button.plus svg{width:28px;height:28px}
 .mrow:first-child{border-top:0;padding-top:2px}
 .mrow b{font-size:15px}.mrow small{display:block;color:var(--mu);font-size:12px;font-weight:600}
 .mrow .mk{font-size:14px;white-space:nowrap}.mrow .chev{color:var(--mu);font-size:20px;width:14px;text-align:center}
+.rtog{margin-top:14px;border-top:1px solid var(--ln);padding-top:12px!important}
 .mbody{margin:0 0 4px 50px}.mbody .item:first-child{padding-top:4px}
 .mgrp{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--mu);margin:14px 0 4px;text-transform:uppercase;letter-spacing:.04em}
 .mgrp:first-child{margin-top:0}
@@ -842,8 +843,10 @@ function renderToday() {
       ${draft.photo ? `<div class="ph"><img src="${draft.photo.url}" alt="Öğün fotoğrafı"><button data-act="clearPhoto" aria-label="Fotoğrafı kaldır">×</button><span class="tagp">📷 Fotoğraftan hesaplanacak</span></div>` : ""}
       <textarea id="foodTx" data-draft="food" rows="${draft.photo ? 2 : 3}" placeholder="${draft.photo ? "İsteğe bağlı not: ör. 2 kepçe, tereyağlı, yarısını yedim" : "ör. 2 haşlanmış yumurta, 1 dilim beyaz peynir, 5 zeytin"}">${esc(draft.food)}</textarea>
       <div class="btns"><button class="pri grow" data-act="calcFood">✨ Kaloriyi hesapla</button><button class="camb" data-act="photo" aria-label="Fotoğraf ekle">📷</button><button data-act="toggleManual">Elle</button></div>`}
-    ${S.recent.length ? `<div class="hint" style="margin:14px 0 7px">Son yediklerin · dokun, ${esc(draft.meal)} öğününe ekle</div>
-      <div class="chips">${S.recent.slice(0, 14).map((r, i) => `<button class="chip" data-act="recent" data-i="${i}">${foodEmoji(r.name)} ${esc(r.name)} <small>${r.kcal}</small></button>`).join("")}</div>` : ""}
+    ${S.recent.length ? `<div class="mrow rtog" data-act="rtog" role="button" aria-expanded="${recentOpen}">
+        <span class="fic" style="width:38px;height:38px;font-size:18px;background:var(--card2)">🕘</span>
+        <span class="grow"><b>Son yediklerin</b><small>${recentOpen ? `Dokun, ${esc(draft.meal)} öğününe ekle` : `${Math.min(S.recent.length, 14)} kayıt · tek dokunuşla ekle`}</small></span><span class="chev">${recentOpen ? "⌃" : "›"}</span></div>
+      ${recentOpen ? `<div class="chips" style="margin-top:4px">${S.recent.slice(0, 14).map((r, i) => `<button class="chip" data-act="recent" data-i="${i}">${foodEmoji(r.name)} ${esc(r.name)} <small>${r.kcal}</small></button>`).join("")}</div>` : ""}` : ""}
   </div>`;
 
   if (draft.preview) {
@@ -928,6 +931,7 @@ function reviewCard(rv, d) {
 
 /* ============ PROGRAM ============ */
 let adjOpen = false;
+let recentOpen = false;   // "Son yediklerin" varsayılan kapalı
 const openMeals = new Set();   // "Bugün yediklerin"de açık olan öğünler
 function ogunToMeal(s) { const n = String(s || "").toLocaleLowerCase("tr-TR"); return n.includes("kahvalt") ? "Kahvaltı" : n.includes("öğle") || n.includes("ogle") ? "Öğle" : n.includes("akşam") || n.includes("aksam") ? "Akşam" : "Ara öğün"; }
 function renderPlan() {
@@ -1483,6 +1487,7 @@ document.addEventListener("click", e => {
       save(); renderChef(); toast(`${r.meal} öğününe ${fmt(r.kcal)} kcal eklendi`);
     },
     openRecipe: () => { const x = arr(S.recipes).find(y => y.id === a.dataset.id); if (x) { chef.result = x; chef.meal = x.meal; chef.last = x.last; renderChef(); setTimeout(() => $("#recipe")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); } },
+    rtog: () => { recentOpen = !recentOpen; renderToday(); },
     mtog: () => { const m = a.dataset.m; openMeals.has(m) ? openMeals.delete(m) : openMeals.add(m); renderToday(); },
     ate: () => {
       const pl = S.plan, tg = S.targets, g = arr(pl?.gunler)[planDay], o = arr(g?.ogunler)[+a.dataset.o]; if (!o) return;
