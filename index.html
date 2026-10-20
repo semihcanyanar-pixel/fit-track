@@ -238,6 +238,41 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 .snr span{color:var(--mu);font-weight:600;flex:none}
 .snr b{text-align:right;font-weight:700}
 .snr b small{display:block;font-size:11.5px;color:var(--warn);font-weight:700;margin-top:2px}
+/* program sayfası */
+.detbtn{display:inline-flex;align-items:center;gap:4px;padding:8px 13px;border-radius:99px;background:var(--ac2);color:var(--acTx);font-size:13px;font-weight:800;box-shadow:none}
+.wstrip{display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px;border-radius:16px;cursor:pointer}
+.wstrip .ic{font-size:20px}.wstrip b{font-size:13.5px;display:block}.wstrip small{font-size:12px;color:var(--mu);font-weight:600}
+.planc{padding:16px}
+.planc .ph2{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.planc .ph2 .ie{width:46px;height:46px;border-radius:15px;background:var(--btn);display:flex;align-items:center;justify-content:center;font-size:23px;box-shadow:var(--btnSh);flex:none}
+.planc .ph2 b{font-size:19px;letter-spacing:-.02em;display:block}.planc .ph2 small{color:var(--mu);font-weight:600;font-size:12.5px}
+.dtabs{display:grid;gap:8px;margin-bottom:8px}
+.dtab{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:9px 6px;text-align:center;box-shadow:none;color:var(--tx)}
+.dtab b{display:block;font-size:14px}.dtab small{font-size:11.5px;color:var(--mu);font-weight:700}
+.dtab.on{background:var(--btn);color:#fff;border-color:transparent;box-shadow:var(--btnSh)}.dtab.on small{color:rgba(255,255,255,.85)}
+.mrow2{display:flex;gap:12px;padding:13px 10px;margin:0 -10px;border-top:1px solid var(--ln)}
+.mlist .mrow2:first-child{border-top:0}
+.mrow2 .ie{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:21px;flex:none}
+.mrow2 .bd{flex:1;min-width:0}
+.mrow2 .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mrow2 .hd b{font-size:15px}.mrow2 .hd em{font-style:normal;font-weight:800;font-size:14.5px;white-space:nowrap}
+.mrow2 p{margin:3px 0 8px;font-size:13.5px;color:var(--mu);font-weight:500;line-height:1.45}
+.mrow2 .yed{padding:6px 11px;font-size:12.5px;border-radius:99px;background:var(--ac2);color:var(--acTx);box-shadow:none}
+.mrow2 .yed.done{background:var(--card2);color:var(--mu)}
+.mrow2.next{background:var(--ac2);border-top-color:transparent;border-radius:16px}.mrow2.next + .mrow2{border-top-color:transparent}
+.mrow2.next .yed:not(.done){background:var(--btn);color:#fff}
+.ptot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:12px 14px;border-radius:16px;background:var(--card2);font-weight:800;font-size:14.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--card);border:1px solid var(--ln);border-radius:22px;padding:14px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:150px;position:relative;text-align:left;color:var(--tx);backdrop-filter:var(--glass)}
+.tile .ti{width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.tile b{font-size:14.5px;letter-spacing:-.01em}
+.tile p{margin:0;font-size:12.5px;color:var(--mu);font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tile .go{position:absolute;top:14px;right:14px;color:var(--mu);font-size:18px}
+.shi{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:21px;flex:none}
+.gitem{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--ln)}
+.gitem:first-child{border-top:0}
+.gitem b{display:block;font-size:15px;margin-bottom:3px}.gitem p{margin:0;font-size:14.5px;line-height:1.5;font-weight:500;color:var(--tx2,var(--tx))}
+.gitem .fic{width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
 /* alt panel (sheet) */
 #sheet{position:fixed;inset:0;z-index:30;display:none}
 #sheet.on{display:block}
@@ -247,6 +282,7 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 #sheet .grab{width:40px;height:5px;border-radius:9px;background:var(--ln);margin:0 auto 12px}
 #sheet .sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 #sheet .sh b{font-size:19px}
+#sheet .sh .shi + b{font-size:20px}
 #sheet .x{width:34px;height:34px;padding:0;border-radius:50%}
 @keyframes up{from{transform:translateY(100%)}}@keyframes fd{from{opacity:0}}
 /* genel */
@@ -666,7 +702,7 @@ function setTargetKcal(v, note, withPlan) {
   applyTargets(S.targets.strategy, v === formula ? null : { kcal: v, note, at: Date.now() });
   S.targets.history.push({ at: Date.now(), from: old, to: S.targets.kcal, note });
   manualKcal = null; save();
-  if (withPlan) makePlan(); else { toast(`Yeni hedef: ${fmt(S.targets.kcal)} kcal`); renderPlan(); }
+  if (withPlan) { closeSheet(); makePlan(); } else { toast(`Yeni hedef: ${fmt(S.targets.kcal)} kcal`); refreshPlanSheet(); }
 }
 async function makePlan() {
   if (!S.profile) { go("profile"); return toast("Önce profilini doldur", 1); }
@@ -690,15 +726,18 @@ GÖREV:
 3) Spor yapılan günlerde nasıl beslenmesi gerektiğini kısaca açıkla.
 ${NUTRI_REF}
 
+REHBER METİNLERİ: Kısa ve maddeli yaz. Her madde {"baslik":"2-4 kelime","metin":"tek-iki cümle, somut"} biçiminde olsun; her listede 2-4 madde.
+
 JSON ŞEMASI:
-{"ozet":"2-3 cümlelik strateji","haftalikBeklenti":"gerçekçi haftalık/aylık beklenti","sporGunuNotu":"spor günü beslenmesi",
-"onemliNotlar":["..."],
+{"ozet":"2-3 cümlelik strateji","beklenti":[{"baslik":"","metin":""}],"sporGunu":[{"baslik":"ör. Antrenman öncesi","metin":""}],
+"onemliNotlar":[{"baslik":"","metin":""}],
 "gunler":[{"ad":"1. Gün","ogunler":[{"ogun":"Kahvaltı","icerik":"porsiyonlarıyla","kcal":number}],"toplamKcal":number}],
-"ipuclari":["..."],"uyari":"gerekliyse kısa sağlık uyarısı, yoksa boş string"}`;
+"ipuclari":[{"baslik":"","metin":""}],"uyari":"gerekliyse kısa sağlık uyarısı, yoksa boş string"}`;
     const r = await ai(SYS, prompt, 0.6, "deep");
-    Object.assign(S.targets, { ozet: r.ozet || "", haftalik: r.haftalikBeklenti || "", sporNot: r.sporGunuNotu || "", notlar: arr(r.onemliNotlar),
+    const gl = v => guideItems(v).slice(0, 5);
+    Object.assign(S.targets, { ozet: r.ozet || "", beklentiList: gl(r.beklenti), haftalik: "", sporList: gl(r.sporGunu), sporNot: "", notlar: gl(r.onemliNotlar),
       uyari: [r.uyari, tg.calc.floored ? `Hedef, güvenli alt sınır olan ${baseline().floor} kcal'ye yükseltildi.` : ""].filter(Boolean).join(" ") });
-    S.plan = { gunler: arr(r.gunler), ipuclari: arr(r.ipuclari), at: Date.now() };
+    S.plan = { gunler: arr(r.gunler), ipuclari: gl(r.ipuclari), at: Date.now() };
     planDay = 0; save(); toast("Programın hazır"); go("plan");
   } catch (e) { save(); toast(e.message, 1); render(); } finally { busy(); }
 }
@@ -1011,10 +1050,31 @@ function reviewCard(rv, d) {
 }
 
 /* ============ PROGRAM ============ */
-let adjOpen = false;
 let recentOpen = false;   // "Son yediklerin" varsayılan kapalı
 const openMeals = new Set();   // "Bugün yediklerin"de açık olan öğünler
 function ogunToMeal(s) { const n = String(s || "").toLocaleLowerCase("tr-TR"); return n.includes("kahvalt") ? "Kahvaltı" : n.includes("öğle") || n.includes("ogle") ? "Öğle" : n.includes("akşam") || n.includes("aksam") ? "Akşam" : "Ara öğün"; }
+// Rehber maddeleri: eski kayıtlar düz metin, yenileri {baslik, metin}
+function guideItems(v) {
+  if (!v) return [];
+  if (typeof v === "string") return v.split(/\n+|(?<=\.)\s+(?=[A-ZÇĞİÖŞÜ])/).map(t => t.trim()).filter(Boolean).map(t => ({ metin: t }));
+  return arr(v).map(x => typeof x === "string" ? { metin: x } : { baslik: x.baslik || "", metin: x.metin || "" }).filter(x => x.metin || x.baslik);
+}
+const GUIDE = {
+  beklenti: { t: "Beklenti", ic: "🎯", tint: "var(--tint-g)", items: () => guideItems(S.targets?.beklentiList || S.targets?.haftalik) },
+  spor: { t: "Spor günleri", ic: "🏋️", tint: "var(--tint-y)", items: () => guideItems(S.targets?.sporList || S.targets?.sporNot) },
+  notlar: { t: "Önemli notlar", ic: "📌", tint: "var(--tint-b)", items: () => guideItems(S.targets?.notlar) },
+  ipucu: { t: "İpuçları", ic: "💡", tint: "var(--tint-p)", items: () => guideItems(S.plan?.ipuclari) }
+};
+const ITEM_ICON_RULES = [[/su\b|sıvı|içecek|litre/i, "💧"], [/protein|et\b|tavuk|yumurta/i, "🥩"], [/uyku|dinlen/i, "😴"], [/karbon|pirinç|bulgur|ekmek|makarna/i, "🍚"], [/sebze|lif|salata|meyve/i, "🥗"], [/öncesi/i, "⚡"], [/sonrası|toparlan/i, "🔄"], [/hafta|ay\b|ay sonu|süre|başlangıç|ilk/i, "📅"], [/tartı|kilo|ölç/i, "⚖️"], [/hazırl|plan/i, "🧺"], [/dışarı|restoran/i, "🍽️"], [/şeker|tatlı/i, "🍬"], [/zaman|saat|öğün aralı/i, "⏰"], [/antrenman|spor|egzersiz/i, "🏋️"]];
+function itemIcon(m, def) { const t = (m.baslik || "") + " " + (m.baslik ? "" : m.metin || ""); const r = ITEM_ICON_RULES.find(([re]) => re.test(t)); return r ? r[1] : def; }
+function weeklyMini(a) {
+  if (!a?.ready) return { ic: "📊", bg: "var(--tint-b)", t: "Haftalık kontrol", s: `Veri toplanıyor · ${a?.need || "biraz daha veri"}` };
+  if (a.suggest != null) return { ic: "📈", bg: "var(--tint-y)", t: "Haftalık kontrol · Öneri var", s: `Hedefin ${fmt(a.suggest)} kcal olması öneriliyor` };
+  const ok = a.status === "iyi";
+  const sub = { uyum: a.adherence < 0 ? "Hedefinin çok altında yiyorsun" : "Hedefinin üstünde yiyorsun", hizli: "Kilo kaybı hızlı", yavas: "Hedefin gerisinde ilerliyorsun", fazla: "Beklenenden hızlı ilerliyorsun", iyi: "Hedeflenen hızda ilerliyorsun" }[a.status];
+  const cl = { low: "ön tahmin", mid: "güven: orta", high: "güven: yüksek" }[a.conf];
+  return { ic: ok ? "✅" : a.status === "uyum" ? "🎯" : "⚠️", bg: ok ? "var(--ac2)" : "var(--tint-y)", t: `Haftalık kontrol · ${ok ? "İyi" : a.status === "uyum" ? "Uyum" : "Dikkat"}`, s: `${sub} · ${cl}` };
+}
 function renderPlan() {
   const el = $("#v-plan");
   $("#hdr").innerHTML = S.targets ? `<button class="ghost" data-act="makeplan">↻ Yenile</button>` : "";
@@ -1031,65 +1091,80 @@ function renderPlan() {
     return;
   }
   const changed = Math.abs(b.kg - (tg.kg || b.kg)) >= 2 || (S.profile.updatedAt || 0) > tg.at;
-  const g = arr(pl.gunler)[planDay] || arr(pl.gunler)[0];
+  const days = arr(pl.gunler);
+  const g = days[planDay] || days[0];
   const pk = tg.protein * 4, ck = tg.carb * 4, fk = tg.fat * 9;
-  const wk = num(tg.haftalikHedefKg);
-  const a = adaptive();
-  const today = day(ymd(new Date()));
-  const eaten = new Set(today.foods.map(f => f.planKey).filter(Boolean));
-  let mini;
-  const CL = { low: "Ön tahmin", mid: "Orta güven", high: "Yüksek güven" };
-  if (!a?.ready) mini = { ic: "📊", tint: "var(--tint-b)", t: "Haftalık kontrol", s: `Veri toplanıyor · ${a?.need || "biraz daha veri"}`, pill: "" };
-  else if (a.suggest != null) mini = { ic: "📈", tint: "var(--tint-y)", t: "Haftalık kontrol", s: `Hedefin ${fmt(a.suggest)} kcal olması öneriliyor`, pill: `<span class="pillx warn">İncele</span>` };
-  else if (a.conf === "low") mini = { ic: "🔎", tint: "var(--tint-b)", t: "Haftalık kontrol", s: a.status === "uyum" ? "Hedefin biraz üstünde gidiyorsun" : a.status === "iyi" ? "Şimdilik hedefle uyumlu görünüyor" : "İlk eğilim görünmeye başladı", pill: `<span class="pillx ok" style="background:var(--tint-b);color:var(--p)">${CL.low}</span>` };
-  else {
-    const ok = a.status === "iyi";
-    const sub = { uyum: a.adherence < 0 ? "Hedefinin çok altında yiyorsun" : "Hedefinin üstünde yiyorsun", hizli: "Kilo kaybı hızlı", yavas: "Hedefin gerisinde ilerliyorsun", fazla: "Beklenenden hızlı ilerliyorsun", iyi: "Hedeflenen hızda ilerliyorsun" }[a.status];
-    mini = { ic: ok ? "✅" : a.status === "uyum" ? "🎯" : "⚠️", tint: ok ? "var(--tint-g)" : "var(--tint-y)", t: "Haftalık kontrol", s: sub, pill: `<span class="pillx ${ok ? "ok" : "warn"}">${ok ? "İyi" : a.status === "uyum" ? "Uyum" : "Dikkat"}</span>` };
-  }
+  const sp = sporEstimate();
+  const wm = weeklyMini(adaptive());
+  const eaten = new Set(day(ymd(new Date())).foods.map(f => f.planKey).filter(Boolean));
+  const dayKcal = x => num(x?.toplamKcal) || arr(x?.ogunler).reduce((s, o) => s + num(o.kcal), 0);
+  const nowMeal = guessMeal();
+  const nextIdx = g ? arr(g.ogunler).findIndex((o, oi) => ogunToMeal(o.ogun) === nowMeal && !eaten.has(`${planDay}-${oi}-${pl.at}`)) : -1;
 
   el.innerHTML = `
-  ${changed ? `<div class="warnbox">Profilin veya kilon program hazırlandıktan sonra değişti. <button class="ghost" data-act="makeplan">Programı güncelle</button></div>` : ""}
+  ${changed ? `<div class="warnbox" style="margin-top:8px">Profilin veya kilon program hazırlandıktan sonra değişti. <button class="ghost" data-act="makeplan">Programı güncelle</button></div>` : ""}
   <div class="card">
-    <div class="row sp" style="align-items:flex-end"><div><div class="mu sm" style="font-weight:700;margin-bottom:6px">Günlük hedef</div><span class="big2">${fmt(tg.kcal)}</span><span class="unit">kcal</span></div>
-      ${wk ? `<span class="pillx ${wk < 0 ? "ok" : "warn"}">${wk > 0 ? "+" : ""}${String(wk).replace(".", ",")} kg/hafta</span>` : ""}</div>
+    <div class="row sp" style="align-items:flex-start"><div><div class="mu sm" style="font-weight:700;margin-bottom:6px">Günlük hedef</div><span class="big2">${fmt(tg.kcal)}</span><span class="unit">kcal</span></div>
+      <button class="detbtn" data-act="pdetail">Detay ›</button></div>
     <div class="stack"><i style="flex:${pk};background:var(--p)"></i><i style="flex:${ck};background:var(--c)"></i><i style="flex:${fk};background:var(--f)"></i></div>
     <div class="leg"><span><i style="background:var(--p)"></i>Protein <em>${tg.protein} g</em></span><span><i style="background:var(--c)"></i>Karb. <em>${tg.carb} g</em></span><span><i style="background:var(--f)"></i>Yağ <em>${tg.fat} g</em></span></div>
-    ${(sp => sp ? `<div class="tiles in" style="grid-template-columns:1fr 1fr;margin-top:14px"><div><b>${fmt(tg.kcal)}</b><span>dinlenme günü</span></div><div><b style="color:var(--acTx)">~${fmt(tg.kcal + sp.kcal)}</b><span>spor günü (+~${fmt(sp.kcal)})</span></div></div>` : "")(sporEstimate())}
-    ${tg.calc ? `<h4 style="margin-top:16px">🧮 Bu hedef nasıl hesaplandı?</h4>
-    <div class="kv">
-      <span>Bazal metabolizma (BMR)</span><b>${fmt(tg.calc.bmr)} kcal</b>
-      <span>× Günlük hareket (${esc((ACT[S.profile.aktivite]?.[1] || "").split(" (")[0].toLocaleLowerCase("tr-TR"))})</span><b>× ${String(tg.calc.fact).replace(".", ",")}</b>
-      ${tg.calc.extra ? `<span>+ ${esc(SPECIAL[S.profile.ozel] || "Özel durum")}</span><b>+${fmt(tg.calc.extra)} kcal</b>` : ""}
-      <span>= Bakım kalorisi (spor hariç)</span><b>${fmt(tg.calc.maint)} kcal</b>
-      <span>Haftalık hedef ${tg.strategy.weekly > 0 ? "+" : ""}${String(tg.strategy.weekly).replace(".", ",")} kg</span><b style="color:var(--acTx)">${tg.calc.delta > 0 ? "+" : tg.calc.delta < 0 ? "−" : ""}${fmt(Math.abs(tg.calc.delta))} kcal</b>
-      ${tg.calc.floored ? `<span>Güvenli alt sınır</span><b>${fmt(tg.calc.formula)} kcal</b>` : ""}
-      ${tg.override && tg.kcal !== tg.calc.formula ? `<span>Formül sonucu</span><b>${fmt(tg.calc.formula)} kcal</b><span style="color:var(--warn);font-weight:700">${esc(tg.override.note || "Elle ayarlandı")}</span><b style="color:var(--warn)">${tg.kcal - tg.calc.formula > 0 ? "+" : "−"}${fmt(Math.abs(tg.kcal - tg.calc.formula))} kcal</b>` : ""}
-      <span style="font-weight:800;color:var(--tx)">Günlük hedef</span><b style="font-size:16px">${fmt(tg.kcal)} kcal</b>
-      ${(sp => sp ? `<span>🏋️ Spor günlerinde (haftada ${sp.n} · ${sp.lvl}${sp.tur ? ", " + esc(sp.tur) : ""})</span><b style="color:var(--acTx)">+~${fmt(sp.kcal)} kcal</b>` : "")(sporEstimate())}
-    </div>
-    <div class="hint">${sporEstimate() ? "Spor günü eklemesi tahminidir; antrenmanı Bugün sayfasına girdiğin gün gerçekte yakılan kalori eklenir." : "Spor yaptığın günlerde yakılan kalori bu hedefe ayrıca eklenir."} Profilin değişmedikçe bu sayı sabit kalır; "Yenile" sadece örnek günleri yeniler.${tg.strategy.why ? " Strateji: " + esc(tg.strategy.why) : ""}</div>` : ""}
-    ${tg.ozet ? `<p style="margin:14px 0 0">${esc(tg.ozet)}</p>` : ""}
-    ${tg.haftalik ? `<div class="note"><b>Beklenti:</b> ${esc(tg.haftalik)}</div>` : ""}
-    ${tg.uyari ? `<div class="warnbox">${esc(tg.uyari)}</div>` : ""}
-  </div>
-  <div class="card" style="padding:14px 16px">
-    <div class="mini" data-act="toggleAdj"><div class="ic2" style="background:${mini.tint}">${mini.ic}</div>
-      <div class="grow"><div style="font-weight:800;font-size:15px">${mini.t}</div><div class="mu sm" style="font-weight:600">${mini.s}</div></div>${mini.pill}<span class="mu" style="font-size:20px">${adjOpen ? "⌃" : "›"}</span></div>
-    ${adjOpen ? adaptiveDetail(a) : ""}
+    ${sp ? `<div class="tiles in" style="grid-template-columns:1fr 1fr;margin-top:14px"><div><b>${fmt(tg.kcal)}</b><span>dinlenme günü</span></div><div><b style="color:var(--acTx)">~${fmt(tg.kcal + sp.kcal)}</b><span>spor günü (+~${fmt(sp.kcal)})</span></div></div>` : ""}
+    <div class="wstrip" data-act="pweekly" style="background:${wm.bg}"><span class="ic">${wm.ic}</span><div class="grow"><b>${esc(wm.t)}</b><small>${esc(wm.s)}</small></div><span class="mu" style="font-size:20px">›</span></div>
   </div>
 
-  <div class="sec">Örnek gün<small>${g ? fmt(num(g.toplamKcal) || arr(g.ogunler).reduce((s, o) => s + num(o.kcal), 0)) + " kcal" : ""}</small></div>
-  <div class="seg">${arr(pl.gunler).map((x, i) => `<button data-act="pday" data-i="${i}" class="${i === planDay ? "on" : ""}">${esc(x.ad || (i + 1) + ". Gün")}</button>`).join("")}</div>
-  ${g ? `<div class="card"><div class="tl">${arr(g.ogunler).map((o, oi) => { const key = `${planDay}-${oi}-${pl.at}`; const done = eaten.has(key); const m = ogunToMeal(o.ogun);
-    return `<div class="tli"><div class="r"><span>${MEAL_EMOJI[m]} ${esc(o.ogun)}</span><em>${fmt(num(o.kcal))} kcal</em></div><p>${esc(o.icerik)}</p>
-      <button class="yedim ${done ? "done" : ""}" data-act="ate" data-o="${oi}" ${done ? "disabled" : ""}>${done ? "✓ Bugüne eklendi" : "✓ Yedim, bugüne ekle"}</button></div>`; }).join("")}</div></div>` : ""}
+  ${g ? `<div class="card planc">
+    <div class="ph2"><div class="ie">🍽️</div><div><b>Örnek beslenme</b><small>Hedefine ve tercihlerine göre ${days.length} farklı gün</small></div></div>
+    ${days.length > 1 ? `<div class="dtabs" style="grid-template-columns:repeat(${Math.min(days.length, 3)},1fr)">${days.map((x, i) => `<button class="dtab ${i === planDay ? "on" : ""}" data-act="pday" data-i="${i}"><b>${esc(x.ad || (i + 1) + ". Gün")}</b><small>${fmt(dayKcal(x))} kcal</small></button>`).join("")}</div>` : ""}
+    <div class="mlist">${arr(g.ogunler).map((o, oi) => { const key = `${planDay}-${oi}-${pl.at}`, done = eaten.has(key), m = ogunToMeal(o.ogun), nx = oi === nextIdx;
+      return `<div class="mrow2 ${nx ? "next" : ""}"><div class="ie" style="background:${nx ? "var(--card)" : MEAL_TINT[m]}">${MEAL_EMOJI[m]}</div><div class="bd">
+        <div class="hd"><b>${esc(o.ogun)}</b><em>${fmt(num(o.kcal))} kcal</em></div><p>${esc(o.icerik)}</p>
+        <button class="yed ${done ? "done" : ""}" data-act="ate" data-o="${oi}" ${done ? "disabled" : ""}>${done ? "✓ Bugüne eklendi" : "✓ Bugün yedim"}</button></div></div>`; }).join("")}</div>
+    <div class="ptot"><span>Günün toplamı</span><span>${fmt(dayKcal(g))} kcal</span></div>
+  </div>` : ""}
 
-  ${tg.sporNot ? `<div class="card"><h3>🏋️ Spor günlerinde</h3><p style="margin:0">${esc(tg.sporNot)}</p></div>` : ""}
-  ${arr(tg.notlar).length ? `<div class="card"><h3>📌 Önemli notlar</h3><ul class="l">${arr(tg.notlar).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
-  ${arr(pl.ipuclari).length ? `<div class="card"><h3>💡 İpuçları</h3><ul class="l">${arr(pl.ipuclari).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+  <div class="sec">Program rehberi</div>
+  <div class="grid2">${Object.entries(GUIDE).map(([k, x]) => { const it = x.items(); const first = it[0];
+    return `<button class="tile" data-act="pguide" data-k="${k}" ${it.length ? "" : "disabled"}><span class="go">›</span><span class="ti" style="background:${x.tint}">${x.ic}</span><b>${x.t}</b><p>${esc(first ? (first.baslik ? first.baslik + ": " : "") + first.metin : "Programı yenilediğinde burada görünecek.")}</p></button>`; }).join("")}</div>
+  ${tg.uyari ? `<div class="warnbox">${esc(tg.uyari)}</div>` : ""}
   <p class="sm mu" style="text-align:center;margin:16px 8px">Bu program tavsiye niteliğindedir; sağlık sorunun varsa doktoruna veya diyetisyenine danış.</p>`;
 }
+
+/* ---- Program alt panelleri ---- */
+let sheetKind = null;
+function sheetShell(title, icon, tint, body, closeBtn) {
+  const sh = $("#sheet");
+  sh.innerHTML = `<div class="bd" data-act="closeSheet"></div><div class="pn" role="dialog" aria-modal="true"><div class="grab"></div>
+    <div class="sh"><div class="row" style="gap:10px"><span class="shi" style="background:${tint}">${icon}</span><b>${title}</b></div><button class="x" data-act="closeSheet" aria-label="Kapat">×</button></div>
+    ${body}${closeBtn ? `<button class="pri full" style="margin-top:4px" data-act="closeSheet">Tamam</button>` : ""}</div>`;
+  sh.className = "on";
+}
+function openPlanSheet(kind, k) {
+  sheetKind = kind === "guide" ? "guide:" + k : kind;
+  const tg = S.targets; if (!tg) return;
+  if (kind === "detail") {
+    const sp = sporEstimate();
+    sheetShell("Hedefin nasıl hesaplandı?", "🧮", "var(--ac2)", `
+      ${tg.calc ? `<div class="card" style="margin:0 0 12px;padding:8px 16px 14px"><div class="kv">
+        <span>Bazal metabolizma (BMR)</span><b>${fmt(tg.calc.bmr)} kcal</b>
+        <span>× Günlük hareket (${esc((ACT[S.profile.aktivite]?.[1] || "").split(" (")[0].toLocaleLowerCase("tr-TR"))})</span><b>× ${String(tg.calc.fact).replace(".", ",")}</b>
+        ${tg.calc.extra ? `<span>+ ${esc(SPECIAL[S.profile.ozel] || "Özel durum")}</span><b>+${fmt(tg.calc.extra)} kcal</b>` : ""}
+        <span>= Bakım kalorisi (spor hariç)</span><b>${fmt(tg.calc.maint)} kcal</b>
+        <span>Haftalık hedef ${tg.strategy.weekly > 0 ? "+" : ""}${String(tg.strategy.weekly).replace(".", ",")} kg</span><b style="color:var(--acTx)">${tg.calc.delta > 0 ? "+" : tg.calc.delta < 0 ? "−" : ""}${fmt(Math.abs(tg.calc.delta))} kcal</b>
+        ${tg.calc.floored ? `<span>Güvenli alt sınır</span><b>${fmt(tg.calc.formula)} kcal</b>` : ""}
+        ${tg.override && tg.kcal !== tg.calc.formula ? `<span>Formül sonucu</span><b>${fmt(tg.calc.formula)} kcal</b><span style="color:var(--warn);font-weight:700">${esc(tg.override.note || "Elle ayarlandı")}</span><b style="color:var(--warn)">${tg.kcal - tg.calc.formula > 0 ? "+" : "−"}${fmt(Math.abs(tg.kcal - tg.calc.formula))} kcal</b>` : ""}
+        <span style="font-weight:800;color:var(--tx)">Günlük hedef</span><b style="font-size:16px">${fmt(tg.kcal)} kcal</b>
+        ${sp ? `<span>🏋️ Spor günlerinde (haftada ${sp.n} · ${sp.lvl}${sp.tur ? ", " + esc(sp.tur) : ""})</span><b style="color:var(--acTx)">+~${fmt(sp.kcal)} kcal</b>` : ""}
+      </div><div class="hint">${sp ? "Spor günü eklemesi tahminidir; antrenmanı Bugün sayfasına girdiğin gün gerçekte yakılan kalori eklenir." : "Spor yaptığın günlerde yakılan kalori bu hedefe ayrıca eklenir."} Profilin değişmedikçe bu sayı sabit kalır; "Yenile" sadece örnek günleri yeniler.</div></div>` : ""}
+      ${tg.ozet || tg.strategy?.why ? `<div class="card" style="margin:0 0 12px"><h3>🧭 Strateji</h3>${tg.strategy?.why ? `<p style="margin:0 0 8px;font-size:14.5px;font-weight:600">${esc(tg.strategy.why)}</p>` : ""}${tg.ozet ? `<p style="margin:0;font-size:14.5px;line-height:1.55">${esc(tg.ozet)}</p>` : ""}
+        ${guideItems(tg.beklentiList || tg.haftalik).length ? `<div class="note"><b>Beklenti:</b> ${esc(guideItems(tg.beklentiList || tg.haftalik).map(x => x.metin).join(" "))}</div>` : ""}</div>` : ""}`, true);
+  } else if (kind === "weekly") {
+    sheetShell("Haftalık kontrol", "📈", "var(--tint-y)", `<div class="card" style="margin:0 0 12px">${adaptiveDetail(adaptive()).replace('<div style="margin-top:12px">', "<div>")}</div>`, false);
+  } else if (kind === "guide") {
+    const x = GUIDE[k]; const it = x.items();
+    sheetShell(x.t, x.ic, x.tint, `<div class="card" style="margin:0 0 12px;padding:6px 16px">${it.map((m, i) => `<div class="gitem"><span class="fic" style="background:${x.tint}">${itemIcon(m, x.ic)}</span><div>${m.baslik ? `<b>${esc(m.baslik)}</b>` : ""}<p>${esc(m.metin)}</p></div></div>`).join("")}</div>`, true);
+  }
+}
+function refreshPlanSheet() { renderPlan(); if ($("#sheet").className === "on" && sheetKind === "weekly") openPlanSheet("weekly"); }
 
 function confBar(a) {
   const lv = a?.conf, lbl = { low: "Düşük", mid: "Orta", high: "Yüksek" }[lv] || "Henüz yok";
@@ -1320,7 +1395,7 @@ function openSheet(k) {
   sh.innerHTML = `<div class="bd" data-act="closeSheet"></div><div class="pn" role="dialog" aria-modal="true"><div class="grab"></div><div class="sh"><b>${title}</b><button class="x" data-act="closeSheet" aria-label="Kapat">×</button></div>${body}</div>`;
   sh.className = "on";
 }
-function closeSheet() { const sh = $("#sheet"); sh.className = ""; sh.innerHTML = ""; }
+function closeSheet() { const sh = $("#sheet"); sh.className = ""; sh.innerHTML = ""; sheetKind = null; }
 
 function readForm(form) {
   const fd = Object.fromEntries(new FormData(form).entries());
@@ -1578,7 +1653,9 @@ document.addEventListener("click", e => {
     week: () => { const t = ymd(new Date()); let n = addDays(curDate, +a.dataset.n); if (n > t) n = t; curDate = n; draft.preview = null; renderToday(); },
     photo: () => $("#photoIn").click(),
     clearPhoto: () => { draft.photo = null; renderToday(); },
-    toggleAdj: () => { adjOpen = !adjOpen; renderPlan(); },
+    pdetail: () => openPlanSheet("detail"),
+    pweekly: () => openPlanSheet("weekly"),
+    pguide: () => openPlanSheet("guide", a.dataset.k),
     snap: () => openSnapSheet(curDate),
     cmeal: () => { chef.meal = a.dataset.m; const h = new Date().getHours(); chef.last = (chef.meal === "Akşam" && h >= 18) || h >= 21; renderChef(); },
     clast: () => { chef.last = a.dataset.v === "1"; renderChef(); },
@@ -1611,9 +1688,9 @@ document.addEventListener("click", e => {
     wunit: () => { S.settings.waterUnit = a.dataset.u; save(); render(); },
     setWater: () => { const v = num($("#wL").value); if (v < 0 || v > 10) return toast("Geçerli bir litre gir", 1); d().waterMl = Math.round(v * 1000); save(); renderToday(); },
     applyAdj: () => setTargetKcal(Math.round(num(a.dataset.v)), "Haftalık kontrol önerisi", !!a.dataset.plan),
-    mstep: () => { manualKcal = Math.max(baseline().floor, (manualKcal ?? S.targets.kcal) + num(a.dataset.n)); renderPlan(); },
+    mstep: () => { manualKcal = Math.max(baseline().floor, (manualKcal ?? S.targets.kcal) + num(a.dataset.n)); refreshPlanSheet(); },
     msave: () => { if (manualKcal != null && manualKcal !== S.targets.kcal) setTargetKcal(manualKcal, "Elle ayarlandı"); manualKcal = null; },
-    mreset: () => { const tg = S.targets; if (!tg?.strategy) return; const old = tg.kcal; applyTargets(tg.strategy, null); tg.history.push({ at: Date.now(), from: old, to: tg.kcal, note: "Formüle dönüldü" }); manualKcal = null; save(); renderPlan(); toast(`Formül hedefi: ${fmt(tg.kcal)} kcal`); },
+    mreset: () => { const tg = S.targets; if (!tg?.strategy) return; const old = tg.kcal; applyTargets(tg.strategy, null); tg.history.push({ at: Date.now(), from: old, to: tg.kcal, note: "Formüle dönüldü" }); manualKcal = null; save(); refreshPlanSheet(); toast(`Formül hedefi: ${fmt(tg.kcal)} kcal`); },
     toggleManual: () => { draft.manual = !draft.manual; renderToday(); },
     toggleEx: () => { draft.exManual = !draft.exManual; renderToday(); },
     calcFood, calcEx: calcExercise, review: reviewDay, makeplan: () => makePlan(),
