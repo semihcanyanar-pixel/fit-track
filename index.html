@@ -328,12 +328,12 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
   --warnBg:rgba(183,121,31,.09);
 }
 [data-skin="kadran"] body{font-variant-numeric:tabular-nums;background-size:100% 560px}
-[data-skin="kadran"] .ki{display:inline-flex;vertical-align:-.14em}
-[data-skin="kadran"] .ksv{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ki{display:inline-flex;vertical-align:-.14em}
+.ksv{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 [data-skin="kadran"] header.top h1{font-weight:650;font-size:29px;letter-spacing:-.03em}
 [data-skin="kadran"] header.top h1 small{font-weight:500}
-[data-skin="kadran"] #ttl.tday{display:flex;flex-direction:column-reverse}
-[data-skin="kadran"] #ttl.tday small{margin:0 0 2px}
+:root:not([data-skin="ferah"]) #ttl.tday{display:flex;flex-direction:column-reverse}
+:root:not([data-skin="ferah"]) #ttl.tday small{margin:0 0 2px}
 [data-skin="kadran"] .hbtn{border-radius:50%;color:var(--tx)}
 [data-skin="kadran"] .hbtn svg,[data-skin="kadran"] nav.tabs svg{stroke-width:1.6}
 [data-skin="kadran"] .avatar{color:var(--btnTx);box-shadow:none}
@@ -436,6 +436,183 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 [data-skin="kadran"] .phead .nm{font-weight:600}
 [data-skin="kadran"][data-theme="dark"] #sheet .pn{background:#101828}
 [data-skin="kadran"] #toast{background:var(--tx);color:var(--bg)}
+
+/* ===== Tema 3: Bento ===== */
+:root[data-skin="bento"][data-theme="light"]{
+  --bg:#F2F2F7;--card:#FFFFFF;--card2:#F2F2F7;--in:#F2F2F7;--ln:rgba(0,0,0,.06);--tx:#111114;--mu:#8A8A93;
+  --tint-y:#FFF1DC;--tint-g:#E3F7EC;--tint-p:#FFE6EA;--tint-b:#E6EEFF;--tint-v:#ECE9FF;--tint-c:#E0F2FF;
+  --sh:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(20,20,60,.06);--navbg:rgba(255,255,255,.9);
+  --heroBg:linear-gradient(150deg,#2B2370,#1B1650);
+}
+:root[data-skin="bento"][data-theme="dark"]{
+  --bg:#000000;--card:#1C1C1E;--card2:#2C2C2E;--in:#2C2C2E;--ln:rgba(255,255,255,.08);--tx:#F5F5F7;--mu:#8E8E96;
+  --tint-y:rgba(255,255,255,.08);--tint-g:rgba(255,255,255,.08);--tint-p:rgba(255,255,255,.08);--tint-b:rgba(255,255,255,.08);--tint-v:rgba(255,255,255,.08);--tint-c:rgba(255,255,255,.08);
+  --sh:none;--navbg:rgba(28,28,30,.88);--heroBg:linear-gradient(150deg,#3A2F9E,#221B66);
+}
+:root[data-skin="bento"]{
+  --ac:#FF3D7F;--ac-d:#E62E6E;--ac2:rgba(255,61,127,.11);--acTx:#E8336F;--g1:#FF8A3D;--g2:#FF3D7F;
+  --btn:linear-gradient(135deg,#FF8A3D,#FF3D7F);--btnSh:0 8px 20px rgba(255,61,127,.30);--btnTx:#fff;
+  --warn:#F59E0B;--bad:#FF453A;--p:#FF5E57;--c:#FFB020;--f:#22C38E;--w:#2E8CFF;--glass:none;--hero:none;
+}
+[data-skin="bento"] .card{border-radius:26px;border:0}
+[data-skin="bento"][data-theme="dark"] #sheet .pn{background:#1C1C1E}
+[data-skin="bento"] .wd.on,[data-skin="bento"] .dtab.on,[data-skin="bento"] .mealc.on{background:var(--tx);color:var(--bg);box-shadow:none;border-color:transparent}
+[data-skin="bento"] .wd.on b,[data-skin="bento"] .dtab.on small,[data-skin="bento"] .mealc.on small{color:var(--bg)}
+[data-skin="bento"] .wd{border:0;box-shadow:var(--sh)}
+[data-skin="bento"] .mealc.on .e{background:rgba(127,127,127,.25)!important}
+[data-skin="bento"] #v-today .meals{grid-template-columns:1fr 1fr;gap:12px}
+[data-skin="bento"] #v-today .mealc{align-items:flex-start;text-align:left;padding:14px 16px 16px;border-radius:24px;min-height:122px;font-size:16px;font-weight:700;border:0;position:relative}
+[data-skin="bento"] #v-today .mealc .e{width:46px;height:46px;font-size:24px;margin-bottom:auto;border-radius:15px}
+[data-skin="bento"] #v-today .mealc small{font-size:13px;font-weight:600;margin-top:2px}
+[data-skin="bento"] #v-today .mealc:after{content:"+";position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:var(--card2);color:var(--tx);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500}
+[data-skin="bento"] #v-today .mealc.on:after{background:rgba(127,127,127,.3);color:var(--bg)}
+.hero-bento{background:var(--heroBg)!important;color:#fff;padding:20px!important}
+.hero-bento .formula,.hero-bento .note{color:rgba(255,255,255,.75)}
+.hero-bento .note{background:rgba(255,255,255,.12);box-shadow:none}
+.hero-bento .note .ghost{color:#fff}
+.bh{display:flex;align-items:center;gap:14px}
+.bh small{font-size:13px;color:rgba(255,255,255,.65);font-weight:600}
+.bbig{font-size:52px;font-weight:800;letter-spacing:-.04em;line-height:1;margin:6px 0 4px;white-space:nowrap}
+.bbig em{font-style:normal;font-size:16px;font-weight:700;color:rgba(255,255,255,.62);margin-left:4px;letter-spacing:0}
+.bsub{display:flex;gap:14px;margin-top:12px;font-size:12.5px;color:rgba(255,255,255,.62);font-weight:600}
+.bsub b{display:block;color:#fff;font-size:17px;font-weight:700;letter-spacing:-.02em}
+.bgau{width:120px;height:120px;position:relative;flex:none}
+.bgau svg{width:100%;height:100%}
+.bgau .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.62);font-weight:600}
+.bgau .c b{font-size:23px;color:#fff;font-weight:800;letter-spacing:-.03em}
+.bmacs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.btile{background:var(--card);border-radius:24px;padding:14px;box-shadow:var(--sh);position:relative;overflow:hidden;text-align:left;color:var(--tx)}
+.btile .lab{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--mu)}
+.btile .lab .ic{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.btile .val{font-size:24px;font-weight:800;margin:10px 0 2px;line-height:1;letter-spacing:-.035em;white-space:nowrap}
+.btile .val em{font-style:normal;font-size:13px;color:var(--mu);font-weight:700;letter-spacing:0;margin-left:2px}
+.btile .of{font-size:12.5px;color:var(--mu);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btile .pb{height:8px;border-radius:8px;background:var(--card2);margin-top:12px;overflow:hidden}.btile .pb i{display:block;height:100%;border-radius:8px}
+.bduo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.bduo .val{font-size:30px;margin-top:12px}
+.bwat{background:linear-gradient(180deg,#4AA3FF,#2E7BF0);color:#fff}
+.bwat .lab,.bwat .of,.bwat .val em{color:rgba(255,255,255,.85)}.bwat .lab .ic{background:rgba(255,255,255,.22)}
+.bwat .wave{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.16);border-radius:50% 50% 0 0/14px 14px 0 0}
+.bwat .wb{display:flex;gap:8px;margin-top:12px;position:relative}
+.bwat .wb button{flex:1;height:38px;padding:0;border-radius:12px;background:rgba(255,255,255,.22);color:#fff;font-size:18px;box-shadow:none}
+.bwat>*{position:relative}
+.bspor .chip2{display:inline-flex;align-items:center;gap:5px;margin-top:12px;padding:8px 12px;border-radius:12px;background:var(--card2);font-size:13px;font-weight:700;color:var(--tx);box-shadow:none}
+.bend{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:linear-gradient(135deg,#FF8A3D,#FF3D7F)!important;color:#fff;padding:16px 18px}
+.bend .ic{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.bend b{display:block;font-size:16px;font-weight:800}.bend small{font-size:12.5px;opacity:.88;font-weight:600}
+.bend span:last-child{font-size:22px}
+[data-skin="bento"] .phero{background:var(--heroBg);color:#fff}
+[data-skin="bento"] .phero .mu,[data-skin="bento"] .phero .unit,[data-skin="bento"] .phero .leg em{color:rgba(255,255,255,.7)}
+[data-skin="bento"] .phero .detbtn{background:rgba(255,255,255,.16);color:#fff}
+[data-skin="bento"] .phero .tiles.in div{background:rgba(255,255,255,.1)}
+[data-skin="bento"] .phero .tiles span{color:rgba(255,255,255,.7)}
+[data-skin="bento"] .phero .tiles b{color:#fff!important}
+[data-skin="bento"] .phero .wstrip{background:rgba(255,255,255,.1)!important}
+[data-skin="bento"] .phero .wstrip small,[data-skin="bento"] .phero .wstrip .mu{color:rgba(255,255,255,.7)!important}
+[data-skin="bento"] nav.tabs button.on{color:var(--tx)}
+
+/* ===== Tema 4: Tabak ===== */
+:root[data-skin="tabak"][data-theme="light"]{
+  --bg:#FFFFFF;--card:#F6F7F9;--card2:#ECEEF2;--in:#FFFFFF;--ln:#ECEDF0;--tx:#16181D;--mu:#8B9099;
+  --btn:#16181D;--btnTx:#FFFFFF;--ac:#16181D;--ac2:#F1F2F5;--acTx:#16181D;--navbg:rgba(255,255,255,.95);
+}
+:root[data-skin="tabak"][data-theme="dark"]{
+  --bg:#121316;--card:#1C1E22;--card2:#2A2D33;--in:#121316;--ln:#26282D;--tx:#F3F4F6;--mu:#8D929B;
+  --btn:#F3F4F6;--btnTx:#121316;--ac:#F3F4F6;--ac2:#26292E;--acTx:#F3F4F6;--navbg:rgba(18,19,22,.95);
+}
+:root[data-skin="tabak"]{
+  --ac-d:var(--ac);--g1:#FFB72B;--g2:#2FBF71;--btnSh:none;--warn:#E8A317;--bad:#FF453A;
+  --p:#FF6B57;--c:#FFB72B;--f:#2FBF71;--w:#3AA0FF;--sh:none;--glass:none;--hero:none;
+  --tint-y:#FFB72B;--tint-g:#2FBF71;--tint-v:#5468FF;--tint-p:#FF6B57;--tint-b:#3AA0FF;--tint-c:#3AA0FF;
+}
+[data-skin="tabak"] body{font-variant-numeric:tabular-nums}
+[data-skin="tabak"] .card{border:0;box-shadow:none;border-radius:20px}
+[data-skin="tabak"][data-theme="dark"] #sheet .pn{background:#1C1E22}
+[data-skin="tabak"][data-theme="light"] .seg button.on{background:#fff}
+[data-skin="tabak"] header.top h1{font-weight:700}
+[data-skin="tabak"] .sec,[data-skin="tabak"] .card h3{font-weight:700}
+[data-skin="tabak"] .hbtn{background:transparent;border:0;box-shadow:none;color:var(--tx)}
+[data-skin="tabak"] .wd{background:transparent;border:0;box-shadow:none}
+[data-skin="tabak"] .wd b{width:34px;height:34px;margin:3px auto 0;border-radius:50%;display:flex;align-items:center;justify-content:center}
+[data-skin="tabak"] .wd.on{background:transparent;color:var(--tx);box-shadow:none}
+[data-skin="tabak"] .wd.on b{background:var(--tx);color:var(--bg)}
+[data-skin="tabak"] .wd.dot:after,[data-skin="tabak"] .wd.on.dot:after{background:var(--mu);bottom:-2px}
+[data-skin="tabak"] .mealc .e,[data-skin="tabak"] .addh .e,[data-skin="tabak"] .fic[style*="--tint-"],[data-skin="tabak"] .mrow2 .ie,[data-skin="tabak"] .tile .ti,[data-skin="tabak"] .shi,[data-skin="tabak"] .gitem .fic{border-radius:50%;color:#fff}
+[data-skin="tabak"] .lrow .ic,[data-skin="tabak"] .mini .ic2{background:var(--card2)!important;border-radius:50%;color:var(--tx)}
+[data-skin="tabak"] .fic{border-radius:50%}
+[data-skin="tabak"] .fic:empty{display:none}
+[data-skin="tabak"] .mbody{margin-left:51px}
+[data-skin="tabak"] .warnbox,[data-skin="tabak"] .pillx.warn,[data-skin="tabak"] .ing li.miss span{background:rgba(232,163,23,.14)}
+[data-skin="tabak"] .wstrip{background:var(--card2)!important}
+[data-skin="tabak"] .mealc.on,[data-skin="tabak"] .dtab.on{background:var(--tx);color:var(--bg);border-color:transparent}
+[data-skin="tabak"] .mealc.on small,[data-skin="tabak"] .dtab.on small{color:var(--bg);opacity:.75}
+[data-skin="tabak"] .mealc,[data-skin="tabak"] .dtab{border:0;background:var(--card)}
+[data-skin="tabak"] .mrow2 .ie{width:4px;height:auto;align-self:stretch;border-radius:4px;font-size:0;margin-right:4px}
+[data-skin="tabak"] .mrow2.next{background:var(--card2)}
+[data-skin="tabak"] .mrow2 .yed{background:var(--card2);color:var(--tx)}
+[data-skin="tabak"] .mrow2.next .yed:not(.done){background:var(--tx);color:var(--bg)}
+[data-skin="tabak"] .planc .ph2 .ie{background:var(--tx);color:var(--bg);box-shadow:none}
+[data-skin="tabak"] .detbtn{background:var(--card2);color:var(--tx)}
+[data-skin="tabak"] .tiles.in div{background:var(--card2)}
+[data-skin="tabak"] .note{background:var(--card2)}
+[data-skin="tabak"] .steps li:before{color:var(--btnTx)}
+[data-skin="tabak"] .avatar{color:var(--btnTx);box-shadow:none}
+[data-skin="tabak"] #toast{background:var(--tx);color:var(--bg)}
+[data-skin="tabak"] nav.tabs{left:0;right:0;bottom:0;max-width:none;border-radius:0;height:calc(62px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);border:0;border-top:1px solid var(--ln);box-shadow:none}
+[data-skin="tabak"] nav.tabs button.on{color:var(--tx)}
+[data-skin="tabak"] nav.tabs button.plus,[data-skin="tabak"] nav.tabs button.plus.on{flex:1;width:auto;height:auto;margin:0;padding:6px 0;border-radius:18px;background:none;color:var(--mu);box-shadow:none;font-size:10.5px}
+[data-skin="tabak"] nav.tabs button.plus.on{color:var(--tx)}
+[data-skin="tabak"] nav.tabs button.plus svg{width:23px;height:23px}
+[data-skin="tabak"] nav.tabs button.plus:after{content:"Ne pişirsem"}
+[data-skin="tabak"] #v-today{padding-bottom:76px}
+.hero-tabak{background:transparent!important;padding:0!important;margin-top:4px!important}
+.tring{position:relative;width:min(300px,80vw);aspect-ratio:1;margin:0 auto}
+.tring svg{position:absolute;inset:0;width:100%;height:100%}
+.tring .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.tring .ctr small{font-size:13px;color:var(--mu);font-weight:600}
+.tring .ctr b{font-size:50px;font-weight:700;letter-spacing:-.04em;line-height:1.05;margin:2px 0}
+.tring .ctr span{font-size:13px;color:var(--mu);font-weight:600}
+.tleg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 4px}
+.tleg button{background:var(--card);border-radius:14px;padding:9px 8px;text-align:left;box-shadow:none;color:var(--tx);border:1.5px solid transparent}
+.tleg button.on{border-color:var(--mc)}
+.tleg i{display:block;width:18px;height:4px;border-radius:2px;margin-bottom:7px;background:var(--mc)}
+.tleg b{display:block;font-size:12px;font-weight:700}
+.tleg span{font-size:15px;font-weight:700;letter-spacing:-.02em}
+.tleg .emp span{font-size:12.5px;color:var(--mu);font-weight:600;letter-spacing:0}
+.tmacs{display:flex;gap:16px;padding:14px 0;margin-top:10px;border-top:1px solid var(--ln);border-bottom:1px solid var(--ln)}
+.tmacs>div{flex:1;min-width:0}
+.tmacs .r{display:flex;justify-content:space-between;gap:4px;font-size:12px;font-weight:600;color:var(--mu);white-space:nowrap}
+.tmacs .r b{color:var(--tx);font-weight:700}
+[data-skin="tabak"] .tmacs .bar{height:6px;margin-top:7px;background:var(--card2)}
+.trow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:14px 0;border-bottom:1px solid var(--ln);background:none;border-radius:0;box-shadow:none;color:var(--tx);text-align:left}
+.trow .l{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;white-space:nowrap}
+.trow .l small{color:var(--mu);font-weight:600;font-size:13px}
+.trow .l .ksv{font-size:20px}
+.trow.w{flex-direction:column;align-items:stretch}
+.drops{display:flex;justify-content:space-between}
+.drops button{background:none;padding:2px;box-shadow:none;color:var(--mu);font-size:19px;border-radius:8px}
+.drops button.f{color:var(--w)}
+.drops button.f .ksv{fill:currentColor}
+.trow .v{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .v em{font-style:normal;color:var(--mu);font-weight:600;font-size:13px}
+.tfeed .ti{display:flex;align-items:center;gap:12px;padding:10px 0}
+.tfeed .tm{width:40px;font-size:12.5px;color:var(--mu);font-weight:600;flex:none}
+.tfeed .tbar{width:3px;align-self:stretch;border-radius:3px;flex:none}
+.tfeed .bd{flex:1;min-width:0}.tfeed b{display:block;font-size:15px;font-weight:600}.tfeed small{font-size:12.5px;color:var(--mu);font-weight:500}
+.tfeed .kc{font-weight:700;font-size:15px}
+.tmini{padding:6px 16px 14px}
+.tman{width:100%;margin-top:6px;background:var(--card2);box-shadow:none;font-size:14px}
+.tend{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:52px;margin:18px 0 6px;border-radius:16px;border:1.5px dashed var(--card2);background:none;color:var(--mu);box-shadow:none;font-size:14.5px}
+.tdock{position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom));z-index:9;padding:8px 12px;background:var(--navbg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--ln)}
+.tcomp{display:flex;align-items:center;gap:6px;max-width:616px;margin:0 auto;background:var(--card);border-radius:18px;padding:5px}
+.tcomp .mp{flex:none;padding:8px 10px;border-radius:13px;color:#fff;font-size:13px;box-shadow:none}
+.tcomp input{flex:1;min-width:0;background:none;border:0;padding:8px 4px;font-size:16px}
+.tcomp .cam,.tcomp .go{width:40px;height:40px;flex:none;padding:0;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:none}
+.tcomp .cam{background:none;color:var(--mu)}
+.tcomp .go{background:var(--tx);color:var(--bg)}
+.tph{display:flex;align-items:center;gap:10px;max-width:616px;margin:0 auto 8px;font-size:13px;color:var(--mu);font-weight:600}
+.tph img{width:44px;height:44px;border-radius:12px;object-fit:cover}
+.tph span{flex:1}.tph button{background:none;box-shadow:none;font-size:20px;color:var(--mu);padding:4px 8px}
 </style>
 </head>
 <body>
@@ -682,7 +859,7 @@ function go(v) {
   const nm = (S.profile?.ad || "").trim().split(" ")[0];
   const greet = (() => { const hh = new Date().getHours(); return hh < 6 ? "İyi geceler" : hh < 12 ? "Günaydın" : hh < 18 ? "Merhaba" : "İyi akşamlar"; })();
   $("#ttl").className = v === "today" ? "tday" : "";
-  $("#ttl").innerHTML = v === "today" ? `${esc(greet)}${nm ? ", " + esc(nm) : ""}<small>${!S.profile ? "Fit Track'e hoş geldin" : isK() ? esc((d => d.toLocaleDateString("tr-TR", { weekday: "long" }) + ", " + d.toLocaleDateString("tr-TR", { day: "numeric", month: "long" }))(new Date())) : "Bugün de hedefine bir adım daha 💪"}</small>` : { plan: "Programın", weight: "Kilo", profile: S.profile ? "Profil" : "Seni tanıyalım", chef: "Ne pişirsem?<small>Mutfağındakilerle, kalan makrolarına uygun tarif</small>" }[v];
+  $("#ttl").innerHTML = v === "today" ? `${esc(greet)}${nm ? ", " + esc(nm) : ""}<small>${!S.profile ? "Fit Track'e hoş geldin" : SK() !== "ferah" ? esc((d => d.toLocaleDateString("tr-TR", { weekday: "long" }) + ", " + d.toLocaleDateString("tr-TR", { day: "numeric", month: "long" }))(new Date())) : "Bugün de hedefine bir adım daha 💪"}</small>` : { plan: "Programın", weight: "Kilo", profile: S.profile ? "Profil" : "Seni tanıyalım", chef: "Ne pişirsem?<small>Mutfağındakilerle, kalan makrolarına uygun tarif</small>" }[v];
   render();
   window.scrollTo(0, 0);
 }
@@ -950,7 +1127,7 @@ function addFoods(items, meal) {
   if (typeof openMeals !== "undefined") openMeals.add(meal);
   const d = day(curDate);
   items.forEach(i => {
-    const f = { id: uid(), meal, name: i.name, amount: i.amount || "", kcal: Math.round(num(i.kcal)), p: r1(i.p), c: r1(i.c), f: r1(i.f) };
+    const f = { id: uid(), at: Date.now(), meal, name: i.name, amount: i.amount || "", kcal: Math.round(num(i.kcal)), p: r1(i.p), c: r1(i.c), f: r1(i.f) };
     d.foods.push(f);
     S.recent = [{ name: f.name, amount: f.amount, kcal: f.kcal, p: f.p, c: f.c, f: f.f },
       ...S.recent.filter(x => !(x.name.toLowerCase() === f.name.toLowerCase() && x.amount === f.amount))].slice(0, 30);
@@ -1028,14 +1205,19 @@ const FOOD_ICONS = [
   [/yoğurt|ayran|kefir/, "🥛"], [/süt/, "🥛"], [/kahve/, "☕"], [/çay/, "🍵"], [/baklava|tatlı|pasta|kek|kurabiye|ekler|çikolata|dondurma|sütlaç|lokum/, "🍰"],
   [/ceviz|badem|fındık|fıstık|kuruyemiş/, "🥜"], [/bal|reçel|pekmez/, "🍯"], [/sebze|brokoli|kabak|ıspanak|patlıcan|biber|havuç/, "🥦"], [/su\b|soda|maden/, "💧"], [/kola|meyve suyu|içecek/, "🥤"]
 ];
-function foodEmoji(name) { if (isK()) return ""; const n = String(name || "").toLocaleLowerCase("tr-TR"); for (const [re, e] of FOOD_ICONS) if (re.test(n)) return e; return "🍽️"; }
+function foodEmoji(name) { if (lineIc()) return ""; const n = String(name || "").toLocaleLowerCase("tr-TR"); for (const [re, e] of FOOD_ICONS) if (re.test(n)) return e; return "🍽️"; }
 function mondayOf(ds) { const d = new Date(ds + "T12:00:00"); const wd = (d.getDay() + 6) % 7; return addDays(ds, -wd); }
 
 
 /* ---- Tema 2 (Kadran): çizgi simgeler ---- */
-const isK = () => document.documentElement.dataset.skin === "kadran";
+const SK = () => document.documentElement.dataset.skin || "ferah";
+const isK = () => SK() === "kadran";
+const lineIc = () => SK() === "kadran" || SK() === "tabak";
+const SKINS = ["ferah", "kadran", "bento", "tabak"];
+const SKIN_NAMES = { ferah: "Ferah", kadran: "Kadran", bento: "Bento", tabak: "Tabak" };
 const KI = {
   check: '<path d="M5 12.5l4.2 4.2L19 7"/>',
+  up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
   spark: '<path d="M12 3.5l1.7 5 5 1.7-5 1.7-1.7 5-1.7-5-5-1.7 5-1.7z"/><path d="M18.5 16.5l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6z"/>',
   sunrise: '<path d="M3 18h18M6.5 18a5.5 5.5 0 0 1 11 0M12 5v3M5.6 10.6l1.5 1.5M18.4 10.6l-1.5 1.5M8.5 21h7"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/>',
@@ -1078,7 +1260,7 @@ const KI = {
 };
 const kSvg = n => `<svg class="ksv" viewBox="0 0 24 24" aria-hidden="true">${KI[n] || KI.fork}</svg>`;
 const MEAL_KI = { "Kahvaltı": "sunrise", "Öğle": "sun", "Akşam": "moon", "Ara öğün": "apple" };
-function MI(m) { return isK() ? (MEAL_KI[m] ? kSvg(MEAL_KI[m]) : "") : MEAL_EMOJI[m]; }
+function MI(m) { return lineIc() ? (MEAL_KI[m] ? kSvg(MEAL_KI[m]) : "") : MEAL_EMOJI[m]; }
 const EMO_KI = { "✓": "check", "✅": "check", "✨": "spark", "🏋️": "dumbbell", "🏋": "dumbbell", "💪": "", "💧": "drop", "🎯": "target", "🏁": "target",
   "🍽️": "fork", "🍽": "fork", "📋": "fork", "⚖️": "scale", "⚖": "scale", "🔥": "flame", "🌙": "moon", "☀️": "sun", "☀": "sun", "📈": "trendUp", "📉": "trendDown",
   "📊": "chart", "🔄": "refresh", "↻": "refresh", "📷": "camera", "💡": "bulb", "🕘": "clock", "⏰": "clock", "⏱️": "clock", "⏱": "clock", "📌": "pin", "📅": "cal",
@@ -1088,7 +1270,7 @@ const EMO_KI = { "✓": "check", "✅": "check", "✨": "spark", "🏋️": "dum
 const EMO_TEST = new RegExp(Object.keys(EMO_KI).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "u");
 const EMO_RE = new RegExp(EMO_TEST.source + "\\ufe0f?", "gu");
 function iconize(root) {
-  if (!isK() || !root) return;
+  if (!lineIc() || !root) return;
   const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => EMO_TEST.test(n.nodeValue) && !n.parentElement?.closest("textarea,option,select,script,style,title") ? 1 : 3 });
   const list = []; while (tw.nextNode()) list.push(tw.currentNode);
   for (const n of list) {
@@ -1097,7 +1279,7 @@ function iconize(root) {
     const tpl = document.createElement("template"); tpl.innerHTML = html; n.replaceWith(tpl.content);
   }
 }
-new MutationObserver(ms => { if (!isK()) return; const seen = new Set(); for (const m of ms) { const t = m.target.nodeType === 1 ? m.target : m.target.parentElement; if (t && !seen.has(t)) { seen.add(t); iconize(t); } } })
+new MutationObserver(ms => { if (!lineIc()) return; const seen = new Set(); for (const m of ms) { const t = m.target.nodeType === 1 ? m.target : m.target.parentElement; if (t && !seen.has(t)) { seen.add(t); iconize(t); } } })
   .observe(document.documentElement, { childList: true, subtree: true, characterData: true });
 function kDial(p, over) {
   const N = 72; let t = "";
@@ -1112,6 +1294,77 @@ function kDial(p, over) {
     <circle cx="125" cy="125" r="${R}" fill="none" stroke="var(--ln)" stroke-width="3"/>
     ${p > 0 ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 125 125)"/>
     <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="7" fill="${over ? "var(--bad)" : "var(--ac)"}" opacity=".45" filter="url(#kgl)"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="4.5" fill="${over ? "var(--bad)" : "var(--g1)"}"/>` : ""}</svg>`;
+}
+
+/* ---- Tema 3 (Bento) ve Tema 4 (Tabak) parçaları ---- */
+let exOpen = false;
+function bentoHero(c) {
+  const R = 52, C = 2 * Math.PI * R, p = Math.min(c.ratio, 1);
+  return `<div class="bh"><div class="grow" style="min-width:0"><small>${c.diff >= 0 ? "Kalan" : "Hedefin üstünde"}</small><div class="bbig">${fmt(Math.abs(c.diff))}<em>kcal</em></div>
+    <div class="bsub"><div>Alınan<b>${fmt(c.tot.kcal)}</b></div><div>Hedef<b>${fmt(c.t.total)}</b></div>${c.t.ex ? `<div>Spor<b>+${fmt(c.t.ex)}</b></div>` : ""}</div></div>
+    <div class="bgau"><svg viewBox="0 0 128 128"><defs><linearGradient id="bgr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A3D"/><stop offset="1" stop-color="#FF3D7F"/></linearGradient></defs>
+      <circle cx="64" cy="64" r="${R}" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="13"/>
+      ${p > 0 ? `<circle cx="64" cy="64" r="${R}" fill="none" stroke="${c.over ? "#FF453A" : "url(#bgr)"}" stroke-width="13" stroke-linecap="round" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 64 64)"/>` : ""}</svg>
+      <div class="c"><b>%${Math.round(c.ratio * 100)}</b>hedefin</div></div></div>
+    ${!c.tg ? `<div class="formula" style="text-align:left">Kişisel hedefin yok, bakım kalorin gösteriliyor.</div>` : ""}`;
+}
+function bentoTiles(c, d) {
+  const goal = Math.round((c.tg?.water || 2.5) * 1000), gl = Math.round(d.waterMl / GLASS), gGoal = Math.round(goal / GLASS);
+  const lit = waterUnit() === "litre", ex = d.exercises.reduce((a, e) => a + num(e.kcal), 0), last = d.exercises[d.exercises.length - 1];
+  const wp = Math.min(d.waterMl / goal, 1);
+  return `<div class="bmacs">${[["Protein", c.tot.p, c.tg?.protein, "var(--p)", "egg"], ["Karb.", c.tot.c, c.tg?.carb, "var(--c)", "bowl"], ["Yağ", c.tot.f, c.tg?.fat, "var(--f)", "leaf"]].map(([l, v, g, col, ic]) =>
+    `<div class="btile"><div class="lab"><span class="ic" style="background:${col}">${kSvg(ic)}</span>${l}</div><div class="val">${fmt(v)}<em>g</em></div><div class="of">/ ${g ? fmt(g) : "—"} g</div><div class="pb"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${col}"></i></div></div>`).join("")}</div>
+  <div class="bduo">
+    <div class="btile bwat"><div class="wave" style="height:${Math.round(15 + wp * 70)}%"></div><div class="lab"><span class="ic">${kSvg("drop")}</span>Su</div>
+      <div class="val">${lit ? (d.waterMl / 1000).toLocaleString("tr-TR", { maximumFractionDigits: 2 }) + "<em>L</em>" : gl + "<em>bardak</em>"}</div>
+      <div class="of">${lit ? `hedef ${fmtL(goal)}` : `${fmtL(d.waterMl)} / ${gGoal} bardak`}</div>
+      <div class="wb"><button data-act="water" data-ml="-250" aria-label="Azalt">−</button><button data-act="water" data-ml="250" aria-label="Artır">+</button></div></div>
+    <div class="btile bspor"><div class="lab"><span class="ic" style="background:#FF8A3D">${kSvg("flame")}</span>Spor</div>
+      <div class="val">${fmt(ex)}<em>kcal</em></div><div class="of">${last ? esc(last.desc) : "Bugün antrenman yok"}</div>
+      <button class="chip2" data-act="exOpen">${exOpen ? "Kapat" : "+ Ekle"}</button></div>
+  </div>`;
+}
+function tabakHero(c, d) {
+  const T = c.t.total || 1, eaten = c.tot.kcal, over = eaten > T, base = over ? eaten : T, cx = 150, R = 128, r0 = 102;
+  const P = (a, r) => [cx + r * Math.cos(a * Math.PI / 180), cx + r * Math.sin(a * Math.PI / 180)].map(x => x.toFixed(1));
+  const arc = (a1, a2) => { if (a2 - a1 > 359.8) a2 = a1 + 359.8; const l = a2 - a1 > 180 ? 1 : 0, [x1, y1] = P(a1, R), [x2, y2] = P(a2, R), [x3, y3] = P(a2, r0), [x4, y4] = P(a1, r0);
+    return `M${x1} ${y1}A${R} ${R} 0 ${l} 1 ${x2} ${y2}L${x3} ${y3}A${r0} ${r0} 0 ${l} 0 ${x4} ${y4}Z`; };
+  const mk = m => d.foods.filter(f => f.meal === m).reduce((a, f) => a + num(f.kcal), 0);
+  let s = `<path d="${arc(-90, 269.8)}" fill="var(--card)"/>`, a0 = -90;
+  for (const m of MEALS) { const k = mk(m); if (!k) continue; const span = k / base * 360; s += `<path d="${arc(a0 + 1.2, a0 + Math.max(span - 1.2, 1.6))}" fill="${MEAL_TINT[m]}"/>`; a0 += span; }
+  if (over) s += `<circle cx="150" cy="150" r="140" fill="none" stroke="var(--bad)" stroke-width="2.5" stroke-dasharray="4 5"/>`;
+  return `<div class="tring"><svg viewBox="0 0 300 300"><circle cx="150" cy="150" r="90" fill="var(--card)"/><circle cx="150" cy="150" r="90" fill="none" stroke="var(--ln)" stroke-width="1.5"/>${s}</svg>
+    <div class="ctr"><small>${over ? "Hedefin üstünde" : "Kalan"}</small><b style="${over ? "color:var(--bad)" : ""}">${fmt(Math.abs(c.diff))}</b><span>${fmt(eaten)} / ${fmt(c.t.total)} kcal</span></div></div>
+  <div class="tleg">${MEALS.map(m => { const k = mk(m); return `<button class="${draft.meal === m ? "on" : ""} ${k ? "" : "emp"}" data-act="meal" data-m="${m}" style="--mc:${MEAL_TINT[m]}"><i></i><b>${MEAL_SHORT[m]}</b><span>${k ? fmt(k) : "+ ekle"}</span></button>`; }).join("")}</div>
+  <div class="formula">Hedef ${fmt(c.t.base)} kcal${c.t.ex ? `, antrenmanla +${fmt(c.t.ex)}` : ""}${!c.tg ? " (geçici)" : ""}</div>`;
+}
+function tabakRows(c, d) {
+  const goal = Math.round((c.tg?.water || 2.5) * 1000), gl = Math.round(d.waterMl / GLASS), gGoal = Math.round(goal / GLASS), n = Math.min(Math.max(gGoal, gl), 16);
+  const ex = d.exercises.reduce((a, e) => a + num(e.kcal), 0), last = d.exercises[d.exercises.length - 1];
+  return `<div class="tmacs">${[["Protein", c.tot.p, c.tg?.protein, "var(--p)"], ["Karb.", c.tot.c, c.tg?.carb, "var(--c)"], ["Yağ", c.tot.f, c.tg?.fat, "var(--f)"]].map(([l, v, g, col]) =>
+    `<div><div class="r">${l}<b>${fmt(v)}/${g ? fmt(g) : "—"} g</b></div><div class="bar"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${col}"></i></div></div>`).join("")}</div>
+  <div class="trow w"><span class="l">Su <small>${waterUnit() === "litre" ? `${fmtL(d.waterMl)} / ${fmtL(goal)}` : `${gl} / ${gGoal} bardak`}</small></span>
+    <span class="drops">${Array.from({ length: n }, (_, i) => `<button class="${i < gl ? "f" : ""}" data-act="wdrop" data-i="${i}" aria-label="${i + 1}. bardak">${kSvg("drop")}</button>`).join("")}</span></div>
+  <button class="trow" data-act="exOpen"><span class="l"><span style="color:var(--p)">${kSvg("flame")}</span>Spor</span><span class="v">${ex ? `+${fmt(ex)} <em>kcal${last ? " · " + esc(last.desc) : ""}</em>` : `<em>Antrenman ekle</em>`} ${exOpen ? "⌃" : "›"}</span></button>`;
+}
+function tabakFeed(d, isToday) {
+  const fs = d.foods.map((f, i) => ({ f, i })).sort((a, b) => (a.f.at || 0) - (b.f.at || 0) || MEALS.indexOf(a.f.meal) - MEALS.indexOf(b.f.meal) || a.i - b.i);
+  const tm = f => f.at ? new Date(f.at).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }) : "";
+  return `<div class="sec">${isToday ? "Bugün" : "Yenenler"}${fs.length ? `<small>${fs.length} kayıt</small>` : ""}</div>
+  <div class="tfeed">${fs.length ? fs.map(({ f }) => `<div class="ti"><span class="tm">${tm(f)}</span><span class="tbar" style="background:${MEAL_TINT[f.meal]}"></span><div class="bd"><b>${esc(f.name)}</b><small>${esc(f.meal)}${f.amount ? " · " + esc(f.amount) : ""}</small></div>
+    <button class="kc" data-act="editFood" data-id="${f.id}">${f.kcal}</button><button class="del" data-act="delFood" data-id="${f.id}" aria-label="Sil">×</button></div>`).join("")
+    : `<p class="mu sm" style="margin:4px 0">Henüz bir şey girilmedi. Alttaki kutuya ne yediğini yaz.</p>`}</div>`;
+}
+function tabakAddMini() {
+  return `<div class="card tmini" id="addcard">${S.recent.length ? `<div class="mrow" data-act="rtog" role="button" aria-expanded="${recentOpen}"><span class="grow"><b>Son yediklerin</b><small>${recentOpen ? `Dokun, ${esc(draft.meal)} öğününe ekle` : "Tek dokunuşla tekrar ekle"}</small></span><span class="chev">${recentOpen ? "⌃" : "›"}</span></div>
+    ${recentOpen ? `<div class="chips" style="margin:4px 0 8px">${S.recent.slice(0, 14).map((r, i) => `<button class="chip" data-act="recent" data-i="${i}">${esc(r.name)} <small>${r.kcal}</small></button>`).join("")}</div>` : ""}` : ""}
+    <button class="tman" data-act="toggleManual">Kaloriyi elle gir</button></div>`;
+}
+function tabakDock() {
+  return `<div class="tdock">${draft.photo ? `<div class="tph"><img src="${draft.photo.url}" alt=""><span>Fotoğraftan hesaplanacak</span><button data-act="clearPhoto" aria-label="Fotoğrafı kaldır">×</button></div>` : ""}
+    <div class="tcomp"><button class="mp" data-act="mcycle" style="background:${MEAL_TINT[draft.meal]}">${MEAL_SHORT[draft.meal]} ▾</button>
+    <input id="foodTx" data-draft="food" value="${esc(draft.food)}" placeholder="${draft.photo ? "İsteğe bağlı not" : "Ne yedin?"}" enterkeyhint="send" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();calcFood()}">
+    <button class="cam" data-act="photo" aria-label="Fotoğraf ekle">${kSvg("camera")}</button><button class="go" data-act="calcFood" aria-label="Hesapla">${kSvg("up")}</button></div></div>`;
 }
 
 /* ============ BUGÜN ============ */
@@ -1135,6 +1388,7 @@ function renderToday() {
   const unit = waterUnit();
   const mon = mondayOf(curDate);
   const DN = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+  const cx = { d, t, tot, tg, diff, ratio, over, isToday };
 
   let h = `
   <div class="week">
@@ -1145,8 +1399,8 @@ function renderToday() {
   </div>
   ${isToday ? "" : `<button class="todaybtn" data-act="today">${esc(trDate(curDate, { day: "numeric", month: "long" }))} · Bugüne dön</button>`}
 
-  <div class="card${isK() ? " khero" : ""}">
-    ${isK() ? `
+  <div class="card hero-${SK()}">
+    ${SK() === "bento" ? bentoHero(cx) : SK() === "tabak" ? tabakHero(cx, d) : isK() ? `
     <div class="kdial">${kDial(Math.min(ratio, 1), over)}<div class="ctr"><span class="lbl">${isToday ? "Bugün alınan" : "Alınan"}</span><span class="big">${fmt(tot.kcal)}</span><span class="of">/ ${fmt(t.total)} kcal</span></div></div>
     <div class="kkal"><span>${diff >= 0 ? "Kalan" : "Hedefin üstünde"}</span><b style="color:${diff >= 0 ? "var(--acTx)" : "var(--bad)"}">${fmt(Math.abs(diff))}<small>kcal</small></b></div>
     <div class="kmacs">${[["Protein", tot.p, tg?.protein, "var(--p)"], ["Karbonhidrat", tot.c, tg?.carb, "var(--c)"], ["Yağ", tot.f, tg?.fat, "var(--f)"]].map(([l, v, g, c]) => `<div class="kmac"><small><i style="background:${c}"></i>${l}</small><b>${fmt(v)}<em> / ${g ? fmt(g) : "—"} g</em></b><div class="bar"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${c}"></i></div></div>`).join("")}</div>
@@ -1172,13 +1426,14 @@ function renderToday() {
     ${adv?.ready && adv.suggest != null && isToday ? `<div class="note">📈 Kayıtlarına göre hedefinin <b>${fmt(adv.suggest)} kcal</b> olması öneriliyor. <button class="ghost" data-go="plan">İncele</button></div>` : ""}
   </div>
 
-  <div class="sec">Öğün ekle</div>
+  ${SK() === "bento" ? bentoTiles(cx, d) : SK() === "tabak" ? tabakRows(cx, d) : ""}
+  ${SK() === "tabak" ? "" : `<div class="sec">Öğün ekle</div>
   <div class="meals">${MEALS.map(m => {
     const k = d.foods.filter(f => f.meal === m).reduce((a, f) => a + num(f.kcal), 0);
-    return `<button class="mealc ${draft.meal === m ? "on" : ""}" data-act="meal" data-m="${m}"><span class="e" style="background:${MEAL_TINT[m]}">${MI(m)}</span>${MEAL_SHORT[m]}<small>${k ? fmt(k) : "—"}</small></button>`;
-  }).join("")}</div>
+    return `<button class="mealc ${draft.meal === m ? "on" : ""}" data-act="meal" data-m="${m}"><span class="e" style="background:${MEAL_TINT[m]}">${MI(m)}</span>${SK() === "bento" ? m : MEAL_SHORT[m]}<small>${k ? fmt(k) + (SK() === "bento" ? " kcal" : "") : SK() === "bento" ? "Henüz yok" : "—"}</small></button>`;
+  }).join("")}</div>`}
 
-  <div class="card" id="addcard">
+  ${SK() === "tabak" && !draft.manual ? tabakAddMini() : `  <div class="card" id="addcard">
     <div class="addh"><span class="e" style="background:${MEAL_TINT[draft.meal]}">${MI(draft.meal)}</span><b>${esc(draft.meal)} için ne yedin?</b></div>
     ${draft.manual ? `
       <div class="row"><input id="mName" placeholder="Besin adı (ör. Elma)" class="grow"><input id="mKcal" type="number" inputmode="numeric" placeholder="kcal" style="width:92px"></div>
@@ -1191,7 +1446,7 @@ function renderToday() {
         <span class="fic" style="width:38px;height:38px;font-size:18px;background:var(--card2)">🕘</span>
         <span class="grow"><b>Son yediklerin</b><small>${recentOpen ? `Dokun, ${esc(draft.meal)} öğününe ekle` : `${Math.min(S.recent.length, 14)} kayıt · tek dokunuşla ekle`}</small></span><span class="chev">${recentOpen ? "⌃" : "›"}</span></div>
       ${recentOpen ? `<div class="chips" style="margin-top:4px">${S.recent.slice(0, 14).map((r, i) => `<button class="chip" data-act="recent" data-i="${i}">${foodEmoji(r.name)} ${esc(r.name)} <small>${r.kcal}</small></button>`).join("")}</div>` : ""}` : ""}
-  </div>`;
+  </div>`}`;
 
   if (draft.preview) {
     const p = draft.preview;
@@ -1206,7 +1461,7 @@ function renderToday() {
 
   // Yenenler
   const anyFood = d.foods.length;
-  h += `<div class="sec">${isToday ? "Bugün yediklerin" : "Yenenler"}${anyFood ? `<small>${fmt(tot.kcal)} kcal</small>` : ""}</div><div class="card">${anyFood ? MEALS.map(m => {
+  if (SK() === "tabak") h += tabakFeed(d, isToday); else h += `<div class="sec">${isToday ? "Bugün yediklerin" : "Yenenler"}${anyFood ? `<small>${fmt(tot.kcal)} kcal</small>` : ""}</div><div class="card">${anyFood ? MEALS.map(m => {
     const fs = d.foods.filter(f => f.meal === m); if (!fs.length) return "";
     const open = openMeals.has(m);
     return `<div class="mrow" data-act="mtog" data-m="${m}" role="button" aria-expanded="${open}">
@@ -1219,7 +1474,7 @@ function renderToday() {
 
   // Su
   const glasses = Math.round(d.waterMl / GLASS), gGoal = Math.round(waterGoal / GLASS);
-  h += `<div class="card"><div class="row sp"><h3 style="margin:0">💧 Su</h3>
+  if (!["bento", "tabak"].includes(SK())) h += `<div class="card"><div class="row sp"><h3 style="margin:0">💧 Su</h3>
       <div class="seg mini"><button data-act="wunit" data-u="bardak" class="${unit === "bardak" ? "on" : ""}">Bardak</button><button data-act="wunit" data-u="litre" class="${unit === "litre" ? "on" : ""}">Litre</button></div></div>
     <div class="row sp" style="margin-top:12px"><b style="font-size:22px;letter-spacing:-.02em">${waterText(d.waterMl)}</b><span class="mu sm">hedef ${waterText(waterGoal)}</span></div>
     <div class="wbar"><i style="width:${Math.min(d.waterMl / waterGoal * 100, 100)}%"></i></div>
@@ -1233,7 +1488,7 @@ function renderToday() {
   </div>`;
 
   // Egzersiz
-  h += `<div class="card"><h3>🏋️ Spor / antrenman</h3>
+  if (!["bento", "tabak"].includes(SK()) || exOpen) h += `<div class="card" id="excard"><h3>🏋️ Spor / antrenman</h3>
     ${d.exercises.map(e => `<div class="item"><div class="fic" style="background:var(--tint-y)">🔥</div><div class="nm">${esc(e.desc)}${e.ozet ? `<small>${esc(e.ozet)}</small>` : ""}</div>
       <span class="kc">−${e.kcal}</span><button class="del" data-act="delEx" data-id="${e.id}" aria-label="Sil">×</button></div>`).join("")}
     ${draft.exManual ? `
@@ -1246,9 +1501,12 @@ function renderToday() {
 
   const rv = d.review;
   if (rv) h += reviewCard(rv, d);
+  else if (SK() === "bento") h += `<button class="card bend" data-act="review" ${anyFood ? "" : "disabled"}><span class="ic">🌙</span><span class="grow"><b>Günü bitir</b><small>Toplamı değerlendireyim, neyi azaltman gerektiğini söyleyeyim</small></span><span>›</span></button>`;
+  else if (SK() === "tabak") h += `<button class="tend" data-act="review" ${anyFood ? "" : "disabled"}>🌙 Günü bitir ve değerlendir</button>`;
   else h += `<div class="card"><h3>🌙 Gün sonu</h3><p class="mu sm" style="margin-top:0">Bugün başka bir şey yemeyeceksen günü bitir; toplamı hesaplayıp hedefine göre değerlendireyim, fazlalık varsa neleri çıkarman gerektiğini söyleyeyim.</p>
     <button class="pri full" data-act="review" ${anyFood ? "" : "disabled"}>Günü bitir ve değerlendir</button></div>`;
 
+  if (SK() === "tabak") h += tabakDock();
   el.innerHTML = h;
 }
 
@@ -1327,7 +1585,7 @@ function renderPlan() {
 
   el.innerHTML = `
   ${changed ? `<div class="warnbox" style="margin-top:8px">Profilin veya kilon program hazırlandıktan sonra değişti. <button class="ghost" data-act="makeplan">Programı güncelle</button></div>` : ""}
-  <div class="card">
+  <div class="card phero">
     <div class="row sp" style="align-items:flex-start"><div><div class="mu sm" style="font-weight:700;margin-bottom:6px">Günlük hedef</div><span class="big2">${fmt(tg.kcal)}</span><span class="unit">kcal</span></div>
       <button class="detbtn" data-act="pdetail">Detay ›</button></div>
     <div class="stack"><i style="flex:${pk};background:var(--p)"></i><i style="flex:${ck};background:var(--c)"></i><i style="flex:${fk};background:var(--f)"></i></div>
@@ -1593,9 +1851,8 @@ function appSettingsHtml() {
   const dark = S.settings.theme === "dark", skin = S.settings.skin || "ferah";
   return `<div class="grp">Uygulama</div>
   <div class="card lst" style="margin-top:0">
-    <div class="lrow"><span class="ic" style="background:var(--tint-v)">🎨</span>Tema<div class="seg" style="margin-left:auto;width:150px"><button data-act="skin" data-s="ferah" class="${skin === "kadran" ? "" : "on"}">Tema 1</button><button data-act="skin" data-s="kadran" class="${skin === "kadran" ? "on" : ""}">Tema 2</button></div></div>
-    <div class="lrow"><span class="ic" style="background:var(--tint-v)">${dark ? "🌙" : "☀️"}</span>Görünüm<div class="seg" style="margin-left:auto;width:150px"><button data-act="theme" data-t="light" class="${dark ? "" : "on"}">Açık</button><button data-act="theme" data-t="dark" class="${dark ? "on" : ""}">Koyu</button></div></div>
-    ${dark || skin === "kadran" ? "" : `<div class="lrow"><span class="ic" style="background:var(--ac2)">🖌️</span>Vurgu rengi<div class="swatches">${ACCENTS.map(([k, n, g]) => `<button class="sw ${(S.settings.accent || "zumrut") === k ? "on" : ""}" style="background:${g}" data-act="accent" data-a="${k}" aria-label="${n}" title="${n}"></button>`).join("")}</div></div>`}
+    <div class="lrow"><span class="ic" style="background:var(--tint-v)">🎨</span>Tema<div class="seg" style="margin-left:auto;width:150px"><button class="on" data-act="skinNext" aria-label="Temayı değiştir">${SKIN_NAMES[skin] || "Ferah"}</button><button class="on" data-act="theme" data-t="${dark ? "light" : "dark"}" aria-label="Açık veya koyu">${dark ? "🌙 Koyu" : "☀️ Açık"}</button></div></div>
+    ${dark || skin !== "ferah" ? "" : `<div class="lrow"><span class="ic" style="background:var(--ac2)">🖌️</span>Vurgu rengi<div class="swatches">${ACCENTS.map(([k, n, g]) => `<button class="sw ${(S.settings.accent || "zumrut") === k ? "on" : ""}" style="background:${g}" data-act="accent" data-a="${k}" aria-label="${n}" title="${n}"></button>`).join("")}</div></div>`}
     <div class="lrow"><span class="ic" style="background:var(--tint-c)">💧</span>Su birimi<div class="seg" style="margin-left:auto;width:150px"><button data-act="wunit" data-u="bardak" class="${waterUnit() === "bardak" ? "on" : ""}">Bardak</button><button data-act="wunit" data-u="litre" class="${waterUnit() === "litre" ? "on" : ""}">Litre</button></div></div>
     <button class="lrow" data-act="sheet" data-k="ai"><span class="ic" style="background:var(--tint-g)">✨</span>Yapay zeka<span class="v">Bağlantı testi</span><span class="ch">›</span></button>
     <button class="lrow" data-act="sheet" data-k="hesap"><span class="ic" style="background:var(--tint-b)">☁️</span>Hesap<span class="v">${Cloud.user ? esc(Cloud.user.email) : "Sadece bu cihaz"}</span><span class="ch">›</span></button>
@@ -1659,13 +1916,13 @@ function applyTheme() {
   let ls = {}; try { ls = { t: localStorage.getItem("fittrack_theme"), a: localStorage.getItem("fittrack_accent"), s: localStorage.getItem("fittrack_skin") }; } catch (e) {}
   const dark = S.settings?.theme ? S.settings.theme === "dark" : ls.t === "dark";
   const accent = S.settings?.accent || ls.a || "zumrut";
-  const skin = S.settings?.skin || ls.s || "ferah", k = skin === "kadran";
+  let skin = S.settings?.skin || ls.s || "ferah"; if (!SKINS.includes(skin)) skin = "ferah";
   const de = document.documentElement;
   de.dataset.theme = dark ? "dark" : "light";
   if (de.dataset.skin !== skin) de.dataset.skin = skin;
-  if (k) delete de.dataset.accent; else de.dataset.accent = accent;
+  if (skin !== "ferah") delete de.dataset.accent; else de.dataset.accent = accent;
   try { localStorage.setItem("fittrack_accent", accent); localStorage.setItem("fittrack_skin", skin); } catch (e) {}
-  document.querySelector('meta[name="theme-color"]').setAttribute("content", k ? (dark ? "#0A1120" : "#F1F2F5") : dark ? "#0d0b1e" : "#f6f4ef");
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", ({ kadran: ["#F1F2F5", "#0A1120"], bento: ["#F2F2F7", "#000000"], tabak: ["#FFFFFF", "#121316"] }[skin] || ["#f6f4ef", "#0d0b1e"])[dark ? 1 : 0]);
   try { localStorage.setItem("fittrack_theme", dark ? "dark" : "light"); } catch (e) {}
 }
 
@@ -1849,7 +2106,7 @@ JSON: {"ad":"tarif adı","sure":number (dakika),"kcal":number,"protein":number,"
 
 function focusAdd(kb) {
   setTimeout(() => {
-    $("#addcard")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (SK() !== "tabak") $("#addcard")?.scrollIntoView({ behavior: "smooth", block: "center" });
     if (kb) ($("#foodTx") || $("#mName"))?.focus({ preventScroll: true });
   }, 50);
 }
@@ -1909,6 +2166,10 @@ document.addEventListener("click", e => {
     wtype: () => { const v = prompt("Kilo (kg)", String(wStep).replace(".", ",")); if (v === null) return; const n = r1(v); if (n < 30 || n > 350) return toast("Geçerli bir kilo gir", 1); wStep = n; renderWeight(); },
     theme: () => { S.settings.theme = a.dataset.t; save(); applyTheme(); renderProfile(); },
     skin: () => { S.settings.skin = a.dataset.s; save(); go(view); },
+    skinNext: () => { const c = SKINS.indexOf(S.settings.skin || "ferah"); S.settings.skin = SKINS[(c + 1) % SKINS.length]; save(); go(view); toast(SKIN_NAMES[S.settings.skin] + " teması"); },
+    exOpen: () => { exOpen = !exOpen; renderToday(); if (exOpen) setTimeout(() => $("#excard")?.scrollIntoView({ behavior: "smooth", block: "center" }), 60); },
+    mcycle: () => { draft.meal = MEALS[(MEALS.indexOf(draft.meal) + 1) % MEALS.length]; if (draft.preview) draft.preview.meal = draft.meal; renderToday(); },
+    wdrop: () => { const D = d(), ml = (+a.dataset.i + 1) * GLASS; D.waterMl = D.waterMl === ml ? ml - GLASS : ml; save(); renderToday(); },
     accent: () => { S.settings.accent = a.dataset.a; save(); applyTheme(); renderProfile(); toast(ACCENTS.find(x => x[0] === a.dataset.a)?.[1] + " seçildi"); },
     sheet: () => openSheet(a.dataset.k),
     closeSheet,
