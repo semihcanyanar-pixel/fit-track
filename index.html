@@ -595,9 +595,15 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 .drops button.f .ksv{fill:currentColor}
 .trow .v{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trow .v em{font-style:normal;color:var(--mu);font-weight:600;font-size:13px}
-.tfeed .ti{display:flex;align-items:center;gap:12px;padding:10px 0}
+.tfeed .tg{border-bottom:1px solid var(--ln);padding:12px 0}
+.tfeed .th{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.tfeed .th .k{font-weight:700;font-size:16px;white-space:nowrap}.tfeed .th .k em{font-style:normal;font-size:12px;color:var(--mu);margin-left:2px;font-weight:600}
+.tfeed .th .ch{color:var(--mu);font-size:18px;width:14px;text-align:center}
+.tfeed small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.tfeed .tit{display:flex;align-items:center;gap:6px;padding:4px 0 4px 16px;font-size:14.5px}
+.tfeed .tit span{flex:1;min-width:0}.tfeed .tit small{display:inline;color:var(--mu);font-size:12.5px}
 .tfeed .tm{width:40px;font-size:12.5px;color:var(--mu);font-weight:600;flex:none}
-.tfeed .tbar{width:3px;align-self:stretch;border-radius:3px;flex:none}
+.tfeed .tbar{width:4px;align-self:stretch;border-radius:3px;flex:none}
 .tfeed .bd{flex:1;min-width:0}.tfeed b{display:block;font-size:15px;font-weight:600}.tfeed small{font-size:12.5px;color:var(--mu);font-weight:500}
 .tfeed .kc{font-weight:700;font-size:15px}
 .tmini{padding:6px 16px 14px}
@@ -1348,11 +1354,14 @@ function tabakRows(c, d) {
   <button class="trow" data-act="exOpen"><span class="l"><span style="color:var(--p)">${kSvg("flame")}</span>Spor</span><span class="v">${ex ? `+${fmt(ex)} <em>kcal${last ? " · " + esc(last.desc) : ""}</em>` : `<em>Antrenman ekle</em>`} ${exOpen ? "⌃" : "›"}</span></button>`;
 }
 function tabakFeed(d, isToday) {
-  const fs = d.foods.map((f, i) => ({ f, i })).sort((a, b) => (a.f.at || 0) - (b.f.at || 0) || MEALS.indexOf(a.f.meal) - MEALS.indexOf(b.f.meal) || a.i - b.i);
-  const tm = f => f.at ? new Date(f.at).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }) : "";
-  return `<div class="sec">${isToday ? "Bugün" : "Yenenler"}${fs.length ? `<small>${fs.length} kayıt</small>` : ""}</div>
-  <div class="tfeed">${fs.length ? fs.map(({ f }) => `<div class="ti"><span class="tm">${tm(f)}</span><span class="tbar" style="background:${MEAL_TINT[f.meal]}"></span><div class="bd"><b>${esc(f.name)}</b><small>${esc(f.meal)}${f.amount ? " · " + esc(f.amount) : ""}</small></div>
-    <button class="kc" data-act="editFood" data-id="${f.id}">${f.kcal}</button><button class="del" data-act="delFood" data-id="${f.id}" aria-label="Sil">×</button></div>`).join("")
+  const groups = MEALS.map(m => ({ m, fs: d.foods.filter(f => f.meal === m) })).filter(g => g.fs.length);
+  const total = d.foods.reduce((a, f) => a + num(f.kcal), 0);
+  return `<div class="sec">${isToday ? "Bugün" : "Yenenler"}${groups.length ? `<small>${groups.length} öğün · ${fmt(total)} kcal</small>` : ""}</div>
+  <div class="tfeed">${groups.length ? groups.map(({ m, fs }) => { const open = openMeals.has(m), names = fs.map(f => f.name);
+    return `<div class="tg"><div class="th" data-act="mtog" data-m="${m}" role="button" aria-expanded="${open}"><span class="tbar" style="background:${MEAL_TINT[m]}"></span>
+      <div class="bd"><b>${m}</b><small>${open ? fs.length + " kalem" : esc(names.slice(0, 4).join(", ")) + (names.length > 4 ? " +" + (names.length - 4) : "")}</small></div>
+      <span class="k">${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))}<em>kcal</em></span><span class="ch">${open ? "⌃" : "›"}</span></div>
+      ${open ? fs.map(f => `<div class="tit"><span>${esc(f.name)}${f.amount ? ` <small>${esc(f.amount)}</small>` : ""}</span><button class="kc" data-act="editFood" data-id="${f.id}">${f.kcal}</button><button class="del" data-act="delFood" data-id="${f.id}" aria-label="Sil">×</button></div>`).join("") : ""}</div>`; }).join("")
     : `<p class="mu sm" style="margin:4px 0">Henüz bir şey girilmedi. Alttaki kutuya ne yediğini yaz.</p>`}</div>`;
 }
 function tabakAddMini() {
@@ -2164,9 +2173,9 @@ document.addEventListener("click", e => {
     },
     wstep: () => { wStep = Math.max(30, Math.min(350, Math.round((wStep + num(a.dataset.n)) * 10) / 10)); renderWeight(); },
     wtype: () => { const v = prompt("Kilo (kg)", String(wStep).replace(".", ",")); if (v === null) return; const n = r1(v); if (n < 30 || n > 350) return toast("Geçerli bir kilo gir", 1); wStep = n; renderWeight(); },
-    theme: () => { S.settings.theme = a.dataset.t; save(); applyTheme(); renderProfile(); },
+    theme: () => { const y = scrollY; S.settings.theme = a.dataset.t; save(); applyTheme(); renderProfile(); scrollTo(0, y); requestAnimationFrame(() => scrollTo(0, y)); },
     skin: () => { S.settings.skin = a.dataset.s; save(); go(view); },
-    skinNext: () => { const c = SKINS.indexOf(S.settings.skin || "ferah"); S.settings.skin = SKINS[(c + 1) % SKINS.length]; save(); go(view); toast(SKIN_NAMES[S.settings.skin] + " teması"); },
+    skinNext: () => { const y = scrollY, c = SKINS.indexOf(S.settings.skin || "ferah"); S.settings.skin = SKINS[(c + 1) % SKINS.length]; save(); go(view); scrollTo(0, y); requestAnimationFrame(() => scrollTo(0, y)); },
     exOpen: () => { exOpen = !exOpen; renderToday(); if (exOpen) setTimeout(() => $("#excard")?.scrollIntoView({ behavior: "smooth", block: "center" }), 60); },
     mcycle: () => { draft.meal = MEALS[(MEALS.indexOf(draft.meal) + 1) % MEALS.length]; if (draft.preview) draft.preview.meal = draft.meal; renderToday(); },
     wdrop: () => { const D = d(), ml = (+a.dataset.i + 1) * GLASS; D.waterMl = D.waterMl === ml ? ml - GLASS : ml; save(); renderToday(); },
