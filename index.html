@@ -301,6 +301,141 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 .aubox h2{margin:8px 0 4px;font-size:26px;letter-spacing:-.02em}
 .aulogo{width:76px;height:76px;margin:0 auto;border-radius:22px;background:url(icon-180.png) center/cover;box-shadow:0 8px 20px rgba(0,0,0,.12)}
 @media (max-width:370px){.ring{width:128px;height:128px}.ring .big{font-size:27px}.meals{gap:6px}.mealc{font-size:11.5px}}
+
+/* ===== Tema 2: Kadran (lacivert / porselen) ===== */
+:root[data-skin="kadran"][data-theme="dark"]{
+  --bg:#0A1120;--card:rgba(255,255,255,.045);--card2:rgba(255,255,255,.065);--in:rgba(255,255,255,.045);--ln:rgba(255,255,255,.08);
+  --tx:#EEEAE2;--mu:#8D96A9;
+  --ac:#D6B676;--ac-d:#C4A060;--ac2:rgba(214,182,118,.12);--acTx:#E2C68C;--acLn:rgba(214,182,118,.4);
+  --g1:#F1DCAB;--g2:#D6B676;--btn:linear-gradient(180deg,#E3C68B,#CBA865);--btnSh:0 10px 24px -10px rgba(214,182,118,.55);--btnTx:#0A1120;
+  --warn:#E8B45A;--bad:#F08C8C;--p:#E39A8B;--c:#93B2E0;--f:#AFC99C;--w:#7CC3DC;
+  --sh:inset 0 1px 0 rgba(255,255,255,.05),0 24px 48px -22px rgba(0,0,0,.6);
+  --navbg:rgba(17,26,46,.8);--glass:none;--tick:rgba(238,234,226,.16);
+  --hero:radial-gradient(120% 60% at 50% -8%,rgba(76,104,160,.42),rgba(20,32,58,.35) 45%,transparent 72%);
+  --tint-y:rgba(255,255,255,.05);--tint-g:rgba(255,255,255,.05);--tint-p:rgba(255,255,255,.05);--tint-b:rgba(255,255,255,.05);--tint-v:rgba(255,255,255,.05);--tint-c:rgba(255,255,255,.05);
+  --warnBg:rgba(232,180,90,.12);
+}
+:root[data-skin="kadran"][data-theme="light"]{
+  --bg:#F1F2F5;--card:#FFFFFF;--card2:#F3F4F7;--in:#F4F5F8;--ln:rgba(14,23,41,.08);
+  --tx:#0E1729;--mu:#6A7386;
+  --ac:#A7803A;--ac-d:#8E6C2E;--ac2:rgba(167,128,58,.10);--acTx:#8A682B;--acLn:rgba(167,128,58,.42);
+  --g1:#C9A35C;--g2:#A7803A;--btn:linear-gradient(180deg,#1A2540,#0E1729);--btnSh:0 10px 24px -12px rgba(14,23,41,.55);--btnTx:#F3EEE4;
+  --warn:#B7791F;--bad:#C2413B;--p:#D27566;--c:#5A80BE;--f:#7A9C66;--w:#3C9DBF;
+  --sh:0 1px 2px rgba(14,23,41,.04),0 18px 40px -18px rgba(14,23,41,.14);
+  --navbg:rgba(255,255,255,.86);--glass:none;--tick:rgba(14,23,41,.13);
+  --hero:radial-gradient(120% 55% at 50% -8%,#FFFFFF,rgba(255,255,255,.6) 45%,transparent 72%);
+  --tint-y:#F3F4F7;--tint-g:#F3F4F7;--tint-p:#F3F4F7;--tint-b:#F3F4F7;--tint-v:#F3F4F7;--tint-c:#F3F4F7;
+  --warnBg:rgba(183,121,31,.09);
+}
+[data-skin="kadran"] body{font-variant-numeric:tabular-nums;background-size:100% 560px}
+[data-skin="kadran"] .ki{display:inline-flex;vertical-align:-.14em}
+[data-skin="kadran"] .ksv{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+[data-skin="kadran"] header.top h1{font-weight:650;font-size:29px;letter-spacing:-.03em}
+[data-skin="kadran"] header.top h1 small{font-weight:500}
+[data-skin="kadran"] #ttl.tday{display:flex;flex-direction:column-reverse}
+[data-skin="kadran"] #ttl.tday small{margin:0 0 2px}
+[data-skin="kadran"] .hbtn{border-radius:50%;color:var(--tx)}
+[data-skin="kadran"] .hbtn svg,[data-skin="kadran"] nav.tabs svg{stroke-width:1.6}
+[data-skin="kadran"] .avatar{color:var(--btnTx);box-shadow:none}
+[data-skin="kadran"] .card{border-radius:24px}
+[data-skin="kadran"] .card h3,[data-skin="kadran"] .card h4{font-weight:600}
+[data-skin="kadran"] .sec{font-weight:600;font-size:19px;letter-spacing:-.02em}
+[data-skin="kadran"] .sec small{font-weight:500}
+[data-skin="kadran"] button{font-weight:600}
+[data-skin="kadran"] button.pri{color:var(--btnTx)}
+[data-skin="kadran"] .btns button:not(.pri),[data-skin="kadran"] .wq button,[data-skin="kadran"] .stepper button{background:transparent;box-shadow:inset 0 0 0 1px var(--ln);color:var(--tx)}
+[data-skin="kadran"] .chip{background:var(--in);box-shadow:inset 0 0 0 1px var(--ln);font-weight:500}
+[data-skin="kadran"] .seg{background:var(--in)}
+[data-skin="kadran"] .pillx{font-weight:600}
+[data-skin="kadran"] .note{box-shadow:inset 0 0 0 1px var(--acLn)}
+[data-skin="kadran"] .warnbox,[data-skin="kadran"] .pillx.warn{background:var(--warnBg)}
+[data-skin="kadran"] label.f>span{font-weight:600}
+[data-skin="kadran"] .grp,[data-skin="kadran"] .mgrp{text-transform:none;letter-spacing:-.005em;font-size:14px;font-weight:600}
+/* nav */
+[data-skin="kadran"] nav.tabs button{font-weight:500;color:var(--mu)}
+[data-skin="kadran"] nav.tabs button.on{color:var(--tx)}
+[data-skin="kadran"] nav.tabs button:not(.plus).on:after{content:"";width:4px;height:4px;border-radius:50%;background:var(--ac);margin-top:1px}
+[data-skin="kadran"] nav.tabs button.plus{border-radius:50%;color:var(--btnTx);box-shadow:var(--btnSh),0 0 0 5px var(--bg)}
+[data-skin="kadran"] nav.tabs button.plus.on{color:var(--btnTx);box-shadow:var(--btnSh),0 0 0 5px var(--bg),0 0 0 6px var(--acLn)}
+/* hafta */
+[data-skin="kadran"] .wd{background:transparent;border:0;box-shadow:none;font-weight:500;font-size:11.5px}
+[data-skin="kadran"] .wd b{font-weight:500;width:36px;height:36px;margin:5px auto 0;border-radius:50%;display:flex;align-items:center;justify-content:center}
+[data-skin="kadran"] .wd.on{background:transparent;color:var(--acTx);box-shadow:none}
+[data-skin="kadran"] .wd.on b{color:var(--acTx);background:var(--ac2);box-shadow:inset 0 0 0 1px var(--acLn)}
+[data-skin="kadran"] .wd.dot:after,[data-skin="kadran"] .wd.on.dot:after{background:var(--ac);bottom:-1px}
+/* kadran halkası */
+.kdial{position:relative;width:min(250px,72vw);aspect-ratio:1;margin:0 auto 2px}
+.kdial svg{position:absolute;inset:0;width:100%;height:100%}
+.kdial .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.kdial .lbl{font-size:12.5px;color:var(--mu);font-weight:500}
+.kdial .big{font-size:58px;font-weight:200;letter-spacing:-.045em;line-height:1;margin:6px 0}
+.kdial .of{font-size:13.5px;color:var(--mu);font-weight:500}
+.kkal{display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px 14px;border-bottom:1px solid var(--ln)}
+.kkal span{color:var(--mu);font-size:14px;font-weight:500}
+.kkal b{font-size:23px;font-weight:300;letter-spacing:-.02em}
+.kkal b small{font-size:13px;font-weight:500;margin-left:3px}
+.kmacs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-top:14px}
+.kmac small{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu);font-weight:500;white-space:nowrap}
+.kmac small i{width:6px;height:6px;border-radius:50%;flex:none}
+.kmac b{display:block;font-size:17px;font-weight:400;letter-spacing:-.02em;margin:3px 0 7px;white-space:nowrap}
+.kmac b em{font-style:normal;color:var(--mu);font-size:12.5px;font-weight:500}
+[data-skin="kadran"] .kmac .bar{height:3px;background:var(--ln);margin:0}
+[data-skin="kadran"] .formula{margin-top:12px}
+/* öğünler ve listeler */
+[data-skin="kadran"] .mealc{font-weight:600;font-size:13px}
+[data-skin="kadran"] .mealc small{font-weight:500}
+[data-skin="kadran"] .mealc .e,[data-skin="kadran"] .addh .e,[data-skin="kadran"] .fic,[data-skin="kadran"] .lrow .ic,[data-skin="kadran"] .mini .ic2,[data-skin="kadran"] .mrow2 .ie{border-radius:50%;background:transparent!important;box-shadow:inset 0 0 0 1px var(--ln);color:var(--tx)}
+[data-skin="kadran"] .mealc .e{font-size:21px}
+[data-skin="kadran"] .mealc.on{background:var(--ac2);color:var(--acTx);border-color:var(--acLn);box-shadow:none}
+[data-skin="kadran"] .mealc.on small{color:var(--acTx);opacity:.85}
+[data-skin="kadran"] .mealc.on .e{box-shadow:inset 0 0 0 1px var(--acLn);color:var(--acTx)}
+[data-skin="kadran"] .addh b{font-weight:600}
+[data-skin="kadran"] .fic:empty{display:none}
+[data-skin="kadran"] .mbody{margin-left:51px}
+[data-skin="kadran"] .item .nm,[data-skin="kadran"] .mrow b{font-weight:600}
+[data-skin="kadran"] .kc,[data-skin="kadran"] .mrow .mk{font-weight:400;font-size:15px}
+[data-skin="kadran"] .lrow{font-weight:500}
+/* su */
+[data-skin="kadran"] .wbar{display:none}
+[data-skin="kadran"] .glasses{flex-wrap:nowrap;gap:4px;margin-top:14px}
+[data-skin="kadran"] .glass{flex:1;width:auto;height:22px;border:0;border-radius:6px;background:var(--ln);opacity:1}
+[data-skin="kadran"] .glass.on{background:var(--w);opacity:1}
+[data-skin="kadran"] .card .row.sp>b[style*="font-size:22px"]{font-weight:300;font-size:26px}
+/* program */
+[data-skin="kadran"] .big2{font-weight:200;font-size:56px;letter-spacing:-.045em}
+[data-skin="kadran"] .unit{font-weight:500}
+[data-skin="kadran"] .stack{height:6px;gap:4px;border-radius:0;margin:18px 0 12px}
+[data-skin="kadran"] .stack i{border-radius:4px}
+[data-skin="kadran"] .leg{font-weight:500}
+[data-skin="kadran"] .leg i{border-radius:50%;width:6px;height:6px}
+[data-skin="kadran"] .leg em{color:var(--tx);font-weight:500}
+[data-skin="kadran"] .tiles b{font-weight:300;font-size:22px;letter-spacing:-.03em}
+[data-skin="kadran"] .tiles span{font-weight:500}
+[data-skin="kadran"] .tiles.in div{background:var(--in);box-shadow:inset 0 0 0 1px var(--ln)}
+[data-skin="kadran"] .detbtn{background:transparent;box-shadow:inset 0 0 0 1px var(--acLn);font-weight:600}
+[data-skin="kadran"] .wstrip{box-shadow:inset 0 0 0 1px var(--ln)}
+[data-skin="kadran"] .planc .ph2 .ie{background:var(--ac2);box-shadow:inset 0 0 0 1px var(--acLn);color:var(--acTx)}
+[data-skin="kadran"] .planc .ph2 b{font-weight:600}
+[data-skin="kadran"] .dtab{font-weight:600}
+[data-skin="kadran"] .dtab small{font-weight:500}
+[data-skin="kadran"] .dtab.on{color:var(--btnTx)}
+[data-skin="kadran"] .dtab.on small{color:var(--btnTx);opacity:.72}
+[data-skin="kadran"] .mrow2 .hd b{font-weight:600}
+[data-skin="kadran"] .mrow2 .hd em{font-weight:400;font-size:16px}
+[data-skin="kadran"] .mrow2 .yed{background:transparent;color:var(--tx);box-shadow:inset 0 0 0 1px var(--ln)}
+[data-skin="kadran"] .mrow2 .yed.done{color:var(--mu)}
+[data-skin="kadran"] .mrow2.next{box-shadow:inset 0 0 0 1px var(--acLn)}
+[data-skin="kadran"] .mrow2.next .ie{box-shadow:inset 0 0 0 1px var(--acLn);color:var(--acTx)}
+[data-skin="kadran"] .mrow2.next .yed:not(.done){background:var(--btn);color:var(--btnTx);box-shadow:none}
+[data-skin="kadran"] .ptot{background:transparent;border-top:1px solid var(--ln);border-radius:0;padding:14px 4px 2px;font-weight:600}
+[data-skin="kadran"] .ptot span:last-child{font-weight:400;font-size:18px}
+[data-skin="kadran"] .tile b{font-weight:600}
+[data-skin="kadran"] .tile .ti,[data-skin="kadran"] .shi,[data-skin="kadran"] .gitem .fic{border-radius:50%;background:transparent!important;box-shadow:inset 0 0 0 1px var(--acLn);color:var(--acTx)}
+[data-skin="kadran"] .kv b{font-weight:500}
+[data-skin="kadran"] .steps li:before{color:var(--btnTx)}
+[data-skin="kadran"] .phead .nm{font-weight:600}
+[data-skin="kadran"][data-theme="dark"] #sheet .pn{background:#101828}
+[data-skin="kadran"] #toast{background:var(--tx);color:var(--bg)}
 </style>
 </head>
 <body>
@@ -546,7 +681,8 @@ function go(v) {
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.go === v));
   const nm = (S.profile?.ad || "").trim().split(" ")[0];
   const greet = (() => { const hh = new Date().getHours(); return hh < 6 ? "İyi geceler" : hh < 12 ? "Günaydın" : hh < 18 ? "Merhaba" : "İyi akşamlar"; })();
-  $("#ttl").innerHTML = v === "today" ? `${esc(greet)}${nm ? ", " + esc(nm) : ""}<small>${S.profile ? "Bugün de hedefine bir adım daha 💪" : "Fit Track'e hoş geldin"}</small>` : { plan: "Programın", weight: "Kilo", profile: S.profile ? "Profil" : "Seni tanıyalım", chef: "Ne pişirsem?<small>Mutfağındakilerle, kalan makrolarına uygun tarif</small>" }[v];
+  $("#ttl").className = v === "today" ? "tday" : "";
+  $("#ttl").innerHTML = v === "today" ? `${esc(greet)}${nm ? ", " + esc(nm) : ""}<small>${!S.profile ? "Fit Track'e hoş geldin" : isK() ? esc((d => d.toLocaleDateString("tr-TR", { weekday: "long" }) + ", " + d.toLocaleDateString("tr-TR", { day: "numeric", month: "long" }))(new Date())) : "Bugün de hedefine bir adım daha 💪"}</small>` : { plan: "Programın", weight: "Kilo", profile: S.profile ? "Profil" : "Seni tanıyalım", chef: "Ne pişirsem?<small>Mutfağındakilerle, kalan makrolarına uygun tarif</small>" }[v];
   render();
   window.scrollTo(0, 0);
 }
@@ -892,8 +1028,91 @@ const FOOD_ICONS = [
   [/yoğurt|ayran|kefir/, "🥛"], [/süt/, "🥛"], [/kahve/, "☕"], [/çay/, "🍵"], [/baklava|tatlı|pasta|kek|kurabiye|ekler|çikolata|dondurma|sütlaç|lokum/, "🍰"],
   [/ceviz|badem|fındık|fıstık|kuruyemiş/, "🥜"], [/bal|reçel|pekmez/, "🍯"], [/sebze|brokoli|kabak|ıspanak|patlıcan|biber|havuç/, "🥦"], [/su\b|soda|maden/, "💧"], [/kola|meyve suyu|içecek/, "🥤"]
 ];
-function foodEmoji(name) { const n = String(name || "").toLocaleLowerCase("tr-TR"); for (const [re, e] of FOOD_ICONS) if (re.test(n)) return e; return "🍽️"; }
+function foodEmoji(name) { if (isK()) return ""; const n = String(name || "").toLocaleLowerCase("tr-TR"); for (const [re, e] of FOOD_ICONS) if (re.test(n)) return e; return "🍽️"; }
 function mondayOf(ds) { const d = new Date(ds + "T12:00:00"); const wd = (d.getDay() + 6) % 7; return addDays(ds, -wd); }
+
+
+/* ---- Tema 2 (Kadran): çizgi simgeler ---- */
+const isK = () => document.documentElement.dataset.skin === "kadran";
+const KI = {
+  check: '<path d="M5 12.5l4.2 4.2L19 7"/>',
+  spark: '<path d="M12 3.5l1.7 5 5 1.7-5 1.7-1.7 5-1.7-5-5-1.7 5-1.7z"/><path d="M18.5 16.5l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6z"/>',
+  sunrise: '<path d="M3 18h18M6.5 18a5.5 5.5 0 0 1 11 0M12 5v3M5.6 10.6l1.5 1.5M18.4 10.6l-1.5 1.5M8.5 21h7"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/>',
+  moon: '<path d="M19.5 14.5A8 8 0 1 1 9.5 4.5a6.5 6.5 0 0 0 10 10z"/>',
+  apple: '<path d="M12 7.5c-1.6-1.1-4.3-1.3-5.9.4-2 2.1-1.6 6 .1 9.1 1.2 2.2 2.7 3.8 3.9 3.8.7 0 1.1-.4 1.9-.4s1.2.4 1.9.4c1.2 0 2.7-1.6 3.9-3.8 1.7-3.1 2.1-7 .1-9.1-1.6-1.7-4.3-1.5-5.9-.4z"/><path d="M12 7.5c0-2.2 1-3.8 3.2-4.5"/>',
+  drop: '<path d="M12 3.2s6 6.4 6 10.9a6 6 0 0 1-12 0c0-4.5 6-10.9 6-10.9z"/>',
+  flame: '<path d="M12 21c-3.9 0-7-2.7-7-6.5 0-3 1.9-5 3.4-6.4.4 1.6 1.4 2.6 2.4 3.1-.3-3.6 1.6-6.7 4.2-8.2-.4 2.6.8 4.4 2.3 6.1 1.3 1.5 1.7 3.1 1.7 5.3 0 3.9-3.1 6.6-7 6.6z"/>',
+  camera: '<path d="M4 8.5h3.2L8.8 6h6.4l1.6 2.5H20V19H4z"/><circle cx="12" cy="13.3" r="3.3"/>',
+  fork: '<path d="M7 3v7.5M4.8 3v4.8a2.2 2.2 0 0 0 4.4 0V3M7 10.5V21M17.5 3c-2.2 1.4-3.3 4-3.3 7.2h3.3V21"/>',
+  chef: '<path d="M7.5 16.5V20h9v-3.5"/><path d="M7.5 16.5c-2.3-.4-4-2.2-4-4.5a4.2 4.2 0 0 1 4.4-4.2 4.3 4.3 0 0 1 8.2 0 4.2 4.2 0 0 1 4.4 4.2c0 2.3-1.7 4.1-4 4.5z"/>',
+  trendUp: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  trendDown: '<path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/>',
+  chart: '<path d="M5 19V11M10 19V5M15 19v-6M20 19V9"/>',
+  user: '<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c1.1-3.7 4.2-5.6 7.5-5.6s6.4 1.9 7.5 5.6"/>',
+  cal: '<rect x="4" y="5" width="16" height="15.5" rx="3.5"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".9"/>',
+  dumbbell: '<path d="M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11"/>',
+  pin: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.2"/>',
+  bulb: '<path d="M9.5 18h5M10.5 21h3M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>',
+  scale: '<path d="M12 4v16M8 20h8M5 7h14"/><path d="M5 7l-2.5 6a2.5 2.5 0 0 0 5 0zM19 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  cloud: '<path d="M7 18.5a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.8 8.6 4 4 0 0 1 17 18.5z"/>',
+  archive: '<rect x="3.5" y="4.5" width="17" height="4.5" rx="1.5"/><path d="M5 9v9.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V9M10 13h4"/>',
+  basket: '<path d="M4 10h16l-1.6 8.4a2 2 0 0 1-2 1.6H7.6a2 2 0 0 1-2-1.6zM8 10l3-6M16 10l-3-6M9.5 14v2.5M14.5 14v2.5"/>',
+  bolt: '<path d="M13 3L5 13.5h6L10.5 21 19 10.5h-6z"/>',
+  alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/>',
+  compass: '<circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  calc: '<rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M8.5 7.5h7M8.5 12h.1M12 12h.1M15.5 12h.1M8.5 16h.1M12 16h.1M15.5 16h.1"/>',
+  palette: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.3-1-1.6-1-2.6 0-.9.7-1.5 1.6-1.5h2.1a3.9 3.9 0 0 0 4-3.7C20.5 6.8 16.7 3.5 12 3.5z"/><circle cx="7.8" cy="11" r=".9"/><circle cx="10.5" cy="7.6" r=".9"/><circle cx="15" cy="7.8" r=".9"/>',
+  walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2-6 3 3v3M8 12l2.5-4 3.5 1 2 3.5M12.5 15l-1-4"/>',
+  heart: '<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>',
+  arrow: '<path d="M5 6v5a4 4 0 0 0 4 4h10"/><path d="M15 11l4 4-4 4"/>',
+  egg: '<path d="M12 3.5c3.3 0 6 5 6 9.5a6 6 0 0 1-12 0c0-4.5 2.7-9.5 6-9.5z"/>',
+  bowl: '<path d="M3.5 11h17a8.5 8.5 0 0 1-17 0z"/><path d="M8 20h8M8 8c1-1.5 2.5-2 4-2s3 .5 4 2"/>',
+  leaf: '<path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19l7-7"/>',
+  candy: '<circle cx="12" cy="12" r="4"/><path d="M8.5 10L4 7.5v9L8.5 14M15.5 10l4.5-2.5v9L15.5 14"/>',
+  thumb: '<path d="M7.5 10.5V20h-3v-9.5zM7.5 10.5l3.5-7c1.4 0 2.3 1.1 2 2.5l-.7 3.5h5.5a2 2 0 0 1 2 2.3l-1.2 6.5a2 2 0 0 1-2 1.7H7.5"/>',
+  sliders: '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>'
+};
+const kSvg = n => `<svg class="ksv" viewBox="0 0 24 24" aria-hidden="true">${KI[n] || KI.fork}</svg>`;
+const MEAL_KI = { "Kahvaltı": "sunrise", "Öğle": "sun", "Akşam": "moon", "Ara öğün": "apple" };
+function MI(m) { return isK() ? (MEAL_KI[m] ? kSvg(MEAL_KI[m]) : "") : MEAL_EMOJI[m]; }
+const EMO_KI = { "✓": "check", "✅": "check", "✨": "spark", "🏋️": "dumbbell", "🏋": "dumbbell", "💪": "", "💧": "drop", "🎯": "target", "🏁": "target",
+  "🍽️": "fork", "🍽": "fork", "📋": "fork", "⚖️": "scale", "⚖": "scale", "🔥": "flame", "🌙": "moon", "☀️": "sun", "☀": "sun", "📈": "trendUp", "📉": "trendDown",
+  "📊": "chart", "🔄": "refresh", "↻": "refresh", "📷": "camera", "💡": "bulb", "🕘": "clock", "⏰": "clock", "⏱️": "clock", "⏱": "clock", "📌": "pin", "📅": "cal",
+  "👤": "user", "👨‍🍳": "chef", "🙂": "user", "👋": "", "👍": "thumb", "🔧": "sliders", "☁️": "cloud", "☁": "cloud", "🗂️": "archive", "🗂": "archive",
+  "🧺": "basket", "⚡": "bolt", "😴": "moon", "⚠️": "alert", "⚠": "alert", "🧭": "compass", "🧮": "calc", "🎨": "palette", "🚶": "walk", "🤱": "heart",
+  "↪": "arrow", "🥩": "egg", "🍚": "bowl", "🥗": "leaf", "🍬": "candy", "🍳": "sunrise", "🍲": "moon", "🍎": "apple", "🥣": "bowl", "🥚": "egg" };
+const EMO_TEST = new RegExp(Object.keys(EMO_KI).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "u");
+const EMO_RE = new RegExp(EMO_TEST.source + "\\ufe0f?", "gu");
+function iconize(root) {
+  if (!isK() || !root) return;
+  const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => EMO_TEST.test(n.nodeValue) && !n.parentElement?.closest("textarea,option,select,script,style,title") ? 1 : 3 });
+  const list = []; while (tw.nextNode()) list.push(tw.currentNode);
+  for (const n of list) {
+    const html = esc(n.nodeValue).replace(EMO_RE, m => { const k = EMO_KI[m] ?? EMO_KI[m.replace(/️/g, "")]; return k ? `<span class="ki">${kSvg(k)}</span>` : "\u0000"; })
+      .replace(/\s*\u0000\s*/g, " ").replace(/^ | $/g, m => n.nodeValue.match(/^\s|\s$/) ? m : "");
+    const tpl = document.createElement("template"); tpl.innerHTML = html; n.replaceWith(tpl.content);
+  }
+}
+new MutationObserver(ms => { if (!isK()) return; const seen = new Set(); for (const m of ms) { const t = m.target.nodeType === 1 ? m.target : m.target.parentElement; if (t && !seen.has(t)) { seen.add(t); iconize(t); } } })
+  .observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+function kDial(p, over) {
+  const N = 72; let t = "";
+  for (let i = 0; i < N; i++) {
+    const a = i / N * Math.PI * 2 - Math.PI / 2, major = i % 6 === 0, r2 = major ? 110 : 114;
+    t += `<line x1="${(125 + 121 * Math.cos(a)).toFixed(1)}" y1="${(125 + 121 * Math.sin(a)).toFixed(1)}" x2="${(125 + r2 * Math.cos(a)).toFixed(1)}" y2="${(125 + r2 * Math.sin(a)).toFixed(1)}" stroke="${i / N < p ? (over ? "var(--bad)" : "var(--ac)") : "var(--tick)"}" stroke-width="${major ? 1.8 : 1.1}" stroke-linecap="round"/>`;
+  }
+  const R = 99, C = 2 * Math.PI * R, ea = p * Math.PI * 2 - Math.PI / 2, ex = 125 + R * Math.cos(ea), ey = 125 + R * Math.sin(ea);
+  const col = over ? "var(--bad)" : "url(#kgg)";
+  return `<svg viewBox="0 0 250 250" aria-hidden="true"><defs><linearGradient id="kgg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--g1)"/><stop offset="1" stop-color="var(--g2)"/></linearGradient>
+    <filter id="kgl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter></defs>${t}
+    <circle cx="125" cy="125" r="${R}" fill="none" stroke="var(--ln)" stroke-width="3"/>
+    ${p > 0 ? `<circle cx="125" cy="125" r="${R}" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 125 125)"/>
+    <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="7" fill="${over ? "var(--bad)" : "var(--ac)"}" opacity=".45" filter="url(#kgl)"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="4.5" fill="${over ? "var(--bad)" : "var(--g1)"}"/>` : ""}</svg>`;
+}
 
 /* ============ BUGÜN ============ */
 function renderToday() {
@@ -926,7 +1145,12 @@ function renderToday() {
   </div>
   ${isToday ? "" : `<button class="todaybtn" data-act="today">${esc(trDate(curDate, { day: "numeric", month: "long" }))} · Bugüne dön</button>`}
 
-  <div class="card">
+  <div class="card${isK() ? " khero" : ""}">
+    ${isK() ? `
+    <div class="kdial">${kDial(Math.min(ratio, 1), over)}<div class="ctr"><span class="lbl">${isToday ? "Bugün alınan" : "Alınan"}</span><span class="big">${fmt(tot.kcal)}</span><span class="of">/ ${fmt(t.total)} kcal</span></div></div>
+    <div class="kkal"><span>${diff >= 0 ? "Kalan" : "Hedefin üstünde"}</span><b style="color:${diff >= 0 ? "var(--acTx)" : "var(--bad)"}">${fmt(Math.abs(diff))}<small>kcal</small></b></div>
+    <div class="kmacs">${[["Protein", tot.p, tg?.protein, "var(--p)"], ["Karbonhidrat", tot.c, tg?.carb, "var(--c)"], ["Yağ", tot.f, tg?.fat, "var(--f)"]].map(([l, v, g, c]) => `<div class="kmac"><small><i style="background:${c}"></i>${l}</small><b>${fmt(v)}<em> / ${g ? fmt(g) : "—"} g</em></b><div class="bar"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${c}"></i></div></div>`).join("")}</div>
+    <div class="formula">Hedef ${fmt(t.base)} kcal${t.ex ? `, antrenmanla +${fmt(t.ex)}` : ""}${!tg ? " (geçici)" : ""}</div>` : `
     <div class="sum">
       <div class="ring">
         <svg width="150" height="150" viewBox="0 0 150 150">
@@ -943,7 +1167,7 @@ function renderToday() {
       </div>
     </div>
     <div class="kalan"><span>${diff >= 0 ? "Kalan" : "Hedefin üstünde"}</span><b style="color:${diff >= 0 ? "var(--acTx)" : "var(--bad)"}">${fmt(Math.abs(diff))} kcal</b></div>
-    <div class="formula">Hedef ${fmt(t.base)}${t.ex ? ` + egzersiz ${fmt(t.ex)}` : ""}${!tg ? " (geçici)" : ""}</div>
+    <div class="formula">Hedef ${fmt(t.base)}${t.ex ? ` + egzersiz ${fmt(t.ex)}` : ""}${!tg ? " (geçici)" : ""}</div>`}
     ${!tg ? `<div class="note">Kişisel hedefin henüz yok, şu an bakım kalorin gösteriliyor. <button class="ghost" data-act="makeplan">Program oluştur</button></div>` : ""}
     ${adv?.ready && adv.suggest != null && isToday ? `<div class="note">📈 Kayıtlarına göre hedefinin <b>${fmt(adv.suggest)} kcal</b> olması öneriliyor. <button class="ghost" data-go="plan">İncele</button></div>` : ""}
   </div>
@@ -951,11 +1175,11 @@ function renderToday() {
   <div class="sec">Öğün ekle</div>
   <div class="meals">${MEALS.map(m => {
     const k = d.foods.filter(f => f.meal === m).reduce((a, f) => a + num(f.kcal), 0);
-    return `<button class="mealc ${draft.meal === m ? "on" : ""}" data-act="meal" data-m="${m}"><span class="e" style="background:${MEAL_TINT[m]}">${MEAL_EMOJI[m]}</span>${MEAL_SHORT[m]}<small>${k ? fmt(k) : "—"}</small></button>`;
+    return `<button class="mealc ${draft.meal === m ? "on" : ""}" data-act="meal" data-m="${m}"><span class="e" style="background:${MEAL_TINT[m]}">${MI(m)}</span>${MEAL_SHORT[m]}<small>${k ? fmt(k) : "—"}</small></button>`;
   }).join("")}</div>
 
   <div class="card" id="addcard">
-    <div class="addh"><span class="e" style="background:${MEAL_TINT[draft.meal]}">${MEAL_EMOJI[draft.meal]}</span><b>${esc(draft.meal)} için ne yedin?</b></div>
+    <div class="addh"><span class="e" style="background:${MEAL_TINT[draft.meal]}">${MI(draft.meal)}</span><b>${esc(draft.meal)} için ne yedin?</b></div>
     ${draft.manual ? `
       <div class="row"><input id="mName" placeholder="Besin adı (ör. Elma)" class="grow"><input id="mKcal" type="number" inputmode="numeric" placeholder="kcal" style="width:92px"></div>
       <div class="btns"><button class="pri grow" data-act="addManual">Ekle</button><button data-act="toggleManual">Yapay zekayla</button></div>`
@@ -986,7 +1210,7 @@ function renderToday() {
     const fs = d.foods.filter(f => f.meal === m); if (!fs.length) return "";
     const open = openMeals.has(m);
     return `<div class="mrow" data-act="mtog" data-m="${m}" role="button" aria-expanded="${open}">
-        <span class="fic" style="background:${MEAL_TINT[m]};width:38px;height:38px;font-size:18px">${MEAL_EMOJI[m]}</span>
+        <span class="fic" style="background:${MEAL_TINT[m]};width:38px;height:38px;font-size:18px">${MI(m)}</span>
         <span class="grow"><b>${m}</b><small>${fs.length} kalem</small></span>
         <b class="mk">${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))} kcal</b><span class="chev">${open ? "⌃" : "›"}</span></div>
       ${open ? `<div class="mbody">${fs.map(f => `<div class="item"><div class="fic">${foodEmoji(f.name)}</div><div class="nm">${esc(f.name)}${f.amount ? `<small>${esc(f.amount)}</small>` : ""}</div>
@@ -1116,7 +1340,7 @@ function renderPlan() {
     <div class="ph2"><div class="ie">🍽️</div><div><b>Örnek beslenme</b><small>Hedefine ve tercihlerine göre ${days.length} farklı gün</small></div></div>
     ${days.length > 1 ? `<div class="dtabs" style="grid-template-columns:repeat(${Math.min(days.length, 3)},1fr)">${days.map((x, i) => `<button class="dtab ${i === planDay ? "on" : ""}" data-act="pday" data-i="${i}"><b>${esc(x.ad || (i + 1) + ". Gün")}</b><small>${fmt(dayKcal(x))} kcal</small></button>`).join("")}</div>` : ""}
     <div class="mlist">${arr(g.ogunler).map((o, oi) => { const key = `${planDay}-${oi}-${pl.at}`, done = eaten.has(key), m = ogunToMeal(o.ogun), nx = oi === nextIdx;
-      return `<div class="mrow2 ${nx ? "next" : ""}"><div class="ie" style="background:${nx ? "var(--card)" : MEAL_TINT[m]}">${MEAL_EMOJI[m]}</div><div class="bd">
+      return `<div class="mrow2 ${nx ? "next" : ""}"><div class="ie" style="background:${nx ? "var(--card)" : MEAL_TINT[m]}">${MI(m)}</div><div class="bd">
         <div class="hd"><b>${esc(o.ogun)}</b><em>${fmt(num(o.kcal))} kcal</em></div><p>${esc(o.icerik)}</p>
         <button class="yed ${done ? "done" : ""}" data-act="ate" data-o="${oi}" ${done ? "disabled" : ""}>${done ? "✓ Bugüne eklendi" : "✓ Bugün yedim"}</button></div></div>`; }).join("")}</div>
     <div class="ptot"><span>Günün toplamı</span><span>${fmt(dayKcal(g))} kcal</span></div>
@@ -1366,11 +1590,12 @@ function renderProfile() {
   ${appSettingsHtml()}`;
 }
 function appSettingsHtml() {
-  const dark = S.settings.theme === "dark";
+  const dark = S.settings.theme === "dark", skin = S.settings.skin || "ferah";
   return `<div class="grp">Uygulama</div>
   <div class="card lst" style="margin-top:0">
+    <div class="lrow"><span class="ic" style="background:var(--tint-v)">🎨</span>Tema<div class="seg" style="margin-left:auto;width:150px"><button data-act="skin" data-s="ferah" class="${skin === "kadran" ? "" : "on"}">Tema 1</button><button data-act="skin" data-s="kadran" class="${skin === "kadran" ? "on" : ""}">Tema 2</button></div></div>
     <div class="lrow"><span class="ic" style="background:var(--tint-v)">${dark ? "🌙" : "☀️"}</span>Görünüm<div class="seg" style="margin-left:auto;width:150px"><button data-act="theme" data-t="light" class="${dark ? "" : "on"}">Açık</button><button data-act="theme" data-t="dark" class="${dark ? "on" : ""}">Koyu</button></div></div>
-    ${dark ? "" : `<div class="lrow"><span class="ic" style="background:var(--ac2)">🎨</span>Vurgu rengi<div class="swatches">${ACCENTS.map(([k, n, g]) => `<button class="sw ${(S.settings.accent || "zumrut") === k ? "on" : ""}" style="background:${g}" data-act="accent" data-a="${k}" aria-label="${n}" title="${n}"></button>`).join("")}</div></div>`}
+    ${dark || skin === "kadran" ? "" : `<div class="lrow"><span class="ic" style="background:var(--ac2)">🖌️</span>Vurgu rengi<div class="swatches">${ACCENTS.map(([k, n, g]) => `<button class="sw ${(S.settings.accent || "zumrut") === k ? "on" : ""}" style="background:${g}" data-act="accent" data-a="${k}" aria-label="${n}" title="${n}"></button>`).join("")}</div></div>`}
     <div class="lrow"><span class="ic" style="background:var(--tint-c)">💧</span>Su birimi<div class="seg" style="margin-left:auto;width:150px"><button data-act="wunit" data-u="bardak" class="${waterUnit() === "bardak" ? "on" : ""}">Bardak</button><button data-act="wunit" data-u="litre" class="${waterUnit() === "litre" ? "on" : ""}">Litre</button></div></div>
     <button class="lrow" data-act="sheet" data-k="ai"><span class="ic" style="background:var(--tint-g)">✨</span>Yapay zeka<span class="v">Bağlantı testi</span><span class="ch">›</span></button>
     <button class="lrow" data-act="sheet" data-k="hesap"><span class="ic" style="background:var(--tint-b)">☁️</span>Hesap<span class="v">${Cloud.user ? esc(Cloud.user.email) : "Sadece bu cihaz"}</span><span class="ch">›</span></button>
@@ -1431,13 +1656,16 @@ const ACCENTS = [
   ["lavanta", "Lavanta", "linear-gradient(135deg,#8b5cf6,#d946ef)"]
 ];
 function applyTheme() {
-  let ls = {}; try { ls = { t: localStorage.getItem("fittrack_theme"), a: localStorage.getItem("fittrack_accent") }; } catch (e) {}
+  let ls = {}; try { ls = { t: localStorage.getItem("fittrack_theme"), a: localStorage.getItem("fittrack_accent"), s: localStorage.getItem("fittrack_skin") }; } catch (e) {}
   const dark = S.settings?.theme ? S.settings.theme === "dark" : ls.t === "dark";
   const accent = S.settings?.accent || ls.a || "zumrut";
-  document.documentElement.dataset.theme = dark ? "dark" : "light";
-  document.documentElement.dataset.accent = accent;
-  try { localStorage.setItem("fittrack_accent", accent); } catch (e) {}
-  document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#0d0b1e" : "#f6f4ef");
+  const skin = S.settings?.skin || ls.s || "ferah", k = skin === "kadran";
+  const de = document.documentElement;
+  de.dataset.theme = dark ? "dark" : "light";
+  if (de.dataset.skin !== skin) de.dataset.skin = skin;
+  if (k) delete de.dataset.accent; else de.dataset.accent = accent;
+  try { localStorage.setItem("fittrack_accent", accent); localStorage.setItem("fittrack_skin", skin); } catch (e) {}
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", k ? (dark ? "#0A1120" : "#F1F2F5") : dark ? "#0d0b1e" : "#f6f4ef");
   try { localStorage.setItem("fittrack_theme", dark ? "dark" : "light"); } catch (e) {}
 }
 
@@ -1543,7 +1771,7 @@ function renderChef() {
   </div>
 
   <div class="sec">Hangi öğün için?</div>
-  <div class="meals">${MEALS.map(m => `<button class="mealc ${chef.meal === m ? "on" : ""}" data-act="cmeal" data-m="${m}"><span class="e" style="background:${MEAL_TINT[m]}">${MEAL_EMOJI[m]}</span>${MEAL_SHORT[m]}<small>${(k => k ? fmt(k) : "—")(r.d.foods.filter(f => f.meal === m).reduce((a, f) => a + num(f.kcal), 0))}</small></button>`).join("")}</div>
+  <div class="meals">${MEALS.map(m => `<button class="mealc ${chef.meal === m ? "on" : ""}" data-act="cmeal" data-m="${m}"><span class="e" style="background:${MEAL_TINT[m]}">${MI(m)}</span>${MEAL_SHORT[m]}<small>${(k => k ? fmt(k) : "—")(r.d.foods.filter(f => f.meal === m).reduce((a, f) => a + num(f.kcal), 0))}</small></button>`).join("")}</div>
 
   <div class="card">
     <b style="font-size:15px">Bugünün son öğünü mü?</b>
@@ -1563,9 +1791,9 @@ function renderChef() {
   if (res) {
     const owned = new Set(arr(res.malzemeler).filter(m => m.var !== false).map(m => m.ad));
     h += `<div class="card recipe" id="recipe">
-      <div class="row" style="align-items:flex-start;gap:12px"><div class="fic" style="width:52px;height:52px;font-size:26px;background:${MEAL_TINT[res.meal] || "var(--ac2)"}">${foodEmoji(res.ad)}</div>
+      <div class="row" style="align-items:flex-start;gap:12px"><div class="fic" style="width:52px;height:52px;font-size:26px;background:${MEAL_TINT[res.meal] || "var(--ac2)"}">${foodEmoji(res.ad) || MI(res.meal)}</div>
         <div class="grow"><b style="font-size:18px;line-height:1.25;display:block">${esc(res.ad)}</b>
-        <div class="chips" style="margin-top:8px">${res.sure ? `<span class="pillx ok">⏱ ${esc(res.sure)} dk</span>` : ""}<span class="pillx ok">🔥 ${fmt(res.kcal)} kcal</span><span class="pillx ok">${MEAL_EMOJI[res.meal]} ${esc(res.meal)}${res.last ? " · son öğün" : ""}</span></div></div></div>
+        <div class="chips" style="margin-top:8px">${res.sure ? `<span class="pillx ok">⏱ ${esc(res.sure)} dk</span>` : ""}<span class="pillx ok">🔥 ${fmt(res.kcal)} kcal</span><span class="pillx ok">${MI(res.meal)} ${esc(res.meal)}${res.last ? " · son öğün" : ""}</span></div></div></div>
       <div class="tiles in" style="grid-template-columns:repeat(3,1fr)"><div><b style="color:var(--p)">${fmt(res.p)} g</b><span>protein</span></div><div><b style="color:var(--c)">${fmt(res.c)} g</b><span>karb.</span></div><div><b style="color:var(--f)">${fmt(res.f)} g</b><span>yağ</span></div></div>
       ${res.neden ? `<div class="note"><b>Neden bu tarif?</b> ${esc(res.neden)}</div>` : ""}
       <h4>🧺 Malzemeler</h4>
@@ -1579,7 +1807,7 @@ function renderChef() {
     </div>`;
   }
   const past = arr(S.recipes).filter(x => !res || x.id !== res.id).slice(0, 5);
-  if (past.length) h += `<div class="sec">Son tariflerin</div><div class="card">${past.map(x => `<div class="item" data-act="openRecipe" data-id="${x.id}" style="cursor:pointer"><div class="fic">${foodEmoji(x.ad)}</div><div class="nm">${esc(x.ad)}<small>${MEAL_EMOJI[x.meal] || ""} ${esc(x.meal)} · ${esc(new Date(x.at).toLocaleDateString("tr-TR", { day: "numeric", month: "short" }))}</small></div><b class="kc">${fmt(x.kcal)} kcal</b><span class="mu" style="font-size:20px">›</span></div>`).join("")}</div>`;
+  if (past.length) h += `<div class="sec">Son tariflerin</div><div class="card">${past.map(x => `<div class="item" data-act="openRecipe" data-id="${x.id}" style="cursor:pointer"><div class="fic">${foodEmoji(x.ad) || MI(x.meal)}</div><div class="nm">${esc(x.ad)}<small>${MI(x.meal) || ""} ${esc(x.meal)} · ${esc(new Date(x.at).toLocaleDateString("tr-TR", { day: "numeric", month: "short" }))}</small></div><b class="kc">${fmt(x.kcal)} kcal</b><span class="mu" style="font-size:20px">›</span></div>`).join("")}</div>`;
   el.innerHTML = h;
 }
 async function makeRecipe(again) {
@@ -1680,6 +1908,7 @@ document.addEventListener("click", e => {
     wstep: () => { wStep = Math.max(30, Math.min(350, Math.round((wStep + num(a.dataset.n)) * 10) / 10)); renderWeight(); },
     wtype: () => { const v = prompt("Kilo (kg)", String(wStep).replace(".", ",")); if (v === null) return; const n = r1(v); if (n < 30 || n > 350) return toast("Geçerli bir kilo gir", 1); wStep = n; renderWeight(); },
     theme: () => { S.settings.theme = a.dataset.t; save(); applyTheme(); renderProfile(); },
+    skin: () => { S.settings.skin = a.dataset.s; save(); go(view); },
     accent: () => { S.settings.accent = a.dataset.a; save(); applyTheme(); renderProfile(); toast(ACCENTS.find(x => x[0] === a.dataset.a)?.[1] + " seçildi"); },
     sheet: () => openSheet(a.dataset.k),
     closeSheet,
@@ -1748,7 +1977,7 @@ document.addEventListener("click", e => {
     },
     export: exportData,
     import: () => $("#impFile").click(),
-    reset: () => { if (confirm("Tüm kayıtların silinecek" + (Cloud.user ? " (buluttakiler dahil)" : "") + ". Emin misin?") && confirm("Geri alınamaz. Siliyorum?")) { const st = S.settings; S = defaults(); S.settings = { ...S.settings, workerUrl: st.workerUrl, theme: st.theme, accent: st.accent }; save(); go("profile"); } },
+    reset: () => { if (confirm("Tüm kayıtların silinecek" + (Cloud.user ? " (buluttakiler dahil)" : "") + ". Emin misin?") && confirm("Geri alınamaz. Siliyorum?")) { const st = S.settings; S = defaults(); S.settings = { ...S.settings, workerUrl: st.workerUrl, theme: st.theme, accent: st.accent, skin: st.skin }; save(); go("profile"); } },
     logout: () => { if (confirm("Çıkış yapılsın mı? Kayıtların bulutta kalır.")) Cloud.logout(); },
     login: () => Cloud.auth("login"), signup: () => Cloud.auth("signup"), forgot: () => Cloud.auth("forgot"),
   };
