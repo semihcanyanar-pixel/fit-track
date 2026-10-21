@@ -859,6 +859,7 @@ function busy(msg) { $("#busy").className = msg ? "on" : ""; $("#busyTx").textCo
 document.addEventListener("click", e => { if (e.target.id === "busyCancel" && aiCtl) aiCtl.abort("user"); });
 
 function go(v) {
+  if (v !== view) draft.pantry = "";
   view = v; applyTheme(); closeSheet();
   document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.go === v));
@@ -2048,9 +2049,9 @@ function renderChef() {
   </div>
 
   <div class="card">
-    <div class="addh"><span class="e" style="background:var(--ac2)">🧺</span><b>Mutfağında neler var?</b></div>
-    <textarea id="pantry" rows="3" placeholder="ör. tavuk göğüs, bulgur, domates, biber, yoğurt, yumurta, ıspanak">${esc(S.settings.pantry || "")}</textarea>
-    <div class="hint">Tuz, baharat ve az miktar yağın olduğu varsayılır. Listeni bir dahaki sefere hatırlarım.</div>
+    <div class="addh"><span class="e" style="background:var(--tint-g)">🧺</span><b>Mutfağında neler var?</b></div>
+    <textarea id="pantry" data-draft="pantry" rows="3" placeholder="ör. tavuk göğüs, bulgur, domates, biber, yoğurt, yumurta, ıspanak">${esc(draft.pantry || "")}</textarea>
+    <div class="hint">Tuz, baharat ve az miktar yağın olduğu varsayılır.</div>
     <button class="pri full" style="margin-top:12px" data-act="recipe">✨ Bana tarif öner</button>
   </div>`;
 
@@ -2069,7 +2070,7 @@ function renderChef() {
       <ol class="steps">${arr(res.adimlar).map(s => `<li>${esc(s)}</li>`).join("")}</ol>
       ${res.ipucu ? `<div class="warnbox">💡 ${esc(res.ipucu)}</div>` : ""}
       ${res.sonra ? `<div class="note">🍎 <b>Sonrası için:</b> ${esc(res.sonra)}</div>` : ""}
-      <div class="btns"><button class="pri grow" data-act="recipeAte" ${res.added ? "disabled" : ""}>${res.added ? "✓ Eklendi" : `✓ Yedim, ${esc(MEAL_SHORT[res.meal])} öğününe ekle`}</button><button data-act="recipe" data-again="1" aria-label="Başka tarif">↻</button></div>
+      <div class="btns"><button class="pri grow" data-act="recipeAte" ${res.added ? "disabled" : ""}>${res.added ? "✓ Eklendi" : `✓ Yedim, ${esc(MEAL_SHORT[res.meal])} öğününe ekle`}</button>${arr(S.recipes).some(x => x.id === res.id) ? `<button disabled>✓ Kayıtlı</button>` : `<button data-act="recipeSave">Kaydet</button>`}<button data-act="recipe" data-again="1" aria-label="Başka tarif">↻</button></div>
     </div>`;
   }
   const past = arr(S.recipes).filter(x => !res || x.id !== res.id).slice(0, 5);
@@ -2079,17 +2080,23 @@ function renderChef() {
 async function makeRecipe(again) {
   const pantry = ($("#pantry")?.value || "").trim();
   if (!pantry) return toast("Mutfağında neler olduğunu yaz", 1);
-  S.settings.pantry = pantry; save();
+  draft.pantry = pantry; if (S.settings.pantry) { delete S.settings.pantry; save(); }
   chefDefaults();
   const r = remainingToday(), tg = S.targets, p = S.profile;
   const eaten = MEALS.map(m => { const fs = r.d.foods.filter(f => f.meal === m); return fs.length ? `${m}: ${fs.map(f => `${f.name} (${f.kcal} kcal)`).join(", ")}` : ""; }).filter(Boolean).join("\n") || "Bugün henüz bir şey yenmedi.";
   const prev = again && chef.result ? `\nÖNCEKİ ÖNERİ: "${chef.result.ad}" — farklı bir tarif öner.` : "";
-  const budget = chef.last
-    ? `Bu, BUGÜNÜN SON ÖĞÜNÜ. Kalan kaloriyi aşmadan (en fazla kalan kcal kadar) ve özellikle eksik kalan proteini mümkün olduğunca kapatacak şekilde planla. Kalan kalori çok azsa ya da hedef aşıldıysa hafif, yüksek proteinli ve düşük kalorili bir seçenek öner ve bunu "neden" alanında belirt.`
-    : `Bu öğünden SONRA kişi en az bir öğün daha yiyecek. Kalan kalorinin tamamını kullanma; ${chef.meal === "Ara öğün" ? "ara öğün için kalan kalorinin en fazla ~%25'i (genelde 150-300 kcal)" : "bu öğün için kalan kalorinin yaklaşık %55-70'i"} kadar planla ve sonraki öğüne pay bırak. "sonra" alanında sonraki öğün için kısa bir öneri ver.`;
+  const share = chef.last ? [0.9, 1] : chef.meal === "Ara öğün" ? [0.15, 0.25] : [0.55, 0.7];
+  const cap = chef.meal === "Ara öğün" ? 400 : 1500;
+  const hi = Math.round(Math.min(r.kcal * share[1], cap)), lo = Math.round(Math.min(r.kcal * share[0], hi * 0.9));
+  const smallLeft = r.kcal < 250;
+  const budget = smallLeft
+    ? `Kalan kalori çok az ya da hedef aşıldı (${fmt(r.kcal)} kcal). Hafif, yüksek proteinli ve düşük kalorili (en fazla ~250 kcal) bir seçenek öner ve bunu "neden" alanında belirt.`
+    : chef.last
+    ? `Bu, BUGÜNÜN SON ÖĞÜNÜ. Kalan makroları bu öğünle TAMAMLA: tarifin toplamı ${fmt(lo)}-${fmt(hi)} kcal ARASINDA olmalı (bu bir hedeftir, sadece üst sınır değil). Kalan ${fmt(Math.max(r.p, 0))} g proteini mümkün olduğunca kapat. Kalori hedefe ulaşmıyorsa porsiyonu büyüt (ör. 2 adet/2 porsiyon) veya mutfaktaki malzemelerden bir eşlikçi ekle (yoğurt, salata, ekmek, pilav vb.). Miktarları buna göre yaz.`
+    : `Bu öğünden SONRA kişi en az bir öğün daha yiyecek. Bu öğün ${fmt(lo)}-${fmt(hi)} kcal ARASINDA olmalı; sonraki öğüne pay bırak. "sonra" alanında sonraki öğün için kısa bir öneri ver.`;
   busy("Tarifin hazırlanıyor…");
   try {
-    const out = await ai(SYS, `KİŞİ: ${p.cinsiyet}, ${p.yas} yaş, ${latestWeight() || p.kilo} kg. Amaç: ${p.amac}
+    const prompt = `KİŞİ: ${p.cinsiyet}, ${p.yas} yaş, ${latestWeight() || p.kilo} kg. Amaç: ${p.amac}
 Özel durum: ${SPECIAL[p.ozel] || "Yok"} · Alerji/intolerans: ${p.alerji || "yok"} · Sevmedikleri: ${p.sevmedik || "-"} · Tercihleri: ${p.tercih || "-"} · Sağlık: ${p.saglik || "-"}
 GÜNLÜK HEDEF: ${fmt(r.tt.total)} kcal (egzersiz dahil)${tg ? `, protein ${tg.protein} g, karbonhidrat ${tg.carb} g, yağ ${tg.fat} g` : ""}
 BUGÜN YENENLER:
@@ -2101,18 +2108,24 @@ MUTFAKTA OLANLAR: """${pantry}"""${prev}
 
 GÖREV: Sadece mutfakta olan malzemelerle (tuz, karabiber, baharatlar, su ve az miktar sıvı yağ her evde var sayılır) bu öğün için en mantıklı, pratik ve lezzetli TEK bir tarif öner. Gerekirse listede olmayan en fazla 1-2 küçük malzemeyi isteğe bağlı olarak ekleyebilirsin ("var": false). Alerji ve sevmediklerine kesinlikle uy. Miktarları gram/adet/kaşık olarak tek porsiyon için yaz. Kalori ve makroları malzemelerin gramajından hesapla.
 ${NUTRI_REF}
-JSON: {"ad":"tarif adı","sure":number (dakika),"kcal":number,"protein":number,"karbonhidrat":number,"yag":number,"malzemeler":[{"ad":"string","miktar":"string","var":true}],"adimlar":["kısa adım", "..."],"neden":"bu tarifin kalan makrolara/amaca neden uygun olduğu, 1-2 cümle","ipucu":"varsa kısa ipucu","sonra":"son öğün değilse sonraki öğün için kısa öneri, değilse boş"}`, 0.7, "fast");
+JSON: {"ad":"tarif adı","sure":number (dakika),"kcal":number,"protein":number,"karbonhidrat":number,"yag":number,"malzemeler":[{"ad":"string","miktar":"string","var":true}],"adimlar":["kısa adım", "..."],"neden":"bu tarifin kalan makrolara/amaca neden uygun olduğu, 1-2 cümle","ipucu":"varsa kısa ipucu","sonra":"son öğün değilse sonraki öğün için kısa öneri, değilse boş"}`;
+    let out = await ai(SYS, prompt, 0.7, "fast");
+    if (!smallLeft && num(out.kcal) < lo * 0.8) {
+      busy("Porsiyon hedefe göre ayarlanıyor…");
+      const out2 = await ai(SYS, prompt + `\n\nÖNCEKİ CEVABIN ${fmt(num(out.kcal))} kcal idi; bu hedefin (${fmt(lo)}-${fmt(hi)} kcal) çok altında. Aynı fikri koruyarak porsiyonu büyüt ve/veya eşlikçi ekle, toplamı hedef aralığa getir.`, 0.4, "fast").catch(() => null);
+      if (out2 && num(out2.kcal) > num(out.kcal)) out = out2;
+    }
     const res = { id: uid(), at: Date.now(), meal: chef.meal, last: !!chef.last, ad: String(out.ad || "Tarif"), sure: num(out.sure) || "", kcal: Math.round(num(out.kcal)),
       p: r1(out.protein), c: r1(out.karbonhidrat), f: r1(out.yag), malzemeler: arr(out.malzemeler).slice(0, 20), adimlar: arr(out.adimlar).slice(0, 12),
       neden: out.neden || "", ipucu: out.ipucu || "", sonra: chef.last ? "" : (out.sonra || "") };
     if (!res.adimlar.length) throw new Error("Tarif oluşturulamadı, tekrar dene.");
     chef.result = res;
-    S.recipes = [res, ...arr(S.recipes)].slice(0, 15); save();
     renderChef();
     setTimeout(() => $("#recipe")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
   } catch (e) { toast(e.message, 1); } finally { busy(); }
 }
 
+function saveRecipe(r) { const ex = arr(S.recipes).find(x => x.id === r.id); if (ex) Object.assign(ex, r); else S.recipes = [r, ...arr(S.recipes)].slice(0, 15); }
 function focusAdd(kb) {
   setTimeout(() => {
     if (SK() !== "tabak") $("#addcard")?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -2158,9 +2171,10 @@ document.addEventListener("click", e => {
       const r = chef.result; if (!r || r.added) return;
       const t = ymd(new Date()), D = day(t); openMeals.add(r.meal);
       D.foods.push({ id: uid(), meal: r.meal, name: r.ad, amount: "1 porsiyon · tarif", kcal: r.kcal, p: r.p, c: r.c, f: r.f });
-      r.added = true; const sv = arr(S.recipes).find(x => x.id === r.id); if (sv) sv.added = true;
+      r.added = true; saveRecipe(r);
       save(); renderChef(); toast(`${r.meal} öğününe ${fmt(r.kcal)} kcal eklendi`);
     },
+    recipeSave: () => { const r = chef.result; if (!r) return; saveRecipe(r); save(); renderChef(); toast("Tarif kaydedildi"); },
     openRecipe: () => { const x = arr(S.recipes).find(y => y.id === a.dataset.id); if (x) { chef.result = x; chef.meal = x.meal; chef.last = x.last; renderChef(); setTimeout(() => $("#recipe")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); } },
     rtog: () => { recentOpen = !recentOpen; renderToday(); },
     mtog: () => { const m = a.dataset.m; openMeals.has(m) ? openMeals.delete(m) : openMeals.add(m); renderToday(); },
