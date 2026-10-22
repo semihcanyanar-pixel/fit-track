@@ -908,7 +908,7 @@ async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null
   const t0 = Date.now();
   const tick = setInterval(() => { const s = Math.round((Date.now() - t0) / 1000); if (s >= 4) $("#busyTx").textContent = `${label} ${s} sn`; }, 1000);
   aiCtl = new AbortController();
-  const hardStop = setTimeout(() => aiCtl.abort(), mode === "deep" ? 80000 : 30000);
+  const hardStop = setTimeout(() => aiCtl.abort(), mode === "deep" ? 80000 : 45000);
   try {
     for (let i = 0; i < 2; i++) {               // yoğunlukta sadece 1 kez daha dene
       let r, d;
@@ -919,7 +919,10 @@ async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null
         if (aiCtl?.signal.aborted) throw new Error(aiCtl.signal.reason === "user" ? "İptal edildi." : "Yapay zeka çok geç yanıt verdi.");
         throw new Error("Bağlantı kurulamadı. İnternetini kontrol et.");
       }
-      if (r.ok && !d.error) return parseJSON(d.text);
+      if (r.ok && !d.error) {
+        try { return parseJSON(d.text); }
+        catch (e) { try { localStorage.setItem("fittrack_lastraw", JSON.stringify({ at: Date.now(), model: d.model || "?", fallback: !!d.fallback, ms: d.ms, text: String(d.text || "").slice(0, 4000) })); } catch (x) {} throw e; }
+      }
       if (d.detail) console.warn("AI:", d.detail);
       if (d.kind === "busy" && i === 0 && Date.now() - t0 < (mode === "deep" ? 30000 : 8000)) { await new Promise(res => setTimeout(res, 1500)); continue; }
       throw new Error(d.error || "Hata: " + r.status);
@@ -943,8 +946,17 @@ function repairJSON(t) {
   }
   return null;
 }
+function cleanJSON(t) {
+  return t.replace(/[“”]/g, '"').replace(/[‘’]/g, "'")
+    .replace(/\/\/[^\n"]*$/gm, "")                       // yorum satırları
+    .replace(/(:\s*-?\d+),(\d+)(?=\s*[,}\]])/g, "$1.$2")  // 0,4 → 0.4
+    .replace(/:\s*True\b/g, ": true").replace(/:\s*False\b/g, ": false").replace(/:\s*None\b/g, ": null")
+    .replace(/:\s*NaN\b/g, ": 0").replace(/,\s*([}\]])/g, "$1");
+}
 function parseJSON(t) {
   t = String(t || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
+  try { return JSON.parse(t); } catch (e) {}
+  t = cleanJSON(t);
   try { return JSON.parse(t); } catch (e) {
     const m = t.match(/\{[\s\S]*\}/);
     if (m) { try { return JSON.parse(m[0]); } catch (e2) {} }
@@ -2140,7 +2152,7 @@ function openSheet(k) {
   if (PF[k]) { title = PF[k].ic + " " + PF[k].t; body = `<form id="pfs" data-k="${k}">${PF[k].html(p)}<button type="submit" class="pri full" style="margin-top:16px">Kaydet</button></form>`; }
   else if (k === "ai") { title = "✨ Yapay zeka"; body = `<label class="f"><span>Yapay zeka adresi (Cloudflare Worker)</span><input id="wurl" value="${esc(S.settings.workerUrl || DEFAULT_WORKER)}" autocapitalize="off" autocorrect="off"></label>
       <div class="btns"><button class="grow" data-act="saveUrl">Kaydet</button><button class="pri grow" data-act="testAi">Bağlantıyı test et</button></div>
-      <p class="hint">Önce Google Gemini denenir; yoğunsa Cloudflare'in yedek yapay zekası devreye girer.</p>`; }
+      <p class="hint">Önce Google Gemini denenir; yoğunsa Cloudflare'in yedek yapay zekası devreye girer.</p>${(() => { let x = null; try { x = JSON.parse(localStorage.getItem("fittrack_lastraw")); } catch (e) {} return x ? `<details style="margin-top:14px"><summary class="sm mu" style="font-weight:700">Son okunamayan yanıt (${new Date(x.at).toLocaleString("tr-TR")}, ${esc(x.model)}${x.fallback ? ", yedek" : ""}${x.ms ? `, ${Math.round(x.ms / 1000)} sn` : ""})</summary><pre style="white-space:pre-wrap;font-size:11px;max-height:220px;overflow:auto;background:var(--in);padding:10px;border-radius:10px">${esc(x.text)}</pre></details>` : ""; })()}`; }
   else if (k === "hesap") { title = "☁️ Hesap"; body = Cloud.user ? `<p style="margin:6px 0 4px"><b>${esc(Cloud.user.email)}</b></p><p class="sm mu" style="margin:0 0 14px">Kayıtların buluta kaydediliyor; başka cihazdan aynı hesapla girince hepsi gelir. ${esc(Cloud.statusText())}</p>
       <button class="full" data-act="logout">Çıkış yap</button>` : `<p class="sm mu">Tüm kayıtların sadece bu cihazda saklanıyor. Cihaz değiştirirken yedek al.</p>`; }
   else if (k === "veri") { title = "🗂️ Veriler"; body = `<p class="sm mu" style="margin:4px 0 12px">Tüm kayıtlarını dosya olarak yedekleyebilir ya da yedekten geri yükleyebilirsin.</p>
