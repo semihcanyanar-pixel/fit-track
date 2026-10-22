@@ -639,6 +639,7 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 .fc-btns{margin-top:16px}.fc-btns button{flex:1;height:48px}.fc-btns .fc-del{flex:none;width:52px;color:var(--bad)}
 .fc-g4{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
 .fc-in{position:relative;display:block}.fc-in input{padding:11px 26px 11px 9px;font-weight:600}.fc-in em{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-style:normal;font-size:11.5px;color:var(--mu);font-weight:700}
+.fc-seg button{font-weight:700}
 .fc-tg{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border-radius:14px;background:var(--card2);cursor:pointer}
 .fc-tg input{display:none}.fc-tg .sw{width:44px;height:26px;border-radius:13px;background:var(--ln);position:relative;flex:none;transition:background .15s}
 .fc-tg .sw:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .15s}
@@ -1133,9 +1134,13 @@ async function resolveItems(list) {
     const ai = { k: num(i.kcal100), p: num(i.p100), c: num(i.c100), f: num(i.f100) };
     let tot, src = "tahmini", srcName = "", per = null;
     if (my) {
-      const m = num(i.kayitliMiktar || i.adet) / my.base;
+      const isG = /^(g|gr|gram|ml)$/i.test(u);
+      const m = my.mode === "adet" && isG && my.gpu && g ? g / my.gpu
+        : my.mode === "g" ? (num(i.kayitliMiktar) || g || 100) / 100
+        : num(i.kayitliMiktar || i.adet) || 1;
       tot = { kcal: my.kcal * m, p: my.p * m, c: my.c * m, f: my.f * m }; src = "senin";
-      return { name: String(i.ad || my.name), amount: `${fmtQ(m * my.base)} ${my.u}`, q: m * my.base, u: my.u, gram: g, src, kcal: Math.round(tot.kcal), p: r1(tot.p), c: r1(tot.c), f: r1(tot.f) };
+      const mode = my.mode || (my.base === 100 ? "g" : "adet"), qq = mode === "g" ? m * 100 : mode === "toplam" ? 1 : m;
+      return { name: String(i.ad || my.name), amount: mode === "toplam" ? (m === 1 ? my.u : `${fmtQ(m)} × ${my.u}`) : `${fmtQ(qq)} ${my.u}`, mode, q: qq, u: my.u, gpu: my.gpu, gram: mode === "g" ? qq : my.gpu ? qq * my.gpu : g, src, kcal: Math.round(tot.kcal), p: r1(tot.p), c: r1(tot.c), f: r1(tot.f) };
     }
     if (usda && g > 0) {
       const ratio = ai.k ? usda.kcal100 / ai.k : 1;
@@ -1143,7 +1148,8 @@ async function resolveItems(list) {
     }
     if (!per) per = ai;
     tot = { kcal: g * per.k / 100, p: g * per.p / 100, c: g * per.c / 100, f: g * per.f / 100 };
-    return { name: String(i.ad || "Besin"), amount: String(i.miktar || (g ? g + " g" : "")), q, u, gram: g, per, src, srcName,
+    const isG = /^(g|gr|gram|ml)$/i.test(u);
+    return { name: String(i.ad || "Besin"), amount: String(i.miktar || (g ? g + " g" : "")), mode: isG ? "g" : "adet", q: isG ? (g || q) : q, u: isG ? "g" : u, gpu: !isG && g && q ? r1(g / q) : undefined, gram: g, per, src, srcName,
       kcal: Math.round(tot.kcal), p: r1(tot.p), c: r1(tot.c), f: r1(tot.f) };
   });
 }
@@ -1155,7 +1161,7 @@ async function calcFood() {
   if (!txt && !ph) return toast("Ne yediğini yaz ya da fotoğraf ekle", 1);
   busy(ph ? "Fotoğraf inceleniyor…" : "Kalori hesaplanıyor…");
   const mine = Object.values(S.myFoods || {});
-  const myTxt = mine.length ? `\nKİŞİNİN KAYITLI BESİNLERİ (eşleşen kalemde "kayitli" alanına adını AYNEN yaz ve "kayitliMiktar" alanına o birim cinsinden miktarı yaz):\n${mine.map(m => `- ${m.name} (birim: ${m.u})`).join("\n")}` : "";
+  const myTxt = mine.length ? `\nKİŞİNİN KAYITLI BESİNLERİ (eşleşen kalemde "kayitli" alanına adını AYNEN yaz ve "kayitliMiktar" alanına o birim cinsinden miktarı yaz):\n${mine.map(m => `- ${m.name} (birim: ${m.mode === "g" ? "g (kayitliMiktar = gram)" : m.mode === "toplam" ? m.u + " (toplam; kayitliMiktar = kaç porsiyon, genelde 1)" : m.u})`).join("\n")}` : "";
   const schema = `${myTxt}
 JSON: {"kalemler":[{"ad":"string","miktar":"kişinin anlayacağı miktar, ör. 2 adet / 150 g çiğ / 1 kase","adet":number,"birim":"adet|g|ml|dilim|kaşık|kase|bardak|porsiyon","gram":number,"durum":"çiğ|pişmiş|-","en":"USDA arama terimi ya da boş","karisik":boolean,"kcal100":number,"p100":number,"c100":number,"f100":number,"kayitli":"eşleşen kayıtlı besin adı ya da boş","kayitliMiktar":number}],"not":"önemli bir belirsizlik varsa kısa not, yoksa boş"}`;
   const prompt = ph
@@ -1187,7 +1193,7 @@ function addFoods(items, meal) {
   const d = day(curDate);
   items.forEach(i => {
     const f = { id: uid(), at: Date.now(), meal, name: i.name, amount: i.amount || "", kcal: Math.round(num(i.kcal)), p: r1(i.p), c: r1(i.c), f: r1(i.f) };
-    ["q", "u", "gram", "src", "srcName"].forEach(k => { if (i[k] != null && i[k] !== "") f[k] = i[k]; });
+    ["mode", "q", "u", "gpu", "gram", "src", "srcName"].forEach(k => { if (i[k] != null && i[k] !== "") f[k] = i[k]; });
     d.foods.push(f);
     S.recent = [{ name: f.name, amount: f.amount, kcal: f.kcal, p: f.p, c: f.c, f: f.f, q: f.q, u: f.u, src: f.src },
       ...S.recent.filter(x => !(x.name.toLowerCase() === f.name.toLowerCase() && x.amount === f.amount))].slice(0, 30);
@@ -1378,44 +1384,93 @@ function openFoodSheet(id, edit) {
         <div><small><i style="background:var(--p)"></i>Protein</small><b>${fmtQ(f.p)}<em>g</em></b>${pctBar(f.p, tg.protein, "var(--p)")}</div>
         <div><small><i style="background:var(--c)"></i>Karb.</small><b>${fmtQ(f.c)}<em>g</em></b>${pctBar(f.c, tg.carb, "var(--c)")}</div>
         <div><small><i style="background:var(--f)"></i>Yağ</small><b>${fmtQ(f.f)}<em>g</em></b>${pctBar(f.f, tg.fat, "var(--f)")}</div></div>
-      <div class="hint">Çubuklar günlük hedefinin ne kadarını karşıladığını gösterir.${f.q ? ` ${base === 100 ? "100 " + esc(u) : "1 " + esc(u)}: ${fmt(f.kcal / q * base)} kcal · ${fmtQ(f.p / q * base)} g protein.` : ""}${f.srcName ? ` Kaynak: ${esc(f.srcName)}.` : ""}</div>
+      <div class="hint">Çubuklar günlük hedefinin ne kadarını karşıladığını gösterir.${f.mode === "adet" && f.q ? ` 1 ${esc(f.u)}: ${fmt(f.kcal / f.q)} kcal · ${fmtQ(f.p / f.q)} g protein.` : f.mode === "g" && f.q ? ` 100 g: ${fmt(f.kcal / f.q * 100)} kcal · ${fmtQ(f.p / f.q * 100)} g protein.` : ""}${f.srcName ? ` Kaynak: ${esc(f.srcName)}.` : ""}</div>
       ${warn ? `<div class="warnbox">Kalori ile makrolar birbirini tutmuyor (P×4 + K×4 + Y×9 = ${fmt(f.p * 4 + f.c * 4 + f.f * 9)} kcal). Düzenle'den kontrol edebilirsin.</div>` : ""}
       <div class="btns fc-btns"><button class="fc-del" data-act="fdel" data-id="${f.id}" aria-label="Sil">🗑</button><button data-act="fedit" data-id="${f.id}">Düzenle</button><button class="pri" data-act="closeSheet">Tamam</button></div>`, false);
   } else {
-    const per = k => r1(num(f[k]) / q * base);
-    const my = (S.myFoods || {})[normName(f.name)];
-    sheetShell("Düzenle", MI(f.meal), MEAL_TINT[f.meal], `
-      <label class="f"><span>Besin</span><input id="fcName" value="${esc(f.name)}"></label>
-      <div class="row" style="gap:8px;margin-top:10px"><label class="f" style="flex:1;margin:0"><span>Miktar</span><input id="fcQ" type="number" inputmode="decimal" step="any" value="${fmtQ(q).replace(",", ".")}" oninput="fcTotal()"></label>
-        <label class="f" style="flex:1.3;margin:0"><span>Birim</span><input id="fcU" value="${esc(u)}" oninput="fcTotal(true)" placeholder="adet, g, dilim…"></label></div>
-      <label class="f"><span id="fcPerLbl">${base === 100 ? "100 " + esc(u) : "1 " + esc(u)} için değerler</span></label>
-      <div class="fc-g4">${[["kcal", "kcal", Math.round(num(f.kcal) / q * base)], ["p", "P", per("p")], ["c", "K", per("c")], ["f", "Y", per("f")]].map(([k, l, v]) =>
-        `<label class="fc-in"><input id="fc_${k}" type="number" inputmode="decimal" step="any" value="${String(v).replace(",", ".")}" oninput="fcTotal()"><em>${l}</em></label>`).join("")}</div>
-      <div class="hint" id="fcTot"></div>
-      <label class="fc-tg"><input type="checkbox" id="fcMem" ${my ? "checked" : ""}><span class="sw"></span><span><b>Bu değerleri hatırla</b><small>"${esc(f.name)}" bir dahaki sefere bu değerlerle hesaplanır, miktara göre çarpılır.</small></span></label>
-      <div class="btns fc-btns"><button data-act="fview" data-id="${f.id}">Vazgeç</button><button class="pri" data-act="fsave" data-id="${f.id}">Kaydet</button></div>`, false);
-    fcTotal();
+    fcEdit = fcInit(f);
+    fcDraw(f);
   }
 }
-function fcTotal(unitChanged) {
-  const q = num($("#fcQ")?.value), u = $("#fcU")?.value.trim() || "porsiyon", base = unitBase(u);
-  if (unitChanged) $("#fcPerLbl").textContent = (base === 100 ? "100 " : "1 ") + u + " için değerler";
-  const v = k => num($("#fc_" + k)?.value) * q / base;
-  if ($("#fcTot")) $("#fcTot").textContent = `Toplam: ${fmt(v("kcal"))} kcal · ${fmtQ(v("p"))} g protein · ${fmtQ(v("c"))} g karb. · ${fmtQ(v("f"))} g yağ`;
+const COUNT_U = u => u && !/^(g|gr|gram|ml|porsiyon)$/i.test(u) ? u : "adet";
+function sc(o, k) { return { kcal: Math.round(num(o.kcal) * k), p: r1(num(o.p) * k), c: r1(num(o.c) * k), f: r1(num(o.f) * k) }; }
+function fcInit(f) {
+  const T = { kcal: num(f.kcal), p: num(f.p), c: num(f.c), f: num(f.f) };
+  const mode = f.mode || (/^(g|gr|gram|ml)$/i.test(f.u || "") ? "g" : f.q && f.u && f.u !== "porsiyon" ? "adet" : "toplam");
+  const st = { id: f.id, mode, name: f.name, u: COUNT_U(f.u), note: mode === "toplam" ? (f.amount || "") : "", n: 1, gpu: num(f.gpu) || "", gram: num(f.gram) || "", per: { ...T }, mem: null };
+  if (mode === "adet") { st.n = num(f.q) || 1; st.per = sc(T, 1 / st.n); if (!st.gpu && f.gram) st.gpu = r1(f.gram / st.n); }
+  if (mode === "g") { st.gram = num(f.q) || num(f.gram) || ""; st.per = st.gram ? sc(T, 100 / st.gram) : { kcal: "", p: "", c: "", f: "" }; }
+  return st;
+}
+function fcTotals(s) {
+  if (s.mode === "adet") return { ...sc(s.per, num(s.n)), gram: num(s.gpu) ? num(s.gpu) * num(s.n) : null };
+  if (s.mode === "g") return { ...sc(s.per, num(s.gram) / 100), gram: num(s.gram) || null };
+  return { ...sc(s.per, 1), gram: num(s.gram) || null };
+}
+function fcRead() {
+  const s = fcEdit; if (!s) return;
+  const v = id => $("#" + id) ? $("#" + id).value : undefined;
+  if ($("#fcName")) s.name = v("fcName");
+  if ($("#fcN")) s.n = v("fcN");
+  if ($("#fcGpu")) s.gpu = v("fcGpu");
+  if ($("#fcG")) s.gram = v("fcG");
+  if ($("#fcNote")) s.note = v("fcNote");
+  if ($("#fcMem")) s.mem = $("#fcMem").checked;
+  ["kcal", "p", "c", "f"].forEach(k => { if ($("#fc_" + k)) s.per[k] = v("fc_" + k); });
+  const t = fcTotals(s), el = $("#fcTot");
+  if (el) el.innerHTML = s.mode === "toplam" ? "Yazdığın değerler aynen kaydedilir." : `Toplam: <b>${fmt(t.kcal)} kcal</b> · ${fmtQ(t.p)} g protein · ${fmtQ(t.c)} g karb. · ${fmtQ(t.f)} g yağ`;
+}
+function fcMode(m) {
+  fcRead(); const s = fcEdit; if (!s || s.mode === m) return;
+  const T = fcTotals(s), G = T.gram;
+  if (m === "adet") { s.n = 1; s.per = sc(T, 1); if (!num(s.gpu) && G) s.gpu = Math.round(G); }
+  if (m === "g") { s.gram = G ? Math.round(G) : ""; s.per = G ? sc(T, 100 / G) : { kcal: "", p: "", c: "", f: "" }; }
+  if (m === "toplam") { s.per = sc(T, 1); if (G) s.gram = Math.round(G); }
+  s.mode = m;
+  const r = findFood(s.id); if (r) fcDraw(r.f);
+}
+function fcDraw(f) {
+  const s = fcEdit; if (!f || !s) return;
+  const my = (S.myFoods || {})[normName(f.name)];
+  const mem = s.mem == null ? !!my : s.mem;
+  const inp = (id, val, unit, attrs = "") => `<label class="fc-in"><input id="${id}" type="number" inputmode="decimal" step="any" value="${val === "" || val == null ? "" : String(val).replace(",", ".")}" oninput="fcRead()" ${attrs}><em>${unit}</em></label>`;
+  const qty = s.mode === "adet"
+    ? `<div class="row" style="gap:8px;align-items:flex-end"><label class="f" style="flex:1"><span>Kaç ${esc(s.u)}?</span>${inp("fcN", s.n, esc(s.u))}</label><label class="f" style="flex:1"><span>1 ${esc(s.u)} ≈</span>${inp("fcGpu", s.gpu, "g", 'placeholder="isteğe bağlı"')}</label></div>`
+    : s.mode === "g" ? `<label class="f"><span>Kaç gram yedin?</span>${inp("fcG", s.gram, "g")}</label>`
+    : `<label class="f"><span>Miktar (isteğe bağlı not)</span><input id="fcNote" value="${esc(s.note)}" placeholder="ör. 1 tabak" oninput="fcRead()"></label>`;
+  const lbl = s.mode === "adet" ? `1 ${esc(s.u)} için değerler` : s.mode === "g" ? "100 g için değerler" : "Yediğinin toplam değeri";
+  const nm = esc(String(s.name || f.name).toLocaleLowerCase("tr-TR"));
+  const hint = s.mode === "adet" ? `Sonraki "3 ${nm}" → 3 × 1 ${esc(s.u)} değeri` : s.mode === "g" ? `Sonraki girişte gramla çarpılır (80 g → 0,8 × 100 g değeri)` : `Sonraki "${nm}" → bu toplam değer`;
+  sheetShell("Düzenle", MI(f.meal), MEAL_TINT[f.meal], `
+    <label class="f" style="margin-top:4px"><span>Besin</span><input id="fcName" value="${esc(s.name)}" oninput="fcRead()"></label>
+    <label class="f"><span>Değerleri nasıl gireceksin?</span></label>
+    <div class="seg fc-seg">${[["adet", "1 adet"], ["g", "100 g"], ["toplam", "Toplam"]].map(([k, l]) => `<button class="${s.mode === k ? "on" : ""}" onclick="fcMode('${k}')">${l}</button>`).join("")}</div>
+    ${qty}
+    <label class="f"><span>${lbl}</span></label>
+    <div class="fc-g4">${inp("fc_kcal", s.per.kcal, "kcal")}${inp("fc_p", s.per.p, "P")}${inp("fc_c", s.per.c, "K")}${inp("fc_f", s.per.f, "Y")}</div>
+    <div class="hint" id="fcTot"></div>
+    <label class="fc-tg"><input type="checkbox" id="fcMem" ${mem ? "checked" : ""} onchange="fcRead()"><span class="sw"></span><span><b>Bu değerleri hatırla</b><small>${hint}</small></span></label>
+    <div class="btns fc-btns"><button data-act="fview" data-id="${f.id}">Vazgeç</button><button class="pri" data-act="fsave" data-id="${f.id}">Kaydet</button></div>`, false);
+  fcRead();
 }
 function fcSave(id) {
-  const r = findFood(id); if (!r) return; const f = r.f;
-  const name = $("#fcName").value.trim() || f.name, q = num($("#fcQ").value), u = $("#fcU").value.trim() || "porsiyon", base = unitBase(u);
-  if (!(q > 0)) return toast("Miktarı gir", 1);
-  const per = { kcal: num($("#fc_kcal").value), p: num($("#fc_p").value), c: num($("#fc_c").value), f: num($("#fc_f").value) };
-  if (!(per.kcal > 0)) return toast("Kaloriyi gir", 1);
-  const mem = $("#fcMem").checked;
-  Object.assign(f, { name, q, u, amount: `${fmtQ(q)} ${u}`, kcal: Math.round(per.kcal * q / base), p: r1(per.p * q / base), c: r1(per.c * q / base), f: r1(per.f * q / base), src: mem ? "senin" : "elle" });
+  const r = findFood(id); if (!r || !fcEdit) return; fcRead();
+  const f = r.f, s = fcEdit, name = String(s.name || "").trim() || f.name, t = fcTotals(s);
+  if (s.mode === "adet" && !(num(s.n) > 0)) return toast("Kaç adet olduğunu gir", 1);
+  if (s.mode === "g" && !(num(s.gram) > 0)) return toast("Gramı gir", 1);
+  if (!(num(s.per.kcal) > 0)) return toast("Kaloriyi gir", 1);
+  const mem = !!s.mem;
+  const amount = s.mode === "adet" ? `${fmtQ(s.n)} ${s.u}` : s.mode === "g" ? `${fmtQ(s.gram)} g` : (String(s.note || "").trim() || "1 porsiyon");
+  Object.assign(f, { name, mode: s.mode, q: s.mode === "adet" ? num(s.n) : s.mode === "g" ? num(s.gram) : 1, u: s.mode === "adet" ? s.u : s.mode === "g" ? "g" : amount,
+    amount, kcal: t.kcal, p: t.p, c: t.c, f: t.f, src: mem ? "senin" : "elle" });
+  if (t.gram) f.gram = Math.round(t.gram);
+  if (s.mode === "adet" && num(s.gpu)) f.gpu = num(s.gpu); else delete f.gpu;
   delete f.srcName;
   S.myFoods = S.myFoods || {};
-  if (mem) S.myFoods[normName(name)] = { name, u, base, kcal: per.kcal, p: per.p, c: per.c, f: per.f, at: Date.now() };
-  else delete S.myFoods[normName(name)];
-  save(); render(); openFoodSheet(id); toast(mem ? `${name} değerlerin kaydedildi` : "Güncellendi");
+  const key = normName(name);
+  if (mem) { const m = { name, mode: s.mode, u: f.u, base: s.mode === "g" ? 100 : 1, kcal: num(s.per.kcal), p: num(s.per.p), c: num(s.per.c), f: num(s.per.f), at: Date.now() }; if (s.mode === "adet" && num(s.gpu)) m.gpu = num(s.gpu); S.myFoods[key] = m; }
+  else delete S.myFoods[key];
+  fcEdit = null; save(); render(); openFoodSheet(id); toast(mem ? `${name} değerlerin kaydedildi` : "Güncellendi");
 }
 /* ---- Tema 3 (Bento) ve Tema 4 (Tabak) parçaları ---- */
 let exOpen = false;
