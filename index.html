@@ -928,11 +928,27 @@ async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null
     throw new Error(e.message + (e.message === "İptal edildi." ? "" : " Yazdığın metin silinmedi; tekrar dene ya da 'Elle gir'i kullan."));
   } finally { clearInterval(tick); clearTimeout(hardStop); aiCtl = null; }
 }
+// Yarıda kesilmiş JSON'u son tam kaleme kadar kurtar
+function repairJSON(t) {
+  const s = t.slice(t.indexOf("{")); if (!s) return null;
+  let cut = s.length;
+  for (let tries = 0; tries < 40 && cut > 0; tries++) {
+    const part = s.slice(0, cut), stack = []; let inStr = false, esc = false;
+    for (const ch of part) {
+      if (inStr) { if (esc) esc = false; else if (ch === "\\") esc = true; else if (ch === '"') inStr = false; continue; }
+      if (ch === '"') inStr = true; else if (ch === "{" || ch === "[") stack.push(ch); else if (ch === "}" || ch === "]") stack.pop();
+    }
+    if (!inStr) { const tail = stack.reverse().map(c => c === "{" ? "}" : "]").join(""); try { return JSON.parse(part.replace(/,\s*$/, "") + tail); } catch (e) {} }
+    cut = s.lastIndexOf("}", cut - 2) + 1;
+  }
+  return null;
+}
 function parseJSON(t) {
   t = String(t || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
   try { return JSON.parse(t); } catch (e) {
     const m = t.match(/\{[\s\S]*\}/);
     if (m) { try { return JSON.parse(m[0]); } catch (e2) {} }
+    const fixed = repairJSON(t); if (fixed) { fixed.__cut = true; return fixed; }
     throw new Error("Yapay zeka yanıtı okunamadı, tekrar dene.");
   }
 }
@@ -1180,7 +1196,9 @@ Her besini ayrı kalem olarak ayır. Miktar yazılmadıysa Türkiye'deki standar
 ${FOOD_RULES}
 ${NUTRI_REF}
 ${schema}`;
-  const r = await ai(SYS, prompt, 0, "fast", ph ? { mime: ph.mime, data: ph.data } : null);
+  let r;
+  try { r = await ai(SYS, prompt, 0, "fast", ph ? { mime: ph.mime, data: ph.data } : null); }
+  catch (e) { if (!/okunamadı/.test(e.message)) throw e; busy("Tekrar deneniyor…"); r = await ai(SYS, prompt, 0, "fast", ph ? { mime: ph.mime, data: ph.data } : null); }
   busy("Besin değerleri kontrol ediliyor…");
   const res = await resolveItems(arr(r.kalemler));
   return { r, items: res.map(x => ({ ...x, id: uid(), on: true })) };
@@ -1194,7 +1212,7 @@ async function calcFood() {
     const items = res.map((x, k) => { const i = arr(r.kalemler)[k]; return { ...x, id: uid(), on: true,
       calc: x.src === "senin" ? "Senin kayıtlı değerlerin" : x.gram ? `${Math.round(x.gram)} g${i.durum && i.durum !== "-" ? " " + i.durum : ""} · ${x.src === "usda" ? "USDA verisi" : "tahmini değer"}` : "" }; });
     if (!items.length) throw new Error(ph ? "Fotoğrafta yiyecek bulunamadı. Daha yakından çek ya da not ekle." : "Besin bulunamadı, biraz daha açık yaz.");
-    draft.preview = { meal: draft.meal, items, note: r.not || "", photoUrl: ph?.url || "" };
+    draft.preview = { meal: draft.meal, items, note: [r.__cut ? "Yanıt yarıda kesildi; listede eksik kalem olabilir, kontrol et." : "", r.not || ""].filter(Boolean).join(" "), photoUrl: ph?.url || "" };
     renderToday();
     setTimeout(() => $("#prev")?.scrollIntoView({ behavior: "smooth", block: "center" }), 60);
   } catch (e) { toast(e.message, 1); } finally { busy(); }
