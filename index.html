@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Fit Track">
 <meta name="theme-color" content="#f6f4ef">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-180.png?v=2">
+<link rel="apple-touch-icon" href="icon-180.png?v=3">
 <link rel="icon" href="icon-512.png">
 <title>Fit Track</title>
 <style>
@@ -601,7 +601,7 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 .tfeed .th .ch{color:var(--mu);font-size:18px;width:14px;text-align:center}
 .tfeed small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .tfeed .tit{display:flex;align-items:center;gap:6px;padding:4px 0 4px 16px;font-size:14.5px}
-.tfeed .tit span{flex:1;min-width:0}.tfeed .tit small{display:inline;color:var(--mu);font-size:12.5px}
+.tfeed .tit>span:first-child{flex:1;min-width:0}.tfeed .tit small{display:inline;color:var(--mu);font-size:12.5px}
 .tfeed .tm{width:40px;font-size:12.5px;color:var(--mu);font-weight:600;flex:none}
 .tfeed .tbar{width:4px;align-self:stretch;border-radius:3px;flex:none}
 .tfeed .bd{flex:1;min-width:0}.tfeed b{display:block;font-size:15px;font-weight:600}.tfeed small{font-size:12.5px;color:var(--mu);font-weight:500}
@@ -620,6 +620,30 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 .tph{display:flex;align-items:center;gap:10px;max-width:616px;margin:0 auto 8px;font-size:13px;color:var(--mu);font-weight:600}
 .tph img{width:44px;height:44px;border-radius:12px;object-fit:cover}
 .tph span{flex:1}.tph button{background:none;box-shadow:none;font-size:20px;color:var(--mu);padding:4px 8px}
+
+.mmac{display:flex;gap:6px;margin:8px 0 6px}
+.mmac span{flex:1;background:var(--card2);border-radius:11px;padding:6px 9px;font-size:11.5px;color:var(--mu);font-weight:600;display:flex;flex-wrap:wrap;align-items:center;gap:0 5px}
+.mmac span i{width:6px;height:6px;border-radius:50%}
+.mmac b{flex-basis:100%;color:var(--tx);font-size:14px}
+.tfeed .mmac{margin-left:16px}
+.tfeed .tit{cursor:pointer}.tfeed .tit .kc{font-size:15px}.tfeed .tit .chev{color:var(--mu);width:14px;text-align:center}
+.fc-sub{font-size:13px;color:var(--mu);font-weight:600;margin:-6px 0 4px;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.fc-src{display:inline-flex;font-size:11.5px;font-weight:700;border-radius:8px;padding:3px 8px;background:var(--card2);color:var(--mu)}
+.fc-src.senin{background:rgba(47,191,113,.14);color:#1E9E5A}.fc-src.usda{background:rgba(58,160,255,.14);color:#2378C8}.fc-src.tahmini{background:rgba(232,163,23,.15);color:#B7791F}
+.fc-kc{display:flex;align-items:baseline;gap:6px;margin:12px 0 12px}.fc-kc b{font-size:44px;letter-spacing:-.04em;line-height:1}.fc-kc span{color:var(--mu);font-weight:600}
+.fc-mac{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fc-mac>div{background:var(--card2);border-radius:14px;padding:11px 12px}
+.fc-mac small{font-size:12px;color:var(--mu);font-weight:600;display:flex;align-items:center;gap:6px}.fc-mac small i{width:7px;height:7px;border-radius:50%}
+.fc-mac b{font-size:20px;display:block;margin-top:4px}.fc-mac b em{font-style:normal;font-size:12px;color:var(--mu);margin-left:2px}
+.fc-mac .pb{height:5px;border-radius:5px;background:var(--ln);margin-top:8px;overflow:hidden}.fc-mac .pb i{display:block;height:100%}
+.fc-btns{margin-top:16px}.fc-btns button{flex:1;height:48px}.fc-btns .fc-del{flex:none;width:52px;color:var(--bad)}
+.fc-g4{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.fc-in{position:relative;display:block}.fc-in input{padding:11px 26px 11px 9px;font-weight:600}.fc-in em{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-style:normal;font-size:11.5px;color:var(--mu);font-weight:700}
+.fc-tg{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border-radius:14px;background:var(--card2);cursor:pointer}
+.fc-tg input{display:none}.fc-tg .sw{width:44px;height:26px;border-radius:13px;background:var(--ln);position:relative;flex:none;transition:background .15s}
+.fc-tg .sw:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .15s}
+.fc-tg input:checked+.sw{background:#2FBF71}.fc-tg input:checked+.sw:after{left:21px}
+.fc-tg b{font-size:14px;display:block}.fc-tg small{font-size:12px;color:var(--mu);line-height:1.35;display:block}
 </style>
 </head>
 <body>
@@ -690,7 +714,7 @@ Kurallar:
 - Samimi, net ve kısa yazarsın; "sen" diye hitap edersin.`;
 
 /* ============ Durum ============ */
-const defaults = () => ({ profile: null, settings: { workerUrl: DEFAULT_WORKER }, targets: null, plan: null, days: {}, weights: [], recent: [], history: [], recipes: [] });
+const defaults = () => ({ profile: null, settings: { workerUrl: DEFAULT_WORKER }, targets: null, plan: null, days: {}, weights: [], recent: [], history: [], recipes: [], myFoods: {} });
 let storeKey = KEY;          // giriş yapınca kullanıcıya özel anahtar olur
 let S = FIREBASE_CONFIG ? defaults() : load();
 let view = "today";
@@ -1079,32 +1103,61 @@ Ekmek beyaz 265/9/49/3,2 (1 dilim ~25-30 g) · Tam buğday ekmeği 247/13/41/3,4
 Zeytinyağı 1 yemek kaşığı (13 g) 117 kcal · 1 tatlı kaşığı (5 g) 45 kcal · Tereyağı 10 g 72 kcal · Zeytin 1 adet ~5-7 kcal
 Patates PİŞMİŞ 87/2/20/0,1 · Muz 89/1,1/23/0,3 · Elma 52/0,3/14/0,2 · Hurma 1 adet ~20-23 · Badem 579/21/22/50 · Ceviz 654/15/14/65 · Fıstık ezmesi 588/25/20/50 · Bal 1 tatlı kaşığı ~21`;
 const FOOD_RULES = `HESAPLAMA KURALLARI (çok önemli):
-- Her kalem için önce gramı belirle ("gram"), sonra 100 g değerini ("kcal100") yaz, kaloriyi gram × kcal100 / 100 olarak hesapla. Makroları da aynı oranla hesapla.
+- Her kalem için miktarı sayı ve birim olarak ("adet" + "birim"), gramını ("gram") ve 100 g değerlerini (kcal100, p100, c100, f100) yaz. Toplamları uygulama hesaplar.
+- "en": besin tek ve temel bir besinse (yumurta, tavuk göğsü, yulaf, süt, muz, pirinç pilavı…) USDA veritabanında aranacak kısa İngilizce terim yaz; durumunu ekle (ör. "egg whole raw", "egg whole hard-boiled", "rice white cooked", "chicken breast roasted", "oats", "milk whole"). Çok malzemeli/yöresel yemeklerde (menemen, mercimek çorbası, karnıyarık…) "en" boş olsun ve "karisik": true yaz.
 - Kişi ÇİĞ ağırlık verdiyse (ör. "150 g çiğ pirinçten yapıldı") ÇİĞ değerleri kullan. Pişmiş ağırlık ya da porsiyon verdiyse PİŞMİŞ değerleri kullan. "durum" alanına "çiğ" ya da "pişmiş" yaz.
 - Pişirmede kullanılan yağı ayrı bir kalem olarak yaz (kişi belirttiyse ya da yemek türü gerektiriyorsa makul miktarda).
 - Adet/kaşık/dilim verilen besinleri grama çevir (yumurta 50 g, ekmek dilimi 25-30 g, yemek kaşığı yağ 13 g).
 - Referans tabloda olan besinlerde tablodaki değerleri kullan.`;
 
-// Yapay zekanın çarpım hatalarını düzelt: gram × kcal100 ile tutarlı değilse yeniden hesapla
-function fixItem(i) {
-  const g = num(i.gram), k100 = num(i.kcal100);
-  let kcal = num(i.kcal), p = num(i.protein), c = num(i.karbonhidrat), f = num(i.yag), fixed = false;
-  if (g > 0 && k100 > 0) {
-    const calc = g * k100 / 100;
-    if (!kcal || Math.abs(kcal - calc) / calc > 0.08) {
-      const k = kcal ? calc / kcal : 0;
-      if (k) { p *= k; c *= k; f *= k; }
-      kcal = calc; fixed = true;
-    }
-  }
-  return { kcal: Math.round(kcal), p: r1(p), c: r1(c), f: r1(f), fixed };
+/* ---- Besin değerleri: kayıtlı değerler > USDA > yapay zeka tahmini; her değer ayrı hesaplanır ---- */
+const normName = s => String(s || "").toLocaleLowerCase("tr-TR").replace(/\s+/g, " ").trim();
+const unitBase = u => /^(g|gr|gram|ml)$/i.test(String(u || "").trim()) ? 100 : 1;
+const atwaterOff = x => x.kcal > 40 && Math.abs(x.p * 4 + x.c * 4 + x.f * 9 - x.kcal) / x.kcal > 0.2;
+async function fdcFetch(terms) {
+  if (!terms.length) return [];
+  const url = (S.settings.workerUrl || DEFAULT_WORKER).trim(), ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 7000);
+  try { const r = await fetch(url, { method: "POST", signal: ctl.signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fdc: terms }) }); const d = await r.json(); return arr(d.items); }
+  catch (e) { return []; } finally { clearTimeout(to); }
 }
+async function resolveItems(list) {
+  const prep = list.map(i => {
+    const my = i.kayitli ? (S.myFoods || {})[normName(i.kayitli)] : (S.myFoods || {})[normName(i.ad)];
+    return { i, my: my && num(i.kayitliMiktar || (my.u === "adet" ? i.adet : 0)) > 0 ? my : null };
+  });
+  const need = prep.filter(x => !x.my && x.i.en && !x.i.karisik);
+  const got = await fdcFetch(need.map(x => String(x.i.en)));
+  need.forEach((x, k) => { x.usda = got[k] && !got[k].none ? got[k] : null; });
+  return prep.map(({ i, my, usda }) => {
+    const g = num(i.gram), q = num(i.adet) || (g ? g : 1), u = String(i.birim || (g ? "g" : "porsiyon"));
+    const ai = { k: num(i.kcal100), p: num(i.p100), c: num(i.c100), f: num(i.f100) };
+    let tot, src = "tahmini", srcName = "", per = null;
+    if (my) {
+      const m = num(i.kayitliMiktar || i.adet) / my.base;
+      tot = { kcal: my.kcal * m, p: my.p * m, c: my.c * m, f: my.f * m }; src = "senin";
+      return { name: String(i.ad || my.name), amount: `${fmtQ(m * my.base)} ${my.u}`, q: m * my.base, u: my.u, gram: g, src, kcal: Math.round(tot.kcal), p: r1(tot.p), c: r1(tot.c), f: r1(tot.f) };
+    }
+    if (usda && g > 0) {
+      const ratio = ai.k ? usda.kcal100 / ai.k : 1;
+      if (ratio > 0.5 && ratio < 2) { per = { k: usda.kcal100, p: usda.p100, c: usda.c100, f: usda.f100 }; src = "usda"; srcName = usda.ad; }
+    }
+    if (!per) per = ai;
+    tot = { kcal: g * per.k / 100, p: g * per.p / 100, c: g * per.c / 100, f: g * per.f / 100 };
+    return { name: String(i.ad || "Besin"), amount: String(i.miktar || (g ? g + " g" : "")), q, u, gram: g, per, src, srcName,
+      kcal: Math.round(tot.kcal), p: r1(tot.p), c: r1(tot.c), f: r1(tot.f) };
+  });
+}
+const fmtQ = n => (Math.round(num(n) * 10) / 10).toLocaleString("tr-TR");
+const SRC_LBL = { senin: "✓ Senin değerlerin", usda: "USDA verisi", tahmini: "Tahmini", elle: "Elle girildi" };
 
 async function calcFood() {
   const txt = draft.food.trim(), ph = draft.photo;
   if (!txt && !ph) return toast("Ne yediğini yaz ya da fotoğraf ekle", 1);
   busy(ph ? "Fotoğraf inceleniyor…" : "Kalori hesaplanıyor…");
-  const schema = `JSON: {"kalemler":[{"ad":"string","miktar":"kişinin anlayacağı miktar, ör. 150 g çiğ / 1 kase","gram":number,"durum":"çiğ|pişmiş|-","kcal100":number,"kcal":number,"protein":number,"karbonhidrat":number,"yag":number}],"not":"önemli bir belirsizlik varsa kısa not, yoksa boş"}`;
+  const mine = Object.values(S.myFoods || {});
+  const myTxt = mine.length ? `\nKİŞİNİN KAYITLI BESİNLERİ (eşleşen kalemde "kayitli" alanına adını AYNEN yaz ve "kayitliMiktar" alanına o birim cinsinden miktarı yaz):\n${mine.map(m => `- ${m.name} (birim: ${m.u})`).join("\n")}` : "";
+  const schema = `${myTxt}
+JSON: {"kalemler":[{"ad":"string","miktar":"kişinin anlayacağı miktar, ör. 2 adet / 150 g çiğ / 1 kase","adet":number,"birim":"adet|g|ml|dilim|kaşık|kase|bardak|porsiyon","gram":number,"durum":"çiğ|pişmiş|-","en":"USDA arama terimi ya da boş","karisik":boolean,"kcal100":number,"p100":number,"c100":number,"f100":number,"kayitli":"eşleşen kayıtlı besin adı ya da boş","kayitliMiktar":number}],"not":"önemli bir belirsizlik varsa kısa not, yoksa boş"}`;
   const prompt = ph
     ? `Kişi "${draft.meal}" öğününde yediği yemeğin fotoğrafını gönderdi.${txt ? `\nKişinin notu: """${txt}"""` : ""}
 Fotoğraftaki her yiyecek ve içeceği tanı, ayrı kalem olarak yaz. Porsiyonu tabak, kase, kaşık, ekmek dilimi gibi görünen ölçülere göre tahmin et; Türkiye'deki standart porsiyonları esas al. Görünmeyen yağ/sos için makul bir varsayım yap ve bunu "not" alanında kısaca belirt. Kişinin notu fotoğrafla çelişirse nota öncelik ver. Fotoğrafta yiyecek yoksa kalemler boş liste olsun.
@@ -1119,12 +1172,10 @@ ${NUTRI_REF}
 ${schema}`;
   try {
     const r = await ai(SYS, prompt, 0, "fast", ph ? { mime: ph.mime, data: ph.data } : null);
-    const items = arr(r.kalemler).map(i => {
-      const v = fixItem(i);
-      const g = num(i.gram), k100 = num(i.kcal100);
-      return { id: uid(), name: String(i.ad || "Besin"), amount: String(i.miktar || (g ? g + " g" : "")), kcal: v.kcal, p: v.p, c: v.c, f: v.f, on: true,
-        calc: g && k100 ? `${Math.round(g)} g${i.durum && i.durum !== "-" ? " " + i.durum : ""} × ${Math.round(k100)} kcal/100 g` : "", fixed: v.fixed };
-    });
+    busy("Besin değerleri kontrol ediliyor…");
+    const res = await resolveItems(arr(r.kalemler));
+    const items = res.map((x, k) => { const i = arr(r.kalemler)[k]; return { ...x, id: uid(), on: true,
+      calc: x.src === "senin" ? "Senin kayıtlı değerlerin" : x.gram ? `${Math.round(x.gram)} g${i.durum && i.durum !== "-" ? " " + i.durum : ""} · ${x.src === "usda" ? "USDA verisi" : "tahmini değer"}` : "" }; });
     if (!items.length) throw new Error(ph ? "Fotoğrafta yiyecek bulunamadı. Daha yakından çek ya da not ekle." : "Besin bulunamadı, biraz daha açık yaz.");
     draft.preview = { meal: draft.meal, items, note: r.not || "", photoUrl: ph?.url || "" };
     renderToday();
@@ -1136,8 +1187,9 @@ function addFoods(items, meal) {
   const d = day(curDate);
   items.forEach(i => {
     const f = { id: uid(), at: Date.now(), meal, name: i.name, amount: i.amount || "", kcal: Math.round(num(i.kcal)), p: r1(i.p), c: r1(i.c), f: r1(i.f) };
+    ["q", "u", "gram", "src", "srcName"].forEach(k => { if (i[k] != null && i[k] !== "") f[k] = i[k]; });
     d.foods.push(f);
-    S.recent = [{ name: f.name, amount: f.amount, kcal: f.kcal, p: f.p, c: f.c, f: f.f },
+    S.recent = [{ name: f.name, amount: f.amount, kcal: f.kcal, p: f.p, c: f.c, f: f.f, q: f.q, u: f.u, src: f.src },
       ...S.recent.filter(x => !(x.name.toLowerCase() === f.name.toLowerCase() && x.amount === f.amount))].slice(0, 30);
   });
   save();
@@ -1304,6 +1356,67 @@ function kDial(p, over) {
     <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="7" fill="${over ? "var(--bad)" : "var(--ac)"}" opacity=".45" filter="url(#kgl)"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="4.5" fill="${over ? "var(--bad)" : "var(--g1)"}"/>` : ""}</svg>`;
 }
 
+
+function mealMacros(fs) {
+  const s = fs.reduce((a, f) => ({ p: a.p + num(f.p), c: a.c + num(f.c), f: a.f + num(f.f) }), { p: 0, c: 0, f: 0 });
+  return `<div class="mmac"><span><i style="background:var(--p)"></i>Protein<b>${fmtQ(s.p)} g</b></span><span><i style="background:var(--c)"></i>Karb.<b>${fmtQ(s.c)} g</b></span><span><i style="background:var(--f)"></i>Yağ<b>${fmtQ(s.f)} g</b></span></div>`;
+}
+/* ---- Besin kartı ---- */
+let fcEdit = null;
+function findFood(id) { for (const k of [curDate, ...Object.keys(S.days)]) { const f = S.days[k]?.foods?.find(x => x.id === id); if (f) return { f, dk: k }; } return null; }
+function openFoodSheet(id, edit) {
+  const r = findFood(id); if (!r) return; const f = r.f, tg = S.targets || {};
+  sheetKind = "food:" + id;
+  const q = num(f.q) || 1, u = f.u || "porsiyon", base = unitBase(u);
+  const pctBar = (v, g, col) => `<div class="pb"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${col}"></i></div>`;
+  if (!edit) {
+    const warn = atwaterOff(f);
+    sheetShell(esc(f.name), MI(f.meal), MEAL_TINT[f.meal], `
+      <div class="fc-sub">${esc(f.meal)}${f.amount ? " · " + esc(f.amount) : ""}${f.gram ? ` · ~${Math.round(f.gram)} g` : ""}${f.src ? `<span class="fc-src ${f.src}">${SRC_LBL[f.src] || ""}</span>` : ""}</div>
+      <div class="fc-kc"><b>${fmt(f.kcal)}</b><span>kcal</span></div>
+      <div class="fc-mac">
+        <div><small><i style="background:var(--p)"></i>Protein</small><b>${fmtQ(f.p)}<em>g</em></b>${pctBar(f.p, tg.protein, "var(--p)")}</div>
+        <div><small><i style="background:var(--c)"></i>Karb.</small><b>${fmtQ(f.c)}<em>g</em></b>${pctBar(f.c, tg.carb, "var(--c)")}</div>
+        <div><small><i style="background:var(--f)"></i>Yağ</small><b>${fmtQ(f.f)}<em>g</em></b>${pctBar(f.f, tg.fat, "var(--f)")}</div></div>
+      <div class="hint">Çubuklar günlük hedefinin ne kadarını karşıladığını gösterir.${f.q ? ` ${base === 100 ? "100 " + esc(u) : "1 " + esc(u)}: ${fmt(f.kcal / q * base)} kcal · ${fmtQ(f.p / q * base)} g protein.` : ""}${f.srcName ? ` Kaynak: ${esc(f.srcName)}.` : ""}</div>
+      ${warn ? `<div class="warnbox">Kalori ile makrolar birbirini tutmuyor (P×4 + K×4 + Y×9 = ${fmt(f.p * 4 + f.c * 4 + f.f * 9)} kcal). Düzenle'den kontrol edebilirsin.</div>` : ""}
+      <div class="btns fc-btns"><button class="fc-del" data-act="fdel" data-id="${f.id}" aria-label="Sil">🗑</button><button data-act="fedit" data-id="${f.id}">Düzenle</button><button class="pri" data-act="closeSheet">Tamam</button></div>`, false);
+  } else {
+    const per = k => r1(num(f[k]) / q * base);
+    const my = (S.myFoods || {})[normName(f.name)];
+    sheetShell("Düzenle", MI(f.meal), MEAL_TINT[f.meal], `
+      <label class="f"><span>Besin</span><input id="fcName" value="${esc(f.name)}"></label>
+      <div class="row" style="gap:8px;margin-top:10px"><label class="f" style="flex:1;margin:0"><span>Miktar</span><input id="fcQ" type="number" inputmode="decimal" step="any" value="${fmtQ(q).replace(",", ".")}" oninput="fcTotal()"></label>
+        <label class="f" style="flex:1.3;margin:0"><span>Birim</span><input id="fcU" value="${esc(u)}" oninput="fcTotal(true)" placeholder="adet, g, dilim…"></label></div>
+      <label class="f"><span id="fcPerLbl">${base === 100 ? "100 " + esc(u) : "1 " + esc(u)} için değerler</span></label>
+      <div class="fc-g4">${[["kcal", "kcal", Math.round(num(f.kcal) / q * base)], ["p", "P", per("p")], ["c", "K", per("c")], ["f", "Y", per("f")]].map(([k, l, v]) =>
+        `<label class="fc-in"><input id="fc_${k}" type="number" inputmode="decimal" step="any" value="${String(v).replace(",", ".")}" oninput="fcTotal()"><em>${l}</em></label>`).join("")}</div>
+      <div class="hint" id="fcTot"></div>
+      <label class="fc-tg"><input type="checkbox" id="fcMem" ${my ? "checked" : ""}><span class="sw"></span><span><b>Bu değerleri hatırla</b><small>"${esc(f.name)}" bir dahaki sefere bu değerlerle hesaplanır, miktara göre çarpılır.</small></span></label>
+      <div class="btns fc-btns"><button data-act="fview" data-id="${f.id}">Vazgeç</button><button class="pri" data-act="fsave" data-id="${f.id}">Kaydet</button></div>`, false);
+    fcTotal();
+  }
+}
+function fcTotal(unitChanged) {
+  const q = num($("#fcQ")?.value), u = $("#fcU")?.value.trim() || "porsiyon", base = unitBase(u);
+  if (unitChanged) $("#fcPerLbl").textContent = (base === 100 ? "100 " : "1 ") + u + " için değerler";
+  const v = k => num($("#fc_" + k)?.value) * q / base;
+  if ($("#fcTot")) $("#fcTot").textContent = `Toplam: ${fmt(v("kcal"))} kcal · ${fmtQ(v("p"))} g protein · ${fmtQ(v("c"))} g karb. · ${fmtQ(v("f"))} g yağ`;
+}
+function fcSave(id) {
+  const r = findFood(id); if (!r) return; const f = r.f;
+  const name = $("#fcName").value.trim() || f.name, q = num($("#fcQ").value), u = $("#fcU").value.trim() || "porsiyon", base = unitBase(u);
+  if (!(q > 0)) return toast("Miktarı gir", 1);
+  const per = { kcal: num($("#fc_kcal").value), p: num($("#fc_p").value), c: num($("#fc_c").value), f: num($("#fc_f").value) };
+  if (!(per.kcal > 0)) return toast("Kaloriyi gir", 1);
+  const mem = $("#fcMem").checked;
+  Object.assign(f, { name, q, u, amount: `${fmtQ(q)} ${u}`, kcal: Math.round(per.kcal * q / base), p: r1(per.p * q / base), c: r1(per.c * q / base), f: r1(per.f * q / base), src: mem ? "senin" : "elle" });
+  delete f.srcName;
+  S.myFoods = S.myFoods || {};
+  if (mem) S.myFoods[normName(name)] = { name, u, base, kcal: per.kcal, p: per.p, c: per.c, f: per.f, at: Date.now() };
+  else delete S.myFoods[normName(name)];
+  save(); render(); openFoodSheet(id); toast(mem ? `${name} değerlerin kaydedildi` : "Güncellendi");
+}
 /* ---- Tema 3 (Bento) ve Tema 4 (Tabak) parçaları ---- */
 let exOpen = false;
 function bentoHero(c) {
@@ -1363,7 +1476,7 @@ function tabakFeed(d, isToday) {
     return `<div class="tg"><div class="th" data-act="mtog" data-m="${m}" role="button" aria-expanded="${open}"><span class="tbar" style="background:${MEAL_TINT[m]}"></span>
       <div class="bd"><b>${m}</b><small>${open ? fs.length + " kalem" : esc(names.slice(0, 4).join(", ")) + (names.length > 4 ? " +" + (names.length - 4) : "")}</small></div>
       <span class="k">${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))}<em>kcal</em></span><span class="ch">${open ? "⌃" : "›"}</span></div>
-      ${open ? fs.map(f => `<div class="tit"><span>${esc(f.name)}${f.amount ? ` <small>${esc(f.amount)}</small>` : ""}</span><button class="kc" data-act="editFood" data-id="${f.id}">${f.kcal}</button><button class="del" data-act="delFood" data-id="${f.id}" aria-label="Sil">×</button></div>`).join("") : ""}</div>`; }).join("")
+      ${open ? mealMacros(fs) + fs.map(f => `<div class="tit" data-act="food" data-id="${f.id}" role="button"><span>${esc(f.name)}${f.amount ? ` <small>${esc(f.amount)}</small>` : ""}</span><b class="kc">${f.kcal}</b><span class="chev">›</span></div>`).join("") : ""}</div>`; }).join("")
     : `<p class="mu sm" style="margin:4px 0">Henüz bir şey girilmedi. Alttaki kutuya ne yediğini yaz.</p>`}</div>`;
 }
 function tabakAddMini() {
@@ -1464,7 +1577,7 @@ function renderToday() {
     h += `<div class="card prev" id="prev"><h3>Kontrol et · ${esc(p.meal)}</h3>
       ${p.photoUrl ? `<div class="ph"><img src="${p.photoUrl}" alt=""></div>` : ""}
       ${p.items.map((it, i) => `<div class="item"><input type="checkbox" data-pi="${i}" ${it.on ? "checked" : ""}>
-        <div class="nm">${esc(it.name)}<small>${esc(it.amount)} · P ${it.p} · K ${it.c} · Y ${it.f}</small>${it.calc ? `<small class="calc">${esc(it.calc)}${it.fixed ? " · hesap düzeltildi" : ""}</small>` : ""}</div>
+        <div class="nm">${esc(it.name)}<small>${esc(it.amount)} · P ${it.p} · K ${it.c} · Y ${it.f}</small>${it.calc ? `<small class="calc">${esc(it.calc)}</small>` : ""}</div>
         <input type="number" inputmode="numeric" data-pk="${i}" value="${it.kcal}"></div>`).join("")}
       ${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}
       <div class="btns"><button class="pri grow" data-act="confirmPrev">Öğüne ekle</button><button data-act="cancelPrev">Vazgeç</button></div></div>`;
@@ -1479,8 +1592,8 @@ function renderToday() {
         <span class="fic" style="background:${MEAL_TINT[m]};width:38px;height:38px;font-size:18px">${MI(m)}</span>
         <span class="grow"><b>${m}</b><small>${fs.length} kalem</small></span>
         <b class="mk">${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))} kcal</b><span class="chev">${open ? "⌃" : "›"}</span></div>
-      ${open ? `<div class="mbody">${fs.map(f => `<div class="item"><div class="fic">${foodEmoji(f.name)}</div><div class="nm">${esc(f.name)}${f.amount ? `<small>${esc(f.amount)}</small>` : ""}</div>
-        <button class="kc" data-act="editFood" data-id="${f.id}">${f.kcal} kcal</button><button class="del" data-act="delFood" data-id="${f.id}" aria-label="Sil">×</button></div>`).join("")}</div>` : ""}`;
+      ${open ? `<div class="mbody">${mealMacros(fs)}${fs.map(f => `<div class="item" data-act="food" data-id="${f.id}" role="button" style="cursor:pointer"><div class="fic">${foodEmoji(f.name)}</div><div class="nm">${esc(f.name)}${f.amount ? `<small>${esc(f.amount)}</small>` : ""}</div>
+        <b class="kc">${f.kcal} kcal</b><span class="chev" style="color:var(--mu)">›</span></div>`).join("")}</div>` : ""}`;
   }).join("") : `<p class="mu sm" style="margin:0">Henüz bir şey girilmedi. Yukarıdan bir öğün seç.</p>`}</div>`;
 
   // Su
@@ -2142,7 +2255,7 @@ document.addEventListener("submit", e => {
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
 document.addEventListener("input", e => {
   const k = e.target.dataset.draft; if (k) draft[k] = e.target.value;
-  if (e.target.dataset.pk !== undefined && draft.preview) draft.preview.items[+e.target.dataset.pk].kcal = Math.round(num(e.target.value));
+  if (e.target.dataset.pk !== undefined && draft.preview) { const it = draft.preview.items[+e.target.dataset.pk]; it.kcal = Math.round(num(e.target.value)); it.src = "elle"; }
 });
 document.addEventListener("change", e => {
   if (e.target.dataset.pi !== undefined && draft.preview) draft.preview.items[+e.target.dataset.pi].on = e.target.checked;
@@ -2228,6 +2341,11 @@ document.addEventListener("click", e => {
       save(); renderToday();
     },
     delFood: () => { const D = d(); D.foods = D.foods.filter(x => x.id !== a.dataset.id); save(); renderToday(); },
+    food: () => openFoodSheet(a.dataset.id),
+    fedit: () => openFoodSheet(a.dataset.id, true),
+    fview: () => openFoodSheet(a.dataset.id),
+    fsave: () => fcSave(a.dataset.id),
+    fdel: () => { const r = findFood(a.dataset.id); if (!r || !confirm(`${r.f.name} silinsin mi?`)) return; S.days[r.dk].foods = S.days[r.dk].foods.filter(x => x.id !== a.dataset.id); save(); closeSheet(); render(); toast("Silindi"); },
     delEx: () => { const D = d(); D.exercises = D.exercises.filter(x => x.id !== a.dataset.id); save(); renderToday(); },
     addExManual: () => {
       const n = $("#exName").value.trim() || "Antrenman", k = Math.round(num($("#exKcal").value));
