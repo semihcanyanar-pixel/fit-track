@@ -908,7 +908,7 @@ async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null
   const t0 = Date.now();
   const tick = setInterval(() => { const s = Math.round((Date.now() - t0) / 1000); if (s >= 4) $("#busyTx").textContent = `${label} ${s} sn`; }, 1000);
   aiCtl = new AbortController();
-  const hardStop = setTimeout(() => aiCtl.abort(), mode === "deep" ? 80000 : 45000);
+  const hardStop = setTimeout(() => aiCtl.abort(), mode === "deep" ? 80000 : 60000);
   try {
     for (let i = 0; i < 2; i++) {               // yoğunlukta sadece 1 kez daha dene
       let r, d;
@@ -1243,16 +1243,32 @@ function addFoods(items, meal) {
 }
 
 /* ---- Egzersiz ---- */
+// Yerel MET tablosu (Compendium of Physical Activities) – yapay zeka yanıt vermezse kullanılır
+const MET_TABLE = [[/ısın|warm/i, 3.5], [/koş|jog|run/i, 9], [/yürü|walk|bant/i, 4], [/bisiklet|spin|cycl/i, 7.5], [/yüz|swim/i, 6], [/ip atla|jump rope/i, 11],
+  [/hiit|tabata|crossfit|interval/i, 8], [/futbol|halı saha/i, 7], [/basket/i, 6.5], [/tenis|padel/i, 7], [/yoga|esneme|stretch/i, 2.5], [/pilates/i, 3],
+  [/kardiyo|eliptik|kürek|rowing/i, 7], [/barfiks|şınav|dips|squat|bench|press|deadlift|ağırlık|fitness|mekik|plank|curl|row|lunge|sırt|göğüs|bacak|omuz|kol/i, 5]];
+function localMET(txt) {
+  return String(txt).split(/\n|,|;|\+/).map(l => l.trim()).filter(Boolean).map(l => {
+    const met = (MET_TABLE.find(([re]) => re.test(l)) || [null, 5])[1];
+    const dk = +(l.match(/(\d+(?:[.,]\d+)?)\s*(?:dk|dakika|min)/i)?.[1] || "").replace(",", ".");
+    const sets = +(l.match(/(\d+)\s*[x×*]\s*\d+/i)?.[1] || 0);
+    const sa = +(l.match(/(\d+(?:[.,]\d+)?)\s*(?:saat|sa)\b/i)?.[1] || "").replace(",", ".");
+    const d = dk || (sa ? sa * 60 : 0) || (sets ? sets * 2.5 : 0) || 10;
+    return { ad: l.slice(0, 30), met, dk: d };
+  });
+}
 async function calcExercise() {
   const txt = draft.ex.trim();
   if (!txt) return toast("Antrenmanı yaz", 1);
   const b = baseline();
   busy("Yakılan kalori hesaplanıyor…");
   try {
-    const r = await ai(SYS, `Kişi: ${S.profile?.cinsiyet || "-"}, ${S.profile?.yas || "-"} yaş, ${b?.kg || 75} kg, spor geçmişi: ${S.profile?.sporSeviye || "-"}.
+    let r;
+    try { r = await ai(SYS, `Kişi: ${S.profile?.cinsiyet || "-"}, ${S.profile?.yas || "-"} yaş, ${b?.kg || 75} kg, spor geçmişi: ${S.profile?.sporSeviye || "-"}.
 Yaptığı antrenman: """${txt}"""
 Antrenmanı aktivitelere ayır. Her aktivite için Compendium of Physical Activities (2024) tablosundaki MET değerini ve süresini dakika olarak yaz. Süre yazılmadıysa set/tekrar sayısından gerçekçi süre tahmin et (setler arası dinlenme dahil). Kaloriyi SEN HESAPLAMA, uygulama hesaplayacak.
-JSON: {"aktiviteler":[{"ad":"kısa ad","met":number,"dk":number}],"ozet":"antrenmanın kısa tarifi","not":"varsa kısa not"}`, 0.1);
+JSON: {"aktiviteler":[{"ad":"kısa ad","met":number,"dk":number}],"ozet":"antrenmanın kısa tarifi","not":"varsa kısa not"}`, 0.1); }
+    catch (e) { if (/İptal/.test(e.message)) throw e; r = { aktiviteler: localMET(txt), ozet: "", yerel: true }; if (!r.aktiviteler.length) throw e; }
     const kg = b?.kg || 75, acts = arr(r.aktiviteler).filter(x => num(x.met) > 1 && num(x.dk) > 0);
     // Net kalori = (MET − 1) × kilo × saat  (dinlenme harcaması çıkarılır)
     const kcal = Math.round(acts.reduce((s, x) => s + (num(x.met) - 1) * kg * num(x.dk) / 60, 0));
@@ -1260,7 +1276,7 @@ JSON: {"aktiviteler":[{"ad":"kısa ad","met":number,"dk":number}],"ozet":"antren
     if (acts.length) r.ozet = (r.ozet ? r.ozet + " · " : "") + acts.map(x => `${x.ad} ${Math.round(num(x.dk))} dk (MET ${String(x.met).replace(".", ",")})`).join(", ");
     if (!kcal) throw new Error("Hesaplanamadı, süre ve tempoyu da yaz.");
     day(curDate).exercises.push({ id: uid(), desc: txt, ozet: r.ozet || "", kcal, dur: Math.round(num(r.sureDk)) });
-    draft.ex = ""; save(); renderToday(); toast(`${kcal} kcal eklendi, günlük hedefin arttı`);
+    draft.ex = ""; save(); renderToday(); toast(r.yerel ? `Yapay zeka yanıt vermedi; MET tablosundan ~${kcal} kcal hesaplandı` : `${kcal} kcal eklendi, günlük hedefin arttı`);
   } catch (e) { toast(e.message, 1); } finally { busy(); }
 }
 
