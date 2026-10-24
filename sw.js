@@ -1,5 +1,5 @@
 // Fit Track – basit çevrimdışı önbellek (sayfa önce ağdan, olmazsa önbellekten)
-const CACHE = "fittrack-v28";
+const CACHE = "fittrack-v29";
 const FILES = ["./", "index.html", "manifest.json", "icon-180.png", "icon-512.png"];
 
 self.addEventListener("install", e => {

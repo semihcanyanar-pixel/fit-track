@@ -647,6 +647,33 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 .fc-tg b{font-size:14px;display:block}.fc-tg small{font-size:12px;color:var(--mu);line-height:1.35;display:block}
 .fitl{margin-top:10px;font-size:12.5px;font-weight:600;color:#1E9E5A;background:rgba(47,191,113,.13);border-radius:12px;padding:8px 11px}
 .ing li em b{font-weight:700}
+.wstrip{background:var(--card2)}
+.wspark{position:relative;display:flex;align-items:flex-end;gap:4px;height:38px;width:92px;flex:none}
+.wspark i{flex:1;border-radius:3px;min-height:3px}
+.wspark .wtl{position:absolute;left:0;right:0;border-top:1.5px dashed var(--tx);opacity:.3}
+.wnav{display:flex;align-items:center;justify-content:space-between;margin:2px 0 6px}
+.wnav b{font-size:14.5px}.wnav button{background:none;box-shadow:none;font-size:22px;color:var(--mu);padding:4px 10px}
+.wchart{display:flex;gap:8px;align-items:flex-end;padding:4px 2px 0}
+.wkbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;box-shadow:none;padding:0;border-radius:10px;color:var(--mu)}
+.wkbar:disabled{opacity:1}
+.wcol{position:relative;width:100%;display:flex;align-items:flex-end}
+.wfill{width:100%;border-radius:8px 8px 4px 4px;overflow:hidden;display:flex;flex-direction:column-reverse}
+.wfill i{display:block;width:100%}
+.wtgt{position:absolute;left:-3px;right:-3px;border-top:2px dashed var(--tx);opacity:.35;z-index:1}
+.wkbar small{font-size:11.5px;font-weight:700}.wkbar.today small{color:var(--tx)}
+.wsc{width:26px;height:26px;border-radius:50%;color:#fff;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1.5px var(--ln);color:var(--mu)}
+.wsc[style*="background"]{color:#fff;box-shadow:none}
+.wleg{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:var(--mu);font-weight:600;margin:12px 2px 0}
+.wleg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:0}.wleg i.dash{width:12px;height:0;border-top:2px dashed var(--mu);border-radius:0;vertical-align:3px}
+.wstats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.wstats>div{background:var(--card2);border-radius:14px;padding:11px 12px}
+.wstats small{font-size:12px;color:var(--mu);font-weight:600;display:block}
+.wstats b{font-size:20px;display:block;margin-top:3px;letter-spacing:-.02em}.wstats b em{font-style:normal;font-size:12px;color:var(--mu);margin-left:3px;letter-spacing:0;font-weight:600}
+.wstats>div>span{font-size:12px;font-weight:700;display:block;margin-top:2px}
+.wpr{display:flex!important;gap:4px;align-items:flex-end;height:30px;margin-top:6px}.wpr i{flex:1;border-radius:3px;background:var(--p)}
+.wsug{margin-top:14px;border-radius:16px;padding:14px;background:var(--card2);box-shadow:inset 0 0 0 1.5px var(--tx)}
+.wsug.soft{box-shadow:none}
+.wsug b{font-size:14.5px;display:block}.wsug p{margin:5px 0 10px;font-size:13.5px;line-height:1.45}.wsug .btns button{flex:1}
 </style>
 </head>
 <body>
@@ -1848,6 +1875,81 @@ const GUIDE = {
 };
 const ITEM_ICON_RULES = [[/su\b|sıvı|içecek|litre/i, "💧"], [/protein|et\b|tavuk|yumurta/i, "🥩"], [/uyku|dinlen/i, "😴"], [/karbon|pirinç|bulgur|ekmek|makarna/i, "🍚"], [/sebze|lif|salata|meyve/i, "🥗"], [/öncesi/i, "⚡"], [/sonrası|toparlan/i, "🔄"], [/hafta|ay\b|ay sonu|süre|başlangıç|ilk/i, "📅"], [/tartı|kilo|ölç/i, "⚖️"], [/hazırl|plan/i, "🧺"], [/dışarı|restoran/i, "🍽️"], [/şeker|tatlı/i, "🍬"], [/zaman|saat|öğün aralı/i, "⏰"], [/antrenman|spor|egzersiz/i, "🏋️"]];
 function itemIcon(m, def) { const t = (m.baslik || "") + " " + (m.baslik ? "" : m.metin || ""); const r = ITEM_ICON_RULES.find(([re]) => re.test(t)); return r ? r[1] : def; }
+/* ---- Haftalık özet (gün sonu puanları + kalori grafiği) ---- */
+const MEAL_COL = { "Kahvaltı": "#FFB72B", "Öğle": "#2FBF71", "Akşam": "#5468FF", "Ara öğün": "#FF6B57" };
+const scoreCol = s => s == null ? null : s >= 8 ? "#2FBF71" : s >= 5 ? "#E8A317" : "#FF5A4F";
+let weekOff = 0;
+function weekData(off = 0) {
+  const today = ymd(new Date()), mon = addDays(mondayOf(today), off * 7), tg = S.targets || {};
+  const DN = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+  const days = DN.map((nm, i) => {
+    const k = addDays(mon, i), d = S.days[k], fs = d?.foods || [], t = dayTarget(k);
+    const by = {}; MEALS.forEach(m => by[m] = fs.filter(f => f.meal === m).reduce((a, f) => a + num(f.kcal), 0));
+    const tot = totals(d || { foods: [] });
+    const sc = d?.review ? Math.max(1, Math.min(10, Math.round(num(d.review.puan) || 0))) || null : null;
+    return { k, nm, short: nm.slice(0, 3).replace("Paz", i === 6 ? "Paz" : "Pzt").replace("Sal", "Sal"), by, kcal: tot.kcal, p: tot.p, target: t.total, score: sc, has: fs.length > 0, future: k > today, today: k === today };
+  });
+  ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"].forEach((s, i) => days[i].short = s);
+  const logged = days.filter(d => d.has);
+  const avg = logged.length ? logged.reduce((a, d) => a + d.kcal, 0) / logged.length : 0;
+  const avgT = logged.length ? logged.reduce((a, d) => a + d.target, 0) / logged.length : (tg.kcal || 0);
+  const scored = days.filter(d => d.score != null);
+  const scoreAvg = scored.length ? scored.reduce((a, d) => a + d.score, 0) / scored.length : null;
+  const over = logged.filter(d => !d.today && d.kcal > d.target * 1.1);
+  const pAvg = logged.length ? logged.reduce((a, d) => a + d.p, 0) / logged.length : 0;
+  const ws = sortedWeights(), end = addDays(mon, 6);
+  const inW = ws.filter(w => w.date >= mon && w.date <= end), before = ws.filter(w => w.date < mon).pop();
+  const last = inW[inW.length - 1] || null, first = before || inW[0] || null;
+  const wChange = last && first && last !== first ? last.kg - first.kg : null;
+  return { mon, end, days, logged, avg, avgT, scored, scoreAvg, over, pAvg, last, wChange };
+}
+function weekStrip() {
+  const w = weekData(0);
+  const sub = !w.logged.length ? "Bu hafta henüz kayıt yok"
+    : (w.scoreAvg != null ? `Haftanın puanı ${w.scoreAvg.toFixed(1).replace(".", ",")} · ` : "Henüz puan yok · ") + `ort. ${fmt(w.avg)} kcal`;
+  const bars = w.days.map(d => { const h = d.has ? Math.max(12, Math.min(d.kcal / (d.target || 1), 1.3) / 1.3 * 100) : 8;
+    return `<i style="height:${h}%;background:${d.future || !d.has ? "var(--ln)" : scoreCol(d.score) || "var(--mu2, #C9CCD2)"};${d.future || !d.has ? "" : ""}"></i>`; }).join("");
+  return `<div class="wstrip" data-act="pweekly"><div class="wspark"><span class="wtl" style="bottom:${100 / 1.3}%"></span>${bars}</div><div class="grow" style="min-width:0"><b>Bu hafta</b><small>${esc(sub)}</small></div><span class="mu" style="font-size:20px">›</span></div>`;
+}
+function openWeekSheet(off = weekOff) {
+  weekOff = Math.min(0, off); sheetKind = "weekly";
+  const w = weekData(weekOff), tg = S.targets || {}, a = weekOff === 0 ? adaptive() : null;
+  const max = Math.max(...w.days.map(d => Math.max(d.kcal, d.target)), 1) * 1.08;
+  const H = 150, range = `${trDate(w.mon, { day: "numeric", month: "long" })} – ${trDate(w.end, { day: "numeric", month: "long" })}`;
+  const bars = w.days.map(d => {
+    const segs = MEALS.filter(m => d.by[m] > 0).map(m => `<i style="height:${d.by[m] / Math.max(d.kcal, 1) * 100}%;background:${MEAL_COL[m]}"></i>`).join("");
+    const bh = d.has ? Math.max(6, d.kcal / max * H) : 6;
+    return `<button class="wkbar ${d.today ? "today" : ""}" data-act="wday" data-d="${d.k}" ${d.future ? "disabled" : ""}>
+      <span class="wcol" style="height:${H}px"><span class="wtgt" style="bottom:${d.target / max * H}px"></span><span class="wfill" style="height:${bh}px;${d.has ? "" : "background:var(--ln)"}">${segs}</span></span>
+      <small>${d.short}</small>
+      <span class="wsc" style="${d.score != null ? `background:${scoreCol(d.score)}` : d.future || !d.has ? "visibility:hidden" : ""}">${d.score != null ? d.score : "–"}</span></button>`;
+  }).join("");
+  const dayN = d => d.nm;
+  const kcNote = !w.logged.length ? "Kayıt yok" : w.over.length === 1 ? `${dayN(w.over[0])} hedefin üstünde` : w.over.length > 1 ? `${w.over.length} gün hedefin üstünde`
+    : Math.abs(w.avg - w.avgT) <= w.avgT * 0.1 ? "Hedefe yakın" : w.avg < w.avgT ? "Hedefin altında" : "Hedefin üstünde";
+  const kcCol = w.over.length || (w.logged.length && w.avg > w.avgT * 1.1) ? "var(--warn)" : "#1E9E5A";
+  const goalW = num(tg.strategy?.weekly ?? tg.haftalikHedefKg);
+  const prBars = w.days.map(d => `<i style="height:${d.has && tg.protein ? Math.max(8, Math.min(d.p / tg.protein, 1) * 100) : 6}%;${d.has ? "" : "background:var(--ln)"}"></i>`).join("");
+  let sug = "";
+  if (a?.ready && a.suggest != null) {
+    const wk = Math.abs(a.weekly).toFixed(1).replace(".", ","), dir = a.weekly < 0 ? "verdin" : "aldın", gw = Math.abs(a.goalWeekly).toFixed(1).replace(".", ",");
+    sug = `<div class="wsug"><b>Öneri</b><p>Son ${a.nDays} günde ortalama ${fmt(a.avgIn)} kcal yedin ve haftada ${wk} kg ${dir}; hedefin haftada ${gw} kg ${a.goalWeekly < 0 ? "vermek" : a.goalWeekly > 0 ? "almak" : "korumak"}. Günlük hedefi ${fmt(a.suggest)} kcal yaparsan hedefe oturur.</p>
+      <div class="btns"><button data-act="closeSheet">Şimdilik kalsın</button><button class="pri" data-act="applyAdj" data-v="${a.suggest}">Hedefi ${fmt(a.suggest)} yap</button></div></div>`;
+  } else if (a?.ready && (a.status === "uyum" || a.status === "hizli")) sug = `<div class="wsug soft"><b>Not</b><p>${esc(a.msg)}</p></div>`;
+  sheetShell("Haftalık özet", kSvgOr("📊"), "var(--tint-b)", `
+    <div class="wnav"><button data-act="wweek" data-n="-1" aria-label="Önceki hafta">‹</button><b>${range}${weekOff === 0 ? " · Bu hafta" : ""}</b><button data-act="wweek" data-n="1" ${weekOff === 0 ? "disabled" : ""} aria-label="Sonraki hafta">›</button></div>
+    <div class="wchart">${bars}</div>
+    <div class="wleg">${MEALS.map(m => `<span><i style="background:${MEAL_COL[m]}"></i>${MEAL_SHORT[m]}</span>`).join("")}<span><i class="dash"></i>hedef</span><span><i style="border-radius:50%;background:var(--mu)"></i>gün sonu puanı</span></div>
+    <div class="wstats">
+      <div><small>Ortalama kalori</small><b>${w.logged.length ? fmt(w.avg) : "–"}<em>/ ${fmt(w.avgT)}</em></b><span style="color:${kcCol}">${kcNote}</span></div>
+      <div><small>Haftanın puanı</small><b>${w.scoreAvg != null ? w.scoreAvg.toFixed(1).replace(".", ",") : "–"}<em>/ 10</em></b><span style="color:${w.scoreAvg != null ? scoreCol(Math.round(w.scoreAvg)) : "var(--mu)"}">${w.scored.length ? `${w.scored.length} gün değerlendirildi` : "Henüz değerlendirme yok"}</span></div>
+      <div><small>Ortalama protein</small><b>${w.logged.length ? fmt(w.pAvg) : "–"}<em>/ ${fmt(tg.protein || 0)} g</em></b><span class="wpr">${prBars}</span></div>
+      <div><small>Kilo ${weekOff === 0 ? "bu hafta" : "o hafta"}</small><b>${w.last ? String(r1(w.last.kg)).replace(".", ",") : "–"}<em>kg</em></b><span style="color:${w.wChange == null ? "var(--mu)" : (goalW < 0 ? w.wChange <= 0 : w.wChange >= 0) ? "#1E9E5A" : "var(--warn)"}">${w.wChange == null ? "Bu hafta tartı yok" : `${w.wChange < 0 ? "▼" : w.wChange > 0 ? "▲" : "="} ${Math.abs(w.wChange).toFixed(1).replace(".", ",")} kg${goalW ? ` · hedef ${goalW > 0 ? "+" : "−"}${Math.abs(goalW).toString().replace(".", ",")}` : ""}`}</span></div>
+    </div>
+    ${w.days.some(d => d.has && !d.future && !d.today && d.score == null) ? `<div class="hint">Puanı olmayan gün (–): "Günü bitir ve değerlendir" yapılmamış. Güne dokununca oraya gidip değerlendirebilirsin.</div>` : ""}
+    ${sug}`, false);
+}
+
 function weeklyMini(a) {
   if (!a?.ready) return { ic: "📊", bg: "var(--tint-b)", t: "Haftalık kontrol", s: `Veri toplanıyor · ${a?.need || "biraz daha veri"}` };
   if (a.suggest != null) return { ic: "📈", bg: "var(--tint-y)", t: "Haftalık kontrol · Öneri var", s: `Hedefin ${fmt(a.suggest)} kcal olması öneriliyor` };
@@ -1876,7 +1978,6 @@ function renderPlan() {
   const g = days[planDay] || days[0];
   const pk = tg.protein * 4, ck = tg.carb * 4, fk = tg.fat * 9;
   const sp = sporEstimate();
-  const wm = weeklyMini(adaptive());
   const eaten = new Set(day(ymd(new Date())).foods.map(f => f.planKey).filter(Boolean));
   const dayKcal = x => num(x?.toplamKcal) || arr(x?.ogunler).reduce((s, o) => s + num(o.kcal), 0);
   const nowMeal = guessMeal();
@@ -1890,7 +1991,7 @@ function renderPlan() {
     <div class="stack"><i style="flex:${pk};background:var(--p)"></i><i style="flex:${ck};background:var(--c)"></i><i style="flex:${fk};background:var(--f)"></i></div>
     <div class="leg"><span><i style="background:var(--p)"></i>Protein <em>${tg.protein} g</em></span><span><i style="background:var(--c)"></i>Karb. <em>${tg.carb} g</em></span><span><i style="background:var(--f)"></i>Yağ <em>${tg.fat} g</em></span></div>
     ${sp ? `<div class="tiles in" style="grid-template-columns:1fr 1fr;margin-top:14px"><div><b>${fmt(tg.kcal)}</b><span>dinlenme günü</span></div><div><b style="color:var(--acTx)">~${fmt(tg.kcal + sp.kcal)}</b><span>spor günü (+~${fmt(sp.kcal)})</span></div></div>` : ""}
-    <div class="wstrip" data-act="pweekly" style="background:${wm.bg}"><span class="ic">${wm.ic}</span><div class="grow"><b>${esc(wm.t)}</b><small>${esc(wm.s)}</small></div><span class="mu" style="font-size:20px">›</span></div>
+    ${weekStrip()}
   </div>
 
   ${g ? `<div class="card planc">
@@ -1937,7 +2038,8 @@ function openPlanSheet(kind, k) {
         ${sp ? `<span>🏋️ Spor günlerinde (haftada ${sp.n} · ${sp.lvl}${sp.tur ? ", " + esc(sp.tur) : ""})</span><b style="color:var(--acTx)">+~${fmt(sp.kcal)} kcal</b>` : ""}
       </div><div class="hint">${sp ? "Spor günü eklemesi tahminidir; antrenmanı Bugün sayfasına girdiğin gün gerçekte yakılan kalori eklenir." : "Spor yaptığın günlerde yakılan kalori bu hedefe ayrıca eklenir."} Profilin değişmedikçe bu sayı sabit kalır; "Yenile" sadece örnek günleri yeniler.</div></div>` : ""}
       ${tg.ozet || tg.strategy?.why ? `<div class="card" style="margin:0 0 12px"><h3>🧭 Strateji</h3>${tg.strategy?.why ? `<p style="margin:0 0 8px;font-size:14.5px;font-weight:600">${esc(tg.strategy.why)}</p>` : ""}${tg.ozet ? `<p style="margin:0;font-size:14.5px;line-height:1.55">${esc(tg.ozet)}</p>` : ""}
-        ${guideItems(tg.beklentiList || tg.haftalik).length ? `<div class="note"><b>Beklenti:</b> ${esc(guideItems(tg.beklentiList || tg.haftalik).map(x => x.metin).join(" "))}</div>` : ""}</div>` : ""}`, true);
+        ${guideItems(tg.beklentiList || tg.haftalik).length ? `<div class="note"><b>Beklenti:</b> ${esc(guideItems(tg.beklentiList || tg.haftalik).map(x => x.metin).join(" "))}</div>` : ""}</div>` : ""}
+      <div class="card" style="margin:0 0 12px">${manualBox()}</div>`, true);
   } else if (kind === "weekly") {
     sheetShell("Haftalık kontrol", "📈", "var(--tint-y)", `<div class="card" style="margin:0 0 12px">${adaptiveDetail(adaptive()).replace('<div style="margin-top:12px">', "<div>")}</div>`, false);
   } else if (kind === "guide") {
@@ -1945,7 +2047,7 @@ function openPlanSheet(kind, k) {
     sheetShell(x.t, x.ic, x.tint, `<div class="card" style="margin:0 0 12px;padding:6px 16px">${it.map((m, i) => `<div class="gitem"><span class="fic" style="background:${x.tint}">${itemIcon(m, x.ic)}</span><div>${m.baslik ? `<b>${esc(m.baslik)}</b>` : ""}<p>${esc(m.metin)}</p></div></div>`).join("")}</div>`, true);
   }
 }
-function refreshPlanSheet() { renderPlan(); if ($("#sheet").className === "on" && sheetKind === "weekly") openPlanSheet("weekly"); }
+function refreshPlanSheet() { renderPlan(); if ($("#sheet").className === "on" && sheetKind === "weekly") openWeekSheet(); if ($("#sheet").className === "on" && sheetKind === "detail") openPlanSheet("detail"); }
 
 function confBar(a) {
   const lv = a?.conf, lbl = { low: "Düşük", mid: "Orta", high: "Yüksek" }[lv] || "Henüz yok";
@@ -2459,7 +2561,9 @@ document.addEventListener("click", e => {
     photo: () => $("#photoIn").click(),
     clearPhoto: () => { draft.photo = null; renderToday(); },
     pdetail: () => openPlanSheet("detail"),
-    pweekly: () => openPlanSheet("weekly"),
+    pweekly: () => openWeekSheet(0),
+    wweek: () => openWeekSheet(weekOff + num(a.dataset.n)),
+    wday: () => { closeSheet(); curDate = a.dataset.d; draft.preview = null; go("today"); },
     pguide: () => openPlanSheet("guide", a.dataset.k),
     snap: () => openSnapSheet(curDate),
     cmeal: () => { chef.meal = a.dataset.m; const h = new Date().getHours(); chef.last = (chef.meal === "Akşam" && h >= 18) || h >= 21; renderChef(); },
