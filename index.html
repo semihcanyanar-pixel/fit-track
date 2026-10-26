@@ -674,6 +674,15 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 .wsug{margin-top:14px;border-radius:16px;padding:14px;background:var(--card2);box-shadow:inset 0 0 0 1.5px var(--tx)}
 .wsug.soft{box-shadow:none}
 .wsug b{font-size:14.5px;display:block}.wsug p{margin:5px 0 10px;font-size:13.5px;line-height:1.45}.wsug .btns button{flex:1}
+.favrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--ln)}
+.favrow b{font-size:14.5px;display:block;font-weight:600}.favrow small{font-size:12px;color:var(--mu);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.favrow .fk{font-weight:700;font-size:14px;white-space:nowrap}
+.favadd{flex:none;height:34px;padding:0 12px;border-radius:10px;background:var(--btn);color:var(--btnTx,#fff);font-size:13px;box-shadow:none}
+.favsave{width:calc(100% - 16px);margin:8px 0 2px 16px;height:40px;border-radius:12px;background:rgba(232,163,23,.13);color:#A86B00;font-size:14px;box-shadow:none}
+.mbody .favsave{width:100%;margin-left:0}
+.favck{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--ln);font-size:14.5px;cursor:pointer}.favck:first-child{border-top:0}
+.favck input{width:20px;height:20px;flex:none;accent-color:var(--tx)}.favck b{font-weight:700}
+[data-theme="dark"] .favsave{color:#F2C46B}
 </style>
 </head>
 <body>
@@ -744,7 +753,7 @@ Kurallar:
 - Samimi, net ve kısa yazarsın; "sen" diye hitap edersin.`;
 
 /* ============ Durum ============ */
-const defaults = () => ({ profile: null, settings: { workerUrl: DEFAULT_WORKER }, targets: null, plan: null, days: {}, weights: [], recent: [], history: [], recipes: [], myFoods: {} });
+const defaults = () => ({ profile: null, settings: { workerUrl: DEFAULT_WORKER }, targets: null, plan: null, days: {}, weights: [], recent: [], history: [], recipes: [], myFoods: {}, favs: [] });
 let storeKey = KEY;          // giriş yapınca kullanıcıya özel anahtar olur
 let S = FIREBASE_CONFIG ? defaults() : load();
 let view = "today";
@@ -1469,6 +1478,7 @@ function fcCtx(ref) {
   if (ref.t === "day") { const r = findFood(ref.k); return r && { obj: r.f, meal: r.f.meal, label: r.f.meal, del: true, mem: true }; }
   if (ref.t === "prev") { const it = draft.preview?.items?.[+ref.k]; return it && { obj: it, meal: draft.preview.meal, label: `${draft.preview.meal} · eklenmeden önce`, del: true, mem: true }; }
   if (ref.t === "rec") { const it = chef.result?.items?.[+ref.k]; return it && { obj: it, meal: chef.result.meal, label: "Tarif malzemesi", del: true, mem: true, note: "Düzenlersen tarifin toplamı yeniden hesaplanır." }; }
+  if (ref.t === "fav") { const [fid, ix] = String(ref.k).split(":"), fv = arr(S.favs).find(x => x.id === fid), it = fv?.items?.[+ix]; return it && { obj: it, meal: favMeal || draft.meal, label: `${fv.name} favorisinde`, del: fv.items.length > 1, mem: true, back: "favBack" }; }
   if (ref.t === "my") { const m = (S.myFoods || {})[ref.k]; return m && { obj: myAsItem(m), meal: "Ara öğün", label: "Kayıtlı besin", del: true, mem: false, my: true }; }
   if (ref.t === "new") return { obj: { name: "", mode: "adet", u: "adet", q: 1, kcal: "", p: "", c: "", f: "" }, meal: draft.meal, label: draft.meal, del: false, mem: true, isNew: true };
   if (ref.t === "newmy") return { obj: { name: "", mode: "adet", u: "adet", q: 1, kcal: "", p: "", c: "", f: "" }, meal: "Ara öğün", label: "Kayıtlı besin", del: false, mem: false, my: true, isNew: true };
@@ -1490,7 +1500,7 @@ function openFC(ref, edit) {
       <div><small><i style="background:var(--f)"></i>Yağ</small><b>${fmtQ(f.f)}<em>g</em></b>${pctBar(f.f, tg.fat, "var(--f)")}</div></div>
     <div class="hint">Çubuklar günlük hedefinin ne kadarını karşıladığını gösterir.${per}${f.srcName ? ` Kaynak: ${esc(f.srcName)}.` : ""}${cx.note ? " " + cx.note : ""}</div>
     ${atwaterOff(f) ? `<div class="warnbox">Kalori ile makrolar birbirini tutmuyor (P×4 + K×4 + Y×9 = ${fmt(f.p * 4 + f.c * 4 + f.f * 9)} kcal). Düzenle'den kontrol edebilirsin.</div>` : ""}
-    <div class="btns fc-btns">${cx.del ? `<button class="fc-del" data-act="fdel" aria-label="Sil">🗑</button>` : ""}<button data-act="fedit">Düzenle</button><button class="pri" data-act="${cx.my ? "myList" : "closeSheet"}">Tamam</button></div>`, false);
+    <div class="btns fc-btns">${cx.del ? `<button class="fc-del" data-act="fdel" aria-label="Sil">🗑</button>` : ""}<button data-act="fedit">Düzenle</button><button class="pri" data-act="${cx.my ? "myList" : cx.back || "closeSheet"}">Tamam</button></div>`, false);
 }
 const COUNT_U = u => u && !/^(g|gr|gram|ml|porsiyon)$/i.test(u) ? u : "adet";
 function sc(o, k) { return { kcal: Math.round(num(o.kcal) * k), p: r1(num(o.p) * k), c: r1(num(o.c) * k), f: r1(num(o.f) * k) }; }
@@ -1593,6 +1603,7 @@ function fcDel() {
   if (fcRef.t === "day") { const r = findFood(fcRef.k); S.days[r.dk].foods = S.days[r.dk].foods.filter(x => x.id !== fcRef.k); }
   if (fcRef.t === "prev") draft.preview.items.splice(+fcRef.k, 1);
   if (fcRef.t === "rec") { chef.result.items.splice(+fcRef.k, 1); recipeTotals(chef.result); }
+  if (fcRef.t === "fav") { const [fid, ix] = fcRef.k.split(":"), fv = arr(S.favs).find(x => x.id === fid); fv.items.splice(+ix, 1); save(); toast("Silindi"); return openFavSheet(fid); }
   if (fcRef.t === "my") { delete S.myFoods[fcRef.k]; save(); toast("Silindi"); return openMyList(); }
   save(); closeSheet(); render(); toast("Silindi");
 }
@@ -1678,12 +1689,13 @@ function tabakFeed(d, isToday) {
     return `<div class="tg"><div class="th" data-act="mtog" data-m="${m}" role="button" aria-expanded="${open}"><span class="tbar" style="background:${MEAL_TINT[m]}"></span>
       <div class="bd"><b>${m}</b><small>${open ? fs.length + " kalem" : esc(names.slice(0, 4).join(", ")) + (names.length > 4 ? " +" + (names.length - 4) : "")}</small></div>
       <span class="k">${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))}<em>kcal</em></span><span class="ch">${open ? "⌃" : "›"}</span></div>
-      ${open ? mealMacros(fs) + fs.map(f => `<div class="tit" data-act="food" data-id="${f.id}" role="button"><span>${esc(f.name)}${f.amount ? ` <small>${esc(f.amount)}</small>` : ""}</span><b class="kc">${f.kcal}</b><span class="chev">›</span></div>`).join("") : ""}</div>`; }).join("")
+      ${open ? mealMacros(fs) + fs.map(f => `<div class="tit" data-act="food" data-id="${f.id}" role="button"><span>${esc(f.name)}${f.amount ? ` <small>${esc(f.amount)}</small>` : ""}</span><b class="kc">${f.kcal}</b><span class="chev">›</span></div>`).join("") + `<button class="favsave" data-act="favSave" data-dk="${d.k || curDate}" data-m="${m}">Favori öğün olarak kaydet</button>` : ""}</div>`; }).join("")
     : `<p class="mu sm" style="margin:4px 0">Henüz bir şey girilmedi. Alttaki kutuya ne yediğini yaz.</p>`}</div>`;
 }
 function tabakAddMini() {
   return `<div class="card tmini" id="addcard">${S.recent.length ? `<div class="mrow" data-act="rtog" role="button" aria-expanded="${recentOpen}"><span class="grow"><b>Son yediklerin</b><small>${recentOpen ? `Dokun, ${esc(draft.meal)} öğününe ekle` : "Tek dokunuşla tekrar ekle"}</small></span><span class="chev">${recentOpen ? "⌃" : "›"}</span></div>
     ${recentOpen ? `<div class="chips" style="margin:4px 0 8px">${S.recent.slice(0, 14).map((r, i) => `<button class="chip" data-act="recent" data-i="${i}">${esc(r.name)} <small>${r.kcal}</small></button>`).join("")}</div>` : ""}` : ""}
+    ${favListHtml()}
     <button class="tman" data-act="toggleManual">Kaloriyi elle gir</button></div>`;
 }
 function tabakDock() {
@@ -1772,6 +1784,7 @@ function renderToday() {
         <span class="fic" style="width:38px;height:38px;font-size:18px;background:var(--card2)">🕘</span>
         <span class="grow"><b>Son yediklerin</b><small>${recentOpen ? `Dokun, ${esc(draft.meal)} öğününe ekle` : `${Math.min(S.recent.length, 14)} kayıt · tek dokunuşla ekle`}</small></span><span class="chev">${recentOpen ? "⌃" : "›"}</span></div>
       ${recentOpen ? `<div class="chips" style="margin-top:4px">${S.recent.slice(0, 14).map((r, i) => `<button class="chip" data-act="recent" data-i="${i}">${foodEmoji(r.name)} ${esc(r.name)} <small>${r.kcal}</small></button>`).join("")}</div>` : ""}` : ""}
+      ${favListHtml()}
   </div>`}`;
 
   if (draft.preview) {
@@ -1795,7 +1808,7 @@ function renderToday() {
         <span class="grow"><b>${m}</b><small>${fs.length} kalem</small></span>
         <b class="mk">${fmt(fs.reduce((a, f) => a + num(f.kcal), 0))} kcal</b><span class="chev">${open ? "⌃" : "›"}</span></div>
       ${open ? `<div class="mbody">${mealMacros(fs)}${fs.map(f => `<div class="item" data-act="food" data-id="${f.id}" role="button" style="cursor:pointer"><div class="fic">${foodEmoji(f.name)}</div><div class="nm">${esc(f.name)}${f.amount ? `<small>${esc(f.amount)}</small>` : ""}</div>
-        <b class="kc">${f.kcal} kcal</b><span class="chev" style="color:var(--mu)">›</span></div>`).join("")}</div>` : ""}`;
+        <b class="kc">${f.kcal} kcal</b><span class="chev" style="color:var(--mu)">›</span></div>`).join("")}<button class="favsave" data-act="favSave" data-dk="${curDate}" data-m="${m}">Favori öğün olarak kaydet</button></div>` : ""}`;
   }).join("") : `<p class="mu sm" style="margin:0">Henüz bir şey girilmedi. Yukarıdan bir öğün seç.</p>`}</div>`;
 
   // Su
@@ -1875,6 +1888,61 @@ const GUIDE = {
 };
 const ITEM_ICON_RULES = [[/su\b|sıvı|içecek|litre/i, "💧"], [/protein|et\b|tavuk|yumurta/i, "🥩"], [/uyku|dinlen/i, "😴"], [/karbon|pirinç|bulgur|ekmek|makarna/i, "🍚"], [/sebze|lif|salata|meyve/i, "🥗"], [/öncesi/i, "⚡"], [/sonrası|toparlan/i, "🔄"], [/hafta|ay\b|ay sonu|süre|başlangıç|ilk/i, "📅"], [/tartı|kilo|ölç/i, "⚖️"], [/hazırl|plan/i, "🧺"], [/dışarı|restoran/i, "🍽️"], [/şeker|tatlı/i, "🍬"], [/zaman|saat|öğün aralı/i, "⏰"], [/antrenman|spor|egzersiz/i, "🏋️"]];
 function itemIcon(m, def) { const t = (m.baslik || "") + " " + (m.baslik ? "" : m.metin || ""); const r = ITEM_ICON_RULES.find(([re]) => re.test(t)); return r ? r[1] : def; }
+/* ---- Favori öğünler ---- */
+let favOpen = false, favMeal = null, favCur = null;
+const FAV_KEYS = ["name", "amount", "kcal", "p", "c", "f", "mode", "q", "u", "gpu", "gram", "src", "srcName"];
+const favCopy = f => { const o = {}; FAV_KEYS.forEach(k => { if (f[k] != null && f[k] !== "") o[k] = f[k]; }); return o; };
+const favSum = items => items.reduce((a, i) => ({ kcal: a.kcal + num(i.kcal), p: a.p + num(i.p), c: a.c + num(i.c), f: a.f + num(i.f) }), { kcal: 0, p: 0, c: 0, f: 0 });
+function favListHtml() {
+  const favs = arr(S.favs);
+  if (!favs.length) return "";
+  return `<div class="mrow rtog" data-act="favtog" role="button" aria-expanded="${favOpen}"><span class="grow"><b>Favori öğünlerin</b><small>${favOpen ? `Dokun, ${esc(draft.meal)} öğününe hepsini ekle` : `${favs.length} favori · tek dokunuşla ekle`}</small></span><span class="chev">${favOpen ? "⌃" : "›"}</span></div>
+    ${favOpen ? favs.map(fv => { const s = favSum(fv.items); return `<div class="favrow"><div class="grow" data-act="favOpen" data-id="${fv.id}" role="button" style="min-width:0;cursor:pointer"><b>${esc(fv.name)}</b><small>${fv.items.length} besin · ${esc(fv.items.map(i => i.name).join(", ").toLocaleLowerCase("tr-TR"))}</small></div><span class="fk">${fmt(s.kcal)}</span><button class="favadd" data-act="favAdd" data-id="${fv.id}">+ Ekle</button></div>`; }).join("") : ""}`;
+}
+function favAddTo(id, meal) {
+  const fv = arr(S.favs).find(x => x.id === id); if (!fv) return;
+  addFoods(fv.items.map(i => ({ ...i })), meal);
+  toast(`${fv.name} → ${meal} (${fmt(favSum(fv.items).kcal)} kcal)`);
+}
+function openFavSave(dk, meal) {
+  sheetKind = "favsave";
+  const fs = (S.days[dk]?.foods || []).filter(f => f.meal === meal);
+  favCur = { dk, meal, on: fs.map(() => true) };
+  sheetShell("Favori öğün kaydet", MI(meal), MEAL_TINT[meal], `
+    <label class="f" style="margin-top:4px"><span>Adı</span><input id="favName" placeholder="ör. Tavuklu wrap"></label>
+    <label class="f"><span>Hangi besinler dahil?</span></label>
+    <div class="card" style="margin:0;padding:2px 14px">${fs.map((f, i) => `<label class="favck"><input type="checkbox" checked onchange="favCur.on[${i}]=this.checked;favTot()"><span class="grow">${esc(f.name)} <small class="mu">${esc(f.amount || "")}</small></span><b>${f.kcal}</b></label>`).join("")}</div>
+    <div class="hint" id="favTot"></div>
+    <div class="btns fc-btns"><button data-act="closeSheet">Vazgeç</button><button class="pri" data-act="favSaveGo">Kaydet</button></div>`, false);
+  favTot();
+}
+function favTot() {
+  if (!favCur) return; const fs = (S.days[favCur.dk]?.foods || []).filter(f => f.meal === favCur.meal).filter((_, i) => favCur.on[i]);
+  const s = favSum(fs); const el = $("#favTot");
+  if (el) el.innerHTML = `Toplam: <b>${fmt(s.kcal)} kcal</b> · ${fmtQ(s.p)} g protein · ${fmtQ(s.c)} g karb. · ${fmtQ(s.f)} g yağ`;
+}
+function favSaveGo() {
+  const name = ($("#favName")?.value || "").trim(); if (!name) return toast("Favoriye bir ad ver", 1);
+  const fs = (S.days[favCur.dk]?.foods || []).filter(f => f.meal === favCur.meal).filter((_, i) => favCur.on[i]);
+  if (!fs.length) return toast("En az bir besin seç", 1);
+  S.favs = [{ id: uid(), name, items: fs.map(favCopy), at: Date.now() }, ...arr(S.favs)];
+  favCur = null; favOpen = true; save(); closeSheet(); render(); toast(`${name} favorilere eklendi`);
+}
+function openFavSheet(id) {
+  const fv = arr(S.favs).find(x => x.id === id); if (!fv) return closeSheet();
+  sheetKind = "fav"; favCur = { id };
+  favMeal = favMeal && MEALS.includes(favMeal) ? favMeal : draft.meal;
+  const s = favSum(fv.items);
+  sheetShell(esc(fv.name), MI(favMeal), MEAL_TINT[favMeal], `
+    <div class="fc-kc"><b>${fmt(s.kcal)}</b><span>kcal</span></div>
+    <div class="mmac" style="margin:0"><span><i style="background:var(--p)"></i>Protein<b>${fmtQ(s.p)} g</b></span><span><i style="background:var(--c)"></i>Karb.<b>${fmtQ(s.c)} g</b></span><span><i style="background:var(--f)"></i>Yağ<b>${fmtQ(s.f)} g</b></span></div>
+    <label class="f"><span>İçindekiler</span></label>
+    <div class="card" style="margin:0;padding:2px 14px">${fv.items.map((it, i) => `<div class="item" data-act="fc" data-t="fav" data-k="${fv.id}:${i}" role="button" style="cursor:pointer"><div class="nm">${esc(it.name)}${it.amount ? `<small>${esc(it.amount)}</small>` : ""}</div><b class="kc">${it.kcal}</b><span class="chev" style="color:var(--mu)">›</span></div>`).join("")}</div>
+    <label class="f"><span>Hangi öğüne eklensin?</span></label>
+    <div class="seg">${MEALS.map(m => `<button class="${favMeal === m ? "on" : ""}" data-act="favMeal" data-m="${m}">${MEAL_SHORT[m]}</button>`).join("")}</div>
+    <div class="btns fc-btns"><button class="fc-del" data-act="favDel" aria-label="Sil">🗑</button><button data-act="favRen">Adı değiştir</button><button class="pri" data-act="favAddSel">Öğüne ekle</button></div>`, false);
+}
+
 /* ---- Haftalık özet (gün sonu puanları + kalori grafiği) ---- */
 const MEAL_COL = { "Kahvaltı": "#FFB72B", "Öğle": "#2FBF71", "Akşam": "#5468FF", "Ara öğün": "#FF6B57" };
 const scoreCol = s => s == null ? null : s >= 8 ? "#2FBF71" : s >= 5 ? "#E8A317" : "#FF5A4F";
@@ -2648,6 +2716,16 @@ document.addEventListener("click", e => {
     fsave: () => fcSave(),
     fdel: () => fcDel(),
     myList: () => openMyList(),
+    favtog: () => { favOpen = !favOpen; renderToday(); },
+    favAdd: () => { favAddTo(a.dataset.id, draft.meal); renderToday(); },
+    favOpen: () => { favMeal = draft.meal; openFavSheet(a.dataset.id); },
+    favBack: () => openFavSheet(favCur?.id || String(fcRef?.k || "").split(":")[0]),
+    favMeal: () => { favMeal = a.dataset.m; openFavSheet(favCur.id); },
+    favAddSel: () => { favAddTo(favCur.id, favMeal); closeSheet(); render(); },
+    favRen: () => { const fv = arr(S.favs).find(x => x.id === favCur.id); if (!fv) return; const n = prompt("Favori öğünün adı", fv.name); if (!n || !n.trim()) return; fv.name = n.trim(); save(); openFavSheet(fv.id); render(); },
+    favDel: () => { const fv = arr(S.favs).find(x => x.id === favCur.id); if (!fv || !confirm(`${fv.name} favorilerden silinsin mi?`)) return; S.favs = S.favs.filter(x => x.id !== fv.id); save(); closeSheet(); render(); toast("Favori silindi"); },
+    favSave: () => openFavSave(a.dataset.dk, a.dataset.m),
+    favSaveGo: () => favSaveGo(),
     myNew: () => openFC({ t: "newmy" }, true),
     delEx: () => { const D = d(); D.exercises = D.exercises.filter(x => x.id !== a.dataset.id); save(); renderToday(); },
     addExManual: () => {
