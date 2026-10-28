@@ -814,7 +814,10 @@ function dayTarget(date) {
   const b = baseline();
   const base = S.targets?.kcal || b?.tdee || 2000;
   const ex = (S.days[date]?.exercises || []).reduce((a, e) => a + num(e.kcal), 0);
-  return { base, ex, total: base + ex };
+  // Antrenmanla gelen ek kalori makrolara dağıtılır: %20 protein, %55 karbonhidrat, %25 yağ
+  const tg = S.targets || {};
+  return { base, ex, total: base + ex, exP: r1(ex * 0.20 / 4), exC: r1(ex * 0.55 / 4), exF: r1(ex * 0.25 / 9),
+    protein: tg.protein ? Math.round(tg.protein + ex * 0.20 / 4) : 0, carb: tg.carb ? Math.round(tg.carb + ex * 0.55 / 4) : 0, fat: tg.fat ? Math.round(tg.fat + ex * 0.25 / 9) : 0 };
 }
 
 /* ---- Uyarlamalı hedef: kayıtlara göre gerçek harcamayı tahmin et ---- */
@@ -1334,7 +1337,7 @@ async function reviewDay() {
     const r = await ai(SYS, `KİŞİ:
 ${profileText()}
 
-HEDEFLER: temel hedef ${fmt(t.base)} kcal + bugünkü egzersiz ${fmt(t.ex)} kcal = ${fmt(t.total)} kcal.${tg ? ` Makro hedefleri: protein ${tg.protein} g, karbonhidrat ${tg.carb} g, yağ ${tg.fat} g, su ${tg.water} L.` : ""}
+HEDEFLER: temel hedef ${fmt(t.base)} kcal + bugünkü egzersiz ${fmt(t.ex)} kcal = ${fmt(t.total)} kcal.${tg ? ` Makro hedefleri (antrenman payı dahil): protein ${t.protein} g, karbonhidrat ${t.carb} g, yağ ${t.fat} g, su ${tg.water} L.` : ""}
 
 TARİH: ${curDate}
 BUGÜN YENENLER:
@@ -1487,7 +1490,7 @@ function fcCtx(ref) {
 function openFC(ref, edit) {
   const cx = fcCtx(ref); if (!cx) return closeSheet();
   fcRef = ref; sheetKind = "food";
-  const f = cx.obj, tg = S.targets || {};
+  const f = cx.obj, tg = dayTarget(fcRef.t === "day" ? (findFood(ref.k)?.dk || curDate) : curDate);
   if (edit || cx.isNew) { fcEdit = fcInit(f); fcEdit.cx = cx; return fcDraw(); }
   const pctBar = (v, g, col) => `<div class="pb"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${col}"></i></div>`;
   const per = f.mode === "adet" && f.q ? ` 1 ${esc(f.u)}: ${fmt(f.kcal / f.q)} kcal · ${fmtQ(f.p / f.q)} g protein.` : f.mode === "g" && f.q ? ` 100 g: ${fmt(f.kcal / f.q * 100)} kcal · ${fmtQ(f.p / f.q * 100)} g protein.` : "";
@@ -1646,7 +1649,7 @@ function bentoTiles(c, d) {
   const goal = Math.round((c.tg?.water || 2.5) * 1000), gl = Math.round(d.waterMl / GLASS), gGoal = Math.round(goal / GLASS);
   const lit = waterUnit() === "litre", ex = d.exercises.reduce((a, e) => a + num(e.kcal), 0), last = d.exercises[d.exercises.length - 1];
   const wp = Math.min(d.waterMl / goal, 1);
-  return `<div class="bmacs">${[["Protein", c.tot.p, c.tg?.protein, "var(--p)", "egg"], ["Karb.", c.tot.c, c.tg?.carb, "var(--c)", "bowl"], ["Yağ", c.tot.f, c.tg?.fat, "var(--f)", "leaf"]].map(([l, v, g, col, ic]) =>
+  return `<div class="bmacs">${[["Protein", c.tot.p, c.t.protein, "var(--p)", "egg"], ["Karb.", c.tot.c, c.t.carb, "var(--c)", "bowl"], ["Yağ", c.tot.f, c.t.fat, "var(--f)", "leaf"]].map(([l, v, g, col, ic]) =>
     `<div class="btile"><div class="lab"><span class="ic" style="background:${col}">${kSvg(ic)}</span>${l}</div><div class="val">${fmt(v)}<em>g</em></div><div class="of">/ ${g ? fmt(g) : "—"} g</div><div class="pb"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${col}"></i></div></div>`).join("")}</div>
   <div class="bduo">
     <div class="btile bwat"><div class="wave" style="height:${Math.round(15 + wp * 70)}%"></div><div class="lab"><span class="ic">${kSvg("drop")}</span>Su</div>
@@ -1675,7 +1678,7 @@ function tabakHero(c, d) {
 function tabakRows(c, d) {
   const goal = Math.round((c.tg?.water || 2.5) * 1000), gl = Math.round(d.waterMl / GLASS), gGoal = Math.round(goal / GLASS), n = Math.min(Math.max(gGoal, gl), 16);
   const ex = d.exercises.reduce((a, e) => a + num(e.kcal), 0), last = d.exercises[d.exercises.length - 1];
-  return `<div class="tmacs">${[["Protein", c.tot.p, c.tg?.protein, "var(--p)"], ["Karb.", c.tot.c, c.tg?.carb, "var(--c)"], ["Yağ", c.tot.f, c.tg?.fat, "var(--f)"]].map(([l, v, g, col]) =>
+  return `<div class="tmacs">${[["Protein", c.tot.p, c.t.protein, "var(--p)"], ["Karb.", c.tot.c, c.t.carb, "var(--c)"], ["Yağ", c.tot.f, c.t.fat, "var(--f)"]].map(([l, v, g, col]) =>
     `<div><div class="r">${l}<b>${fmt(v)}/${g ? fmt(g) : "—"} g</b></div><div class="bar"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${col}"></i></div></div>`).join("")}</div>
   <div class="trow w"><span class="l">Su <small>${waterUnit() === "litre" ? `${fmtL(d.waterMl)} / ${fmtL(goal)}` : `${gl} / ${gGoal} bardak`}</small></span>
     <span class="drops">${Array.from({ length: n }, (_, i) => `<button class="${i < gl ? "f" : ""}" data-act="wdrop" data-i="${i}" aria-label="${i + 1}. bardak">${kSvg("drop")}</button>`).join("")}</span></div>
@@ -1741,7 +1744,7 @@ function renderToday() {
     ${SK() === "bento" ? bentoHero(cx) : SK() === "tabak" ? tabakHero(cx, d) : isK() ? `
     <div class="kdial">${kDial(Math.min(ratio, 1), over)}<div class="ctr"><span class="lbl">${isToday ? "Bugün alınan" : "Alınan"}</span><span class="big">${fmt(tot.kcal)}</span><span class="of">/ ${fmt(t.total)} kcal</span></div></div>
     <div class="kkal"><span>${diff >= 0 ? "Kalan" : "Hedefin üstünde"}</span><b style="color:${diff >= 0 ? "var(--acTx)" : "var(--bad)"}">${fmt(Math.abs(diff))}<small>kcal</small></b></div>
-    <div class="kmacs">${[["Protein", tot.p, tg?.protein, "var(--p)"], ["Karbonhidrat", tot.c, tg?.carb, "var(--c)"], ["Yağ", tot.f, tg?.fat, "var(--f)"]].map(([l, v, g, c]) => `<div class="kmac"><small><i style="background:${c}"></i>${l}</small><b>${fmt(v)}<em> / ${g ? fmt(g) : "—"} g</em></b><div class="bar"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${c}"></i></div></div>`).join("")}</div>
+    <div class="kmacs">${[["Protein", tot.p, t.protein, "var(--p)"], ["Karbonhidrat", tot.c, t.carb, "var(--c)"], ["Yağ", tot.f, t.fat, "var(--f)"]].map(([l, v, g, c]) => `<div class="kmac"><small><i style="background:${c}"></i>${l}</small><b>${fmt(v)}<em> / ${g ? fmt(g) : "—"} g</em></b><div class="bar"><i style="width:${g ? Math.min(num(v) / g * 100, 100) : 0}%;background:${c}"></i></div></div>`).join("")}</div>
     <div class="formula">Hedef ${fmt(t.base)} kcal${t.ex ? `, antrenmanla +${fmt(t.ex)}` : ""}${!tg ? " (geçici)" : ""}</div>` : `
     <div class="sum">
       <div class="ring">
@@ -1752,9 +1755,9 @@ function renderToday() {
         <div class="ctr"><div class="big">${fmt(tot.kcal)}</div><span>/ ${fmt(t.total)} kcal</span></div>
       </div>
       <div class="macs">
-        ${mac("Protein", tot.p, tg?.protein, " g", "var(--p)")}
-        ${mac("Karb.", tot.c, tg?.carb, " g", "var(--c)")}
-        ${mac("Yağ", tot.f, tg?.fat, " g", "var(--f)")}
+        ${mac("Protein", tot.p, t.protein, " g", "var(--p)")}
+        ${mac("Karb.", tot.c, t.carb, " g", "var(--c)")}
+        ${mac("Yağ", tot.f, t.fat, " g", "var(--f)")}
         ${mac("Su", d.waterMl / 1000, waterGoal / 1000, " L", "var(--w)", (d.waterMl / 1000).toLocaleString("tr-TR", { maximumFractionDigits: 2 }))}
       </div>
     </div>
@@ -1955,7 +1958,7 @@ function weekData(off = 0) {
     const by = {}; MEALS.forEach(m => by[m] = fs.filter(f => f.meal === m).reduce((a, f) => a + num(f.kcal), 0));
     const tot = totals(d || { foods: [] });
     const sc = d?.review ? Math.max(1, Math.min(10, Math.round(num(d.review.puan) || 0))) || null : null;
-    return { k, nm, short: nm.slice(0, 3).replace("Paz", i === 6 ? "Paz" : "Pzt").replace("Sal", "Sal"), by, kcal: tot.kcal, p: tot.p, target: t.total, score: sc, has: fs.length > 0, future: k > today, today: k === today };
+    return { k, nm, short: nm.slice(0, 3), by, kcal: tot.kcal, p: tot.p, pT: t.protein, target: t.total, score: sc, has: fs.length > 0, future: k > today, today: k === today };
   });
   ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"].forEach((s, i) => days[i].short = s);
   const logged = days.filter(d => d.has);
@@ -1997,7 +2000,7 @@ function openWeekSheet(off = weekOff) {
     : Math.abs(w.avg - w.avgT) <= w.avgT * 0.1 ? "Hedefe yakın" : w.avg < w.avgT ? "Hedefin altında" : "Hedefin üstünde";
   const kcCol = w.over.length || (w.logged.length && w.avg > w.avgT * 1.1) ? "var(--warn)" : "#1E9E5A";
   const goalW = num(tg.strategy?.weekly ?? tg.haftalikHedefKg);
-  const prBars = w.days.map(d => `<i style="height:${d.has && tg.protein ? Math.max(8, Math.min(d.p / tg.protein, 1) * 100) : 6}%;${d.has ? "" : "background:var(--ln)"}"></i>`).join("");
+  const prBars = w.days.map(d => `<i style="height:${d.has && d.pT ? Math.max(8, Math.min(d.p / d.pT, 1) * 100) : 6}%;${d.has ? "" : "background:var(--ln)"}"></i>`).join("");
   let sug = "";
   if (a?.ready && a.suggest != null) {
     const wk = Math.abs(a.weekly).toFixed(1).replace(".", ","), dir = a.weekly < 0 ? "verdin" : "aldın", gw = Math.abs(a.goalWeekly).toFixed(1).replace(".", ",");
@@ -2011,7 +2014,7 @@ function openWeekSheet(off = weekOff) {
     <div class="wstats">
       <div><small>Ortalama kalori</small><b>${w.logged.length ? fmt(w.avg) : "–"}<em>/ ${fmt(w.avgT)}</em></b><span style="color:${kcCol}">${kcNote}</span></div>
       <div><small>Haftanın puanı</small><b>${w.scoreAvg != null ? w.scoreAvg.toFixed(1).replace(".", ",") : "–"}<em>/ 10</em></b><span style="color:${w.scoreAvg != null ? scoreCol(Math.round(w.scoreAvg)) : "var(--mu)"}">${w.scored.length ? `${w.scored.length} gün değerlendirildi` : "Henüz değerlendirme yok"}</span></div>
-      <div><small>Ortalama protein</small><b>${w.logged.length ? fmt(w.pAvg) : "–"}<em>/ ${fmt(tg.protein || 0)} g</em></b><span class="wpr">${prBars}</span></div>
+      <div><small>Ortalama protein</small><b>${w.logged.length ? fmt(w.pAvg) : "–"}<em>/ ${fmt(w.logged.length ? w.logged.reduce((a, d) => a + d.pT, 0) / w.logged.length : tg.protein || 0)} g</em></b><span class="wpr">${prBars}</span></div>
       <div><small>Kilo ${weekOff === 0 ? "bu hafta" : "o hafta"}</small><b>${w.last ? String(r1(w.last.kg)).replace(".", ",") : "–"}<em>kg</em></b><span style="color:${w.wChange == null ? "var(--mu)" : (goalW < 0 ? w.wChange <= 0 : w.wChange >= 0) ? "#1E9E5A" : "var(--warn)"}">${w.wChange == null ? "Bu hafta tartı yok" : `${w.wChange < 0 ? "▼" : w.wChange > 0 ? "▲" : "="} ${Math.abs(w.wChange).toFixed(1).replace(".", ",")} kg${goalW ? ` · hedef ${goalW > 0 ? "+" : "−"}${Math.abs(goalW).toString().replace(".", ",")}` : ""}`}</span></div>
     </div>
     ${w.days.some(d => d.has && !d.future && !d.today && d.score == null) ? `<div class="hint">Puanı olmayan gün (–): "Günü bitir ve değerlendir" yapılmamış. Güne dokununca oraya gidip değerlendirebilirsin.</div>` : ""}
@@ -2480,7 +2483,7 @@ function chefDefaults() {
 }
 function remainingToday() {
   const t = ymd(new Date()), d = day(t), tot = totals(d), tg = S.targets, tt = dayTarget(t);
-  return { tot, kcal: tt.total - tot.kcal, p: (tg?.protein || 0) - tot.p, c: (tg?.carb || 0) - tot.c, f: (tg?.fat || 0) - tot.f, tt, d };
+  return { tot, kcal: tt.total - tot.kcal, p: (tt.protein || 0) - tot.p, c: (tt.carb || 0) - tot.c, f: (tt.fat || 0) - tot.f, tt, d };
 }
 function renderChef() {
   const el = $("#v-chef");
@@ -2561,7 +2564,7 @@ async function makeRecipe(again) {
   try {
     const prompt = `KİŞİ: ${p.cinsiyet}, ${p.yas} yaş, ${latestWeight() || p.kilo} kg. Amaç: ${p.amac}
 Özel durum: ${SPECIAL[p.ozel] || "Yok"} · Alerji/intolerans: ${p.alerji || "yok"} · Sevmedikleri: ${p.sevmedik || "-"} · Tercihleri: ${p.tercih || "-"} · Sağlık: ${p.saglik || "-"}
-GÜNLÜK HEDEF: ${fmt(r.tt.total)} kcal (egzersiz dahil)${tg ? `, protein ${tg.protein} g, karbonhidrat ${tg.carb} g, yağ ${tg.fat} g` : ""}
+GÜNLÜK HEDEF: ${fmt(r.tt.total)} kcal (egzersiz dahil)${tg ? `, protein ${r.tt.protein} g, karbonhidrat ${r.tt.carb} g, yağ ${r.tt.fat} g (antrenman payı dahil)` : ""}
 BUGÜN YENENLER:
 ${eaten}
 BUGÜN KALAN: ${fmt(r.kcal)} kcal, protein ${fmt(r.p)} g, karbonhidrat ${fmt(r.c)} g, yağ ${fmt(r.f)} g (negatif değer = hedef aşıldı)
