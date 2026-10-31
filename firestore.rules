@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Fit Track – Firestore kuralları
+// Uygulama yalnızca users/{uid} (profil, hedefler, ayarlar) ve users/{uid}/days/{YYYY-AA-GG} yollarını kullanır.
+// Her kullanıcı sadece kendi verisini okuyup yazabilir; geri kalan her şey kapalıdır.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      match /days/{day} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if request.auth != null && request.auth.uid == uid
+                     && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
