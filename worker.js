@@ -7,12 +7,12 @@
 //   AI (Workers AI) : Google yoğun olduğunda devreye giren yedek yapay zeka (ücretsiz günlük kota)
 
 // mode "fast": kalori hesaplama gibi kısa işler → hızlı Lite modeller önce, düşünme kapalı
-// mode "deep": program/gün değerlendirme → daha güçlü model önce
+// mode "deep": program/gün değerlendirme → gemini-flash-latest ölçümde 40 sn takılıp zaman aşımına uğradığı için lite önce
 const MODELS = {
   fast: ["gemini-3.1-flash-lite", "gemini-flash-lite-latest", "gemini-flash-latest"],
-  deep: ["gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-flash-lite-latest"]
+  deep: ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-flash-lite-latest"]
 };
-const CALL_TIMEOUT = { fast: 16000, deep: 40000 };   // tek Gemini denemesi için üst sınır
+const CALL_TIMEOUT = { fast: 16000, deep: 25000 };   // tek Gemini denemesi için üst sınır
 const TOTAL_BUDGET = { fast: 24000, deep: 45000 };  // Gemini için toplam süre; dolunca yedeğe geçilir
 // Yedek: Cloudflare Workers AI (Gemini hepsi yoğun/kotalıysa)
 const CF_MODELS = ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/meta/llama-3.1-8b-instruct-fast"];
