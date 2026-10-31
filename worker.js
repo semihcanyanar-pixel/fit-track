@@ -2,9 +2,21 @@
 // Ortam değişkenleri (Settings → Variables):
 //   GEMINI_API_KEY  (Secret)  : aistudio.google.com'dan alınan ücretsiz anahtar
 //   ALLOWED_ORIGIN  (Text)    : ör. https://kullaniciadi.github.io  (virgülle birden fazla yazılabilir)
-//   MODELS          (Text, opsiyonel) : sırayla denenecek modeller, ör. "gemini-flash-latest,gemini-flash-lite-latest"
+//   FDC_API_KEY     (Secret, opsiyonel) : api.data.gov'dan ücretsiz USDA FoodData Central anahtarı (besin değerleri)
+// Bağlantı (Settings → Bindings):
+//   AI (Workers AI) : Google yoğun olduğunda devreye giren yedek yapay zeka (ücretsiz günlük kota)
 
-const DEFAULT_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest"];
+// mode "fast": kalori hesaplama gibi kısa işler → hızlı Lite modeller önce, düşünme kapalı
+// mode "deep": program/gün değerlendirme → daha güçlü model önce
+const MODELS = {
+  fast: ["gemini-3.1-flash-lite", "gemini-flash-lite-latest", "gemini-flash-latest"],
+  deep: ["gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-flash-lite-latest"]
+};
+const CALL_TIMEOUT = { fast: 16000, deep: 40000 };   // tek Gemini denemesi için üst sınır
+const TOTAL_BUDGET = { fast: 24000, deep: 45000 };  // Gemini için toplam süre; dolunca yedeğe geçilir
+// Yedek: Cloudflare Workers AI (Gemini hepsi yoğun/kotalıysa)
+const CF_MODELS = ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/meta/llama-3.1-8b-instruct-fast"];
+const CF_VISION = ["@cf/meta/llama-4-scout-17b-16e-instruct", "@cf/meta/llama-3.2-11b-vision-instruct"];   // fotoğraflı istekler için yedek
 
 export default {
   async fetch(request, env) {
@@ -18,7 +30,6 @@ export default {
       "Access-Control-Max-Age": "86400",
       "Vary": "Origin"
     };
-
     if (request.method === "OPTIONS") return new Response(null, { headers: cors });
     if (request.method !== "POST") return json({ error: "Sadece POST kabul edilir" }, 405, cors);
     if (!okOrigin) return json({ error: "Bu adresten erişim izni yok (ALLOWED_ORIGIN)" }, 403, cors);
@@ -26,55 +37,135 @@ export default {
 
     let body;
     try { body = await request.json(); } catch { return json({ error: "Geçersiz istek" }, 400, cors); }
+    if (Array.isArray(body?.fdc)) return json(await fdcLookup(body.fdc.slice(0, 15), env), 200, cors);
     const { system, prompt } = body || {};
+    const mode = body?.mode === "deep" ? "deep" : "fast";
     const temperature = Math.min(Math.max(Number(body?.temperature ?? 0.4), 0), 1.5);
-    if (!prompt || typeof prompt !== "string" || prompt.length > 40000) {
-      return json({ error: "Geçersiz prompt" }, 400, cors);
-    }
+    if (!prompt || typeof prompt !== "string" || prompt.length > 40000) return json({ error: "Geçersiz prompt" }, 400, cors);
+    // İsteğe bağlı fotoğraf: { mime: "image/jpeg", data: "<base64>" }
+    const image = body?.image && typeof body.image.data === "string" ? body.image : null;
+    if (image && (!/^image\/(jpeg|png|webp|heic|heif)$/.test(image.mime || "") || image.data.length > 6_000_000)) return json({ error: "Fotoğraf çok büyük ya da desteklenmiyor" }, 400, cors);
 
-    const payload = {
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature, responseMimeType: "application/json" }
-    };
-    if (system) payload.systemInstruction = { parts: [{ text: String(system).slice(0, 10000) }] };
+    const parts = image ? [{ inlineData: { mimeType: image.mime, data: image.data } }, { text: prompt }] : [{ text: prompt }];
+    const base = { contents: [{ role: "user", parts }], generationConfig: { temperature, responseMimeType: "application/json" } };
+    if (system) base.systemInstruction = { parts: [{ text: String(system).slice(0, 10000) }] };
 
-    const models = (env.MODELS ? env.MODELS.split(",") : DEFAULT_MODELS).map(s => s.trim()).filter(Boolean);
-    let lastErr = "";
-    for (const model of models) {
-      try {
-        const r = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-          {
-            method: "POST",
+    const started = Date.now();
+    let lastErr = "", busy = 0, quota = 0;
+    for (const model of MODELS[mode]) {
+      let thinkingOff = mode === "fast";            // hızlı işlerde düşünmeyi kapat
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const left = TOTAL_BUDGET[mode] - (Date.now() - started);
+        if (left < 2500) break;
+        const payload = structuredClone(base);
+        if (thinkingOff) payload.generationConfig.thinkingConfig = { thinkingBudget: 0 };
+        const ctl = new AbortController();
+        const timer = setTimeout(() => ctl.abort(), Math.min(CALL_TIMEOUT[mode], left));
+        try {
+          const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+            method: "POST", signal: ctl.signal,
             headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
             body: JSON.stringify(payload)
+          });
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            const msg = data?.error?.message || "";
+            lastErr = `${model}: ${r.status} ${msg}`.trim();
+            // Bu model düşünmeyi kapatmayı desteklemiyorsa aynı modeli ayarsız tekrar dene
+            if (r.status === 400 && thinkingOff && /think/i.test(msg)) { thinkingOff = false; attempt--; continue; }
+            if (r.status === 503 || r.status === 500) busy++;
+            if (r.status === 429) quota++;
+            break;                                   // beklemeden sıradaki modele geç
           }
-        );
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) {
-          lastErr = `${model}: ${r.status} ${data?.error?.message || ""}`.trim();
-          continue; // kota dolduysa (429) veya model yoksa sıradakini dene
-        }
-        const parts = data?.candidates?.[0]?.content?.parts || [];
-        const text = parts.filter(p => p.text && !p.thought).map(p => p.text).join("");
-        if (!text) { lastErr = `${model}: boş yanıt`; continue; }
-        return json({ model, text }, 200, cors);
-      } catch (e) {
-        lastErr = `${model}: ${e.message}`;
+          const parts = data?.candidates?.[0]?.content?.parts || [];
+          const text = parts.filter(p => p.text && !p.thought).map(p => p.text).join("");
+          if (!text) { lastErr = `${model}: boş yanıt`; break; }
+          return json({ model, text, ms: Date.now() - started }, 200, cors);
+        } catch (e) {
+          lastErr = `${model}: ${e.name === "AbortError" ? "zaman aşımı" : e.message}`;
+          if (e.name === "AbortError") busy++;
+          break;
+        } finally { clearTimeout(timer); }
       }
     }
-    const quota = /429|quota|RESOURCE_EXHAUSTED/i.test(lastErr);
+    // ---- Yedek sağlayıcı: Cloudflare Workers AI ----
+    if (env.AI && image) {
+      const sys = (system ? String(system).slice(0, 10000) + "\n" : "") + "Yanıtın SADECE geçerli JSON olsun; açıklama, markdown veya ``` ekleme.";
+      const dataUrl = `data:${image.mime};base64,${image.data}`;
+      for (const m of CF_VISION) {
+        try {
+          let out;
+          if (m.includes("llama-4")) {
+            out = await env.AI.run(m, { messages: [{ role: "system", content: sys }, { role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: dataUrl } }] }], max_tokens: 3000, temperature: 0.2 });
+          } else {
+            const bytes = [...Uint8Array.from(atob(image.data), c => c.charCodeAt(0))];
+            const run = () => env.AI.run(m, { messages: [{ role: "system", content: sys }, { role: "user", content: prompt }], image: bytes, max_tokens: 3000, temperature: 0.2 });
+            try { out = await run(); }
+            catch (e) { if (/agree|licen/i.test(e.message)) { await env.AI.run(m, { prompt: "agree" }); out = await run(); } else throw e; }
+          }
+          const text = typeof out?.response === "string" ? out.response : out?.response ? JSON.stringify(out.response) : "";
+          if (text && /[{[]/.test(text)) return json({ model: m, text, ms: Date.now() - started, fallback: true }, 200, cors);
+          lastErr += ` | ${m}: boş yanıt`;
+        } catch (e) { lastErr += ` | ${m}: ${e.message}`; }
+      }
+    }
+    if (env.AI && !image) {
+      const messages = [
+        { role: "system", content: (system ? String(system).slice(0, 10000) + "\n" : "") + "Yanıtın SADECE geçerli JSON olsun; açıklama, markdown veya ``` ekleme." },
+        { role: "user", content: prompt }
+      ];
+      for (const m of CF_MODELS) {
+        try {
+          const out = await env.AI.run(m, { messages, max_tokens: mode === "deep" ? 4000 : 3000, temperature: Math.min(temperature, 1) });
+          let text = typeof out?.response === "string" ? out.response : out?.response ? JSON.stringify(out.response) : "";
+          if (text && /[{[]/.test(text)) return json({ model: m, text, ms: Date.now() - started, fallback: true }, 200, cors);
+          lastErr += ` | ${m}: boş yanıt`;
+        } catch (e) { lastErr += ` | ${m}: ${e.message}`; }
+      }
+    }
+    const kind = busy ? "busy" : quota ? "quota" : "error";
     return json({
-      error: quota
-        ? "Ücretsiz yapay zeka kotası şu an dolu. Birkaç dakika sonra tekrar dene."
+      kind,
+      detail: lastErr.slice(0, 600),
+      error: kind === "busy" ? "Yapay zeka sunucuları şu an çok yoğun" + (env.AI ? "." : " (yedek yapay zeka bağlı değil).")
+        : kind === "quota" ? "Ücretsiz yapay zeka kotası şu an dolu. Birkaç dakika sonra tekrar dene."
         : "Yapay zeka şu an yanıt vermiyor. " + lastErr
     }, 502, cors);
   }
 };
 
+// USDA FoodData Central: 100 g başına kcal / protein / karbonhidrat / yağ
+const NUT = { kcal: [1008, 2047, 2048], p: [1003], c: [1005, 1050], f: [1004, 1085] };
+async function fdcLookup(list, env) {
+  if (!env.FDC_API_KEY) return { error: "nokey", items: [] };
+  const cache = caches.default;
+  const one = async q => {
+    q = String(q || "").trim().toLowerCase().slice(0, 80);
+    if (!q) return null;
+    const ck = new Request("https://fdc-cache.local/v2/" + encodeURIComponent(q));
+    const hit = await cache.match(ck).catch(() => null);
+    if (hit) return hit.json();
+    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${env.FDC_API_KEY}&query=${encodeURIComponent(q)}&dataType=${encodeURIComponent("Foundation,SR Legacy")}&pageSize=8`;
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 5000);
+    try {
+      const r = await fetch(url, { signal: ctl.signal });
+      if (!r.ok) return null;
+      const d = await r.json();
+      const words = q.split(/[\s,]+/).filter(Boolean);
+      const pick = (d.foods || []).map(fd => {
+        const val = ids => { for (const id of ids) { const n = (fd.foodNutrients || []).find(x => x.nutrientId === id || +x.nutrientNumber === id); if (n && n.value != null) return +n.value; } return null; };
+        const desc = String(fd.description || "").toLowerCase();
+        const score = words.filter(x => desc.includes(x)).length * 10 - desc.split(",").length + (fd.dataType === "SR Legacy" ? 1 : 0) - (/powder|dried|dehydrated|frozen|canned/.test(desc) && !/powder|dried|dehydrated|frozen|canned/.test(q) ? 30 : 0);
+        return { score, ad: fd.description, id: fd.fdcId, kcal100: val(NUT.kcal), p100: val(NUT.p), c100: val(NUT.c), f100: val(NUT.f) };
+      }).filter(x => x.kcal100 != null && x.p100 != null).sort((a, b) => b.score - a.score)[0] || null;
+      const out = pick ? { q, ad: pick.ad, id: pick.id, kcal100: pick.kcal100, p100: pick.p100, c100: pick.c100 ?? 0, f100: pick.f100 ?? 0 } : { q, none: true };
+      await cache.put(ck, new Response(JSON.stringify(out), { headers: { "Cache-Control": "max-age=2592000", "Content-Type": "application/json" } })).catch(() => {});
+      return out;
+    } catch { return null; } finally { clearTimeout(to); }
+  };
+  return { items: await Promise.all(list.map(one)) };
+}
+
 function json(obj, status, headers) {
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers: { ...headers, "Content-Type": "application/json; charset=utf-8" }
-  });
+  return new Response(JSON.stringify(obj), { status, headers: { ...headers, "Content-Type": "application/json; charset=utf-8" } });
 }
