@@ -959,7 +959,68 @@ async function workerHeaders(url) {
   try {
     if (new URL(url).origin !== new URL(DEFAULT_WORKER).origin) return h;
     const t = await Cloud.user?.getIdToken(); if (t) h.Authorization = "Bearer " + t;
+    const k = getGkey(); if (k) h["X-Gemini-Key"] = k;
   } catch (e) {}
+  return h;
+}
+/* ---- Kişisel Gemini anahtarı: sadece bu cihazda (localStorage); S'ye girmez, yani buluta ve yedeğe yazılmaz ---- */
+const gkeyName = () => "fittrack_gkey_" + (Cloud.user?.uid || "");
+const getGkey = () => { try { return Cloud.user ? localStorage.getItem(gkeyName()) || "" : ""; } catch (e) { return ""; } };
+const setGkey = k => { try { if (k) localStorage.setItem(gkeyName(), k); else localStorage.removeItem(gkeyName()); } catch (e) {} };
+/* ---- Rol bilgisi (worker'dan): { email, admin, family, hasKey } ---- */
+let ME = null, FAM = null;
+const meName = () => "fittrack_me_" + (Cloud.user?.uid || "");
+function loadMe() { try { ME = Cloud.user ? JSON.parse(localStorage.getItem(meName())) : null; } catch (e) { ME = null; } }
+function saveMe() { try { localStorage.setItem(meName(), JSON.stringify(ME)); } catch (e) {} }
+async function workerCall(body, ms = 15000) {
+  const url = (S.settings.workerUrl || DEFAULT_WORKER).trim(), ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, { method: "POST", signal: ctl.signal, headers: await workerHeaders(url), body: JSON.stringify(body) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || "Hata " + r.status);
+    return d;
+  } catch (e) { throw new Error(e.name === "AbortError" ? "Zaman aşımı" : e.message); }
+  finally { clearTimeout(to); }
+}
+const aiSheetIdle = () => $("#wurl") && !/INPUT|TEXTAREA/.test(document.activeElement?.tagName || "");
+async function refreshMe() {
+  try { ME = await workerCall({ me: 1 }); saveMe(); } catch (e) { return ME; }
+  if (ME.admin && !FAM) famOp("list");
+  if (aiSheetIdle()) openSheet("ai");
+  Cloud.softRender();                     // odaklı bir alanda yazarken ekranı yenileme
+  return ME;
+}
+async function famOp(op, email) {
+  try { const d = await workerCall({ fam: { op, email } }); FAM = d.list || []; if (op !== "list") toast(op === "add" ? email + " eklendi" : email + " çıkarıldı"); }
+  catch (e) { return toast(e.message, 1); }
+  if ($("#wurl")) openSheet("ai");
+}
+const aiRowValue = () => !Cloud.user ? "Bağlantı testi" : ME?.family ? "Aile hesabı ✓" : getGkey() ? "Kendi anahtarın ✓" : ME ? "Anahtar ekle" : "Bağlantı testi";
+function openKeySheet() {
+  sheetShell("Yapay zeka anahtarı", "🔑", "var(--tint-g)", `
+    <p class="sm mu" style="margin:4px 0 12px">Yapay zeka özellikleri için ücretsiz bir Google Gemini anahtarı gerekiyor. 1 dakika sürer.</p>
+    <div class="card lst" style="margin:0 0 12px">
+      <div class="lrow"><span class="ic" style="background:var(--tint-y)">1</span>Aşağıdaki düğmeye dokun; Google AI Studio açılır, Google hesabınla giriş yap</div>
+      <div class="lrow"><span class="ic" style="background:var(--tint-y)">2</span>"Create API key"e bas ve çıkan anahtarı kopyala</div>
+      <div class="lrow"><span class="ic" style="background:var(--tint-y)">3</span>Buraya dönüp yapıştır (AIza ile başlar)</div></div>
+    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;background:var(--btn);color:#fff;border-radius:14px;padding:14px;font-weight:600">Ücretsiz anahtarını al ↗</a>
+    <label class="f" style="margin-top:12px"><span>Anahtar</span><input id="gkIn" placeholder="AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <button class="pri full" data-act="keySave">Kaydet</button>
+    <p class="hint">Anahtar yalnızca bu cihazda saklanır; buluta ve yedeğe yazılmaz. Başka cihazda ayrıca eklemelisin. Ücretsiz anahtarda Google, gönderilen metinleri model geliştirmek için kullanabilir.</p>`);
+}
+function aiAccessHtml() {
+  if (!Cloud.user) return "";
+  let h = `<div class="card lst" style="margin:0 0 12px">`;
+  if (ME?.family) h += `<div class="lrow"><span class="ic" style="background:var(--tint-g)">✅</span>${ME.admin ? "Yöneticisin" : "Aile hesabısın"}<span class="v">Anahtar gerekmez</span></div>`;
+  else if (getGkey()) h += `<div class="lrow"><span class="ic" style="background:var(--tint-g)">🔑</span>Kendi Gemini anahtarın<span class="v">Ekli ✓</span></div><div class="btns" style="padding:0 14px 14px"><button class="grow" data-act="keyOpen">Değiştir</button><button class="dan grow" data-act="keyDel">Kaldır</button></div>`;
+  else h += `<button class="lrow" data-act="keyOpen"><span class="ic" style="background:var(--tint-g)">🔑</span>Gemini anahtarı ekle<span class="v">${ME ? "Gerekli" : ""}</span><span class="ch">›</span></button>`;
+  h += `</div>`;
+  if (ME?.admin) {
+    const rows = (FAM || []).map(x => `<div class="lrow"><span class="ic" style="background:var(--tint-p)">👤</span>${esc(x.e)}<button class="dan" style="margin-left:auto;padding:6px 10px" data-act="famDel" data-e="${esc(x.e)}">Çıkar</button></div>`).join("");
+    h += `<div class="grp">Aile üyeleri</div><div class="card lst" style="margin:0 0 8px"><div class="lrow"><span class="ic" style="background:var(--tint-y)">👑</span>${esc(ME.email)}<span class="v">Sen · yönetici</span></div>${FAM ? rows : `<div class="lrow"><span class="v">Yükleniyor…</span></div>`}</div>
+      <div class="row" style="gap:8px;margin-bottom:6px"><input id="famIn" type="email" placeholder="E-posta adresi" autocapitalize="off" style="flex:1"><button class="pri" data-act="famAdd" style="width:auto;padding:0 16px">Ekle</button></div>
+      <p class="hint" style="margin-bottom:14px">Aile üyeleri Gemini anahtarı girmeden yapay zekayı senin kotanla kullanır. Sadece uygulamada hesabını açmış kişileri ekle.</p>`;
+  }
   return h;
 }
 async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null) {
@@ -984,6 +1045,7 @@ async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null
         catch (e) { try { localStorage.setItem("fittrack_lastraw", JSON.stringify({ at: Date.now(), model: d.model || "?", fallback: !!d.fallback, ms: d.ms, text: String(d.text || "").slice(0, 4000) })); } catch (x) {} throw e; }
       }
       if (d.detail) console.warn("AI:", d.detail);
+      if (d.needKey) setTimeout(openKeySheet, 50);   // kendi anahtarını eklemesi gereken kullanıcıya rehberi aç
       if (d.kind === "busy" && i === 0 && Date.now() - t0 < (mode === "deep" ? 30000 : 8000)) { await new Promise(res => setTimeout(res, 1500)); continue; }
       throw new Error(d.error || "Hata: " + r.status);
     }
@@ -2349,7 +2411,7 @@ function appSettingsHtml() {
     <div class="lrow"><span class="ic" style="background:var(--tint-v)">🎨</span>Tema<div class="seg" style="margin-left:auto;width:150px"><button class="on" data-act="skinNext" aria-label="Temayı değiştir">${SKIN_NAMES[skin] || "Ferah"}</button><button class="on" data-act="theme" data-t="${dark ? "light" : "dark"}" aria-label="Açık veya koyu">${dark ? "🌙 Koyu" : "☀️ Açık"}</button></div></div>
     ${dark || skin !== "ferah" ? "" : `<div class="lrow"><span class="ic" style="background:var(--ac2)">🖌️</span>Vurgu rengi<div class="swatches">${ACCENTS.map(([k, n, g]) => `<button class="sw ${(S.settings.accent || "zumrut") === k ? "on" : ""}" style="background:${g}" data-act="accent" data-a="${k}" aria-label="${n}" title="${n}"></button>`).join("")}</div></div>`}
     <div class="lrow"><span class="ic" style="background:var(--tint-c)">💧</span>Su birimi<div class="seg" style="margin-left:auto;width:150px"><button data-act="wunit" data-u="bardak" class="${waterUnit() === "bardak" ? "on" : ""}">Bardak</button><button data-act="wunit" data-u="litre" class="${waterUnit() === "litre" ? "on" : ""}">Litre</button></div></div>
-    <button class="lrow" data-act="sheet" data-k="ai"><span class="ic" style="background:var(--tint-g)">✨</span>Yapay zeka<span class="v">Bağlantı testi</span><span class="ch">›</span></button>
+    <button class="lrow" data-act="sheet" data-k="ai"><span class="ic" style="background:var(--tint-g)">✨</span>Yapay zeka<span class="v">${aiRowValue()}</span><span class="ch">›</span></button>
     <button class="lrow" data-act="sheet" data-k="hesap"><span class="ic" style="background:var(--tint-b)">☁️</span>Hesap<span class="v">${Cloud.user ? esc(Cloud.user.email) : "Sadece bu cihaz"}</span><span class="ch">›</span></button>
     <button class="lrow" data-act="sheet" data-k="veri"><span class="ic" style="background:var(--tint-y)">🗂️</span>Veriler<span class="v">Yedek · sıfırla</span><span class="ch">›</span></button>
   </div>
@@ -2361,7 +2423,7 @@ function openSheet(k) {
   const sh = $("#sheet"), p = S.profile || PF_DEFAULT;
   let title, body;
   if (PF[k]) { title = PF[k].ic + " " + PF[k].t; body = `<form id="pfs" data-k="${k}">${PF[k].html(p)}<button type="submit" class="pri full" style="margin-top:16px">Kaydet</button></form>`; }
-  else if (k === "ai") { title = "✨ Yapay zeka"; body = `<label class="f"><span>Yapay zeka adresi (Cloudflare Worker)</span><input id="wurl" value="${esc(S.settings.workerUrl || DEFAULT_WORKER)}" autocapitalize="off" autocorrect="off"></label>
+  else if (k === "ai") { title = "✨ Yapay zeka"; body = `${aiAccessHtml()}<label class="f"><span>Yapay zeka adresi (Cloudflare Worker)</span><input id="wurl" value="${esc(S.settings.workerUrl || DEFAULT_WORKER)}" autocapitalize="off" autocorrect="off"></label>
       <div class="btns"><button class="grow" data-act="saveUrl">Kaydet</button><button class="pri grow" data-act="testAi">Bağlantıyı test et</button></div>
       <p class="hint">Önce Google Gemini denenir; yoğunsa Cloudflare'in yedek yapay zekası devreye girer.</p>${(() => { let x = null; try { x = JSON.parse(localStorage.getItem("fittrack_lastraw")); } catch (e) {} return x ? `<details style="margin-top:14px"><summary class="sm mu" style="font-weight:700">Son okunamayan yanıt (${new Date(x.at).toLocaleString("tr-TR")}, ${esc(x.model)}${x.fallback ? ", yedek" : ""}${x.ms ? `, ${Math.round(x.ms / 1000)} sn` : ""})</summary><pre style="white-space:pre-wrap;font-size:11px;max-height:220px;overflow:auto;background:var(--in);padding:10px;border-radius:10px">${esc(x.text)}</pre></details>` : ""; })()}`; }
   else if (k === "hesap") { title = "☁️ Hesap"; body = Cloud.user ? `<p style="margin:6px 0 4px"><b>${esc(Cloud.user.email)}</b></p><p class="sm mu" style="margin:0 0 14px">Kayıtların buluta kaydediliyor; başka cihazdan aynı hesapla girince hepsi gelir. ${esc(Cloud.statusText())}</p>
@@ -2771,6 +2833,21 @@ document.addEventListener("click", e => {
     },
     delW: () => { if (!confirm("Bu ölçüm silinsin mi?")) return; S.weights = S.weights.filter(w => w.date !== a.dataset.d); wStep = null; save(); renderWeight(); },
     goalEx: () => { const t = document.querySelector('[name="amac"]'); t.value = GOAL_EXAMPLES[+a.dataset.i]; t.focus(); },
+    keyOpen: () => openKeySheet(),
+    keySave: async () => {
+      const k = $("#gkIn").value.trim();
+      if (!/^AIza[0-9A-Za-z_-]{30,60}$/.test(k)) return toast("Anahtar AIza ile başlamalı; tamamını yapıştır", 1);
+      const old = getGkey(); setGkey(k); busy("Anahtar doğrulanıyor…");
+      try {
+        const d = await workerCall({ me: 1 });
+        if (!d.hasKey) throw new Error("Anahtar kabul edilmedi");
+        ME = d; saveMe(); closeSheet(); render(); toast("Anahtar kaydedildi ✓");
+      } catch (e) { setGkey(old); toast("Kaydedilemedi: " + e.message, 1); }
+      finally { busy(); }
+    },
+    keyDel: () => { if (!confirm("Gemini anahtarın bu cihazdan kaldırılsın mı?")) return; setGkey(""); toast("Anahtar kaldırıldı"); render(); openSheet("ai"); },
+    famAdd: () => { const e = $("#famIn").value.trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return toast("Geçerli bir e-posta yaz", 1); famOp("add", e); },
+    famDel: () => { const e = a.dataset.e; if (confirm(e + " aile listesinden çıkarılsın mı?")) famOp("del", e); },
     saveUrl: () => { S.settings.workerUrl = $("#wurl").value.trim(); save(); toast("Kaydedildi"); },
     testAi: async () => {
       S.settings.workerUrl = $("#wurl").value.trim(); save();
@@ -2887,13 +2964,15 @@ const Cloud = {
   async onUser(u) {
     this.unsub.forEach(f => f()); this.unsub = [];
     this.user = u; this.sig = null;
-    if (!u) { S = defaults(); storeKey = KEY; showAuth("login"); return; }
+    if (!u) { S = defaults(); storeKey = KEY; ME = null; FAM = null; showAuth("login"); return; }
+    loadMe(); FAM = null;
     localStorage.setItem("fittrack_last_uid", u.uid);
     storeKey = KEY + "_" + u.uid;
     if (this.offlineUid === u.uid) this.offlineUid = null;   // çevrimdışı açılmıştı: S zaten bu kullanıcının yerel verisi, ekranı bozma
     else { S = load(); hideAuth(); go(S.profile ? "today" : "profile"); }   // önce yerel önbellek: anında açılır
     try { await this.pull(true); } catch (e) { console.warn(e); }
     this.listen();
+    refreshMe();                          // aile/yönetici durumu
   },
 
   ref(...p) { const { fsM, db } = this.fb; return p.length % 2 ? fsM.collection(db, "users", this.user.uid, ...p) : fsM.doc(db, "users", this.user.uid, ...p); },
@@ -3023,6 +3102,7 @@ function showAuth(mode, msg) {
         <button class="pri full" data-act="login">Giriş yap</button>
         <button class="full" data-act="signup" style="margin-top:8px">Hesap oluştur</button>
         <button class="ghost full" data-act="forgot" style="margin-top:4px">Şifremi unuttum</button>
+        <p class="mu sm" style="margin:14px 2px 0;text-align:left">Yapay zeka: Yönetici seni aile listesine eklemediyse ücretsiz bir Google Gemini anahtarı gerekir. Giriş yaptıktan sonra Profil → Yapay zeka → "Gemini anahtarı ekle" bölümünden 1 dakikada ekleyebilirsin.</p>
       </div>`;
 }
 function hideAuth() { const el = $("#auth"); if (el) el.style.display = "none"; }
