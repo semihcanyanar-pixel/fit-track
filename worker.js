@@ -18,6 +18,36 @@ const TOTAL_BUDGET = { fast: 24000, deep: 45000 };  // Gemini için toplam süre
 const CF_MODELS = ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/meta/llama-3.1-8b-instruct-fast"];
 const CF_VISION = ["@cf/meta/llama-4-scout-17b-16e-instruct", "@cf/meta/llama-3.2-11b-vision-instruct"];   // fotoğraflı istekler için yedek
 
+// Kimlik doğrulama: istemci Firebase ID token'ını "Authorization: Bearer ..." ile yollar.
+// REQUIRE_AUTH = "1" (Text değişkeni) ise tokensız/geçersiz istekler 401 alır; tanımsızsa token varsa doğrulanır ama zorunlu değildir.
+//   FIREBASE_PROJECT_ID (Text, opsiyonel) : varsayılan aşağıdaki proje
+const FIREBASE_PROJECT = "fit-track-8b38d";
+const JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
+let jwksCache = { keys: null, at: 0 };
+async function getJwks() {
+  if (jwksCache.keys && Date.now() - jwksCache.at < 3600000) return jwksCache.keys;
+  const r = await fetch(JWKS_URL, { cf: { cacheTtl: 3600, cacheEverything: true } });
+  if (!r.ok) throw new Error("anahtarlar alınamadı");
+  jwksCache = { keys: (await r.json()).keys || [], at: Date.now() };
+  return jwksCache.keys;
+}
+const b64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(s.length / 4) * 4, "=")), c => c.charCodeAt(0));
+async function verifyToken(token, projectId) {
+  const [h, p, s] = String(token || "").split(".");
+  if (!h || !p || !s) throw new Error("biçim");
+  const head = JSON.parse(new TextDecoder().decode(b64u(h)));
+  const pay = JSON.parse(new TextDecoder().decode(b64u(p)));
+  const now = Date.now() / 1000;
+  if (head.alg !== "RS256") throw new Error("algoritma");
+  if (pay.aud !== projectId || pay.iss !== `https://securetoken.google.com/${projectId}`) throw new Error("proje");
+  if (!pay.sub || pay.exp < now || pay.iat > now + 300) throw new Error("süre");
+  const jwk = (await getJwks()).find(k => k.kid === head.kid);
+  if (!jwk) throw new Error("anahtar");
+  const key = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
+  if (!await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64u(s), new TextEncoder().encode(`${h}.${p}`))) throw new Error("imza");
+  return pay.sub;
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
@@ -26,13 +56,17 @@ export default {
     const cors = {
       "Access-Control-Allow-Origin": okOrigin ? (origin || "*") : allowed[0],
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
       "Access-Control-Max-Age": "86400",
       "Vary": "Origin"
     };
     if (request.method === "OPTIONS") return new Response(null, { headers: cors });
     if (request.method !== "POST") return json({ error: "Sadece POST kabul edilir" }, 405, cors);
     if (!okOrigin) return json({ error: "Bu adresten erişim izni yok (ALLOWED_ORIGIN)" }, 403, cors);
+    const bearer = (request.headers.get("Authorization") || "").match(/^Bearer (.+)$/);
+    let uid = null;
+    if (bearer) { try { uid = await verifyToken(bearer[1], env.FIREBASE_PROJECT_ID || FIREBASE_PROJECT); } catch (e) { uid = null; } }
+    if (!uid && env.REQUIRE_AUTH === "1") return json({ kind: "auth", error: "Oturum doğrulanamadı. Çıkış yapıp tekrar giriş yap." }, 401, cors);
     if (!env.GEMINI_API_KEY) return json({ error: "Worker'da GEMINI_API_KEY tanımlı değil" }, 500, cors);
 
     let body;
