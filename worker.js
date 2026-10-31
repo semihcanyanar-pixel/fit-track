@@ -70,7 +70,7 @@ export default {
             body: JSON.stringify(payload)
           });
           const data = await r.json().catch(() => ({}));
-          tried.push({ m: model, s: r.status, ms: Date.now() - t1 });
+          tried.push({ m: model, s: r.status, ms: Date.now() - t1, e: r.ok ? undefined : String(data?.error?.message || "").slice(0, 150) });
           if (!r.ok) {
             const msg = data?.error?.message || "";
             lastErr = `${model}: ${r.status} ${msg}`.trim();
