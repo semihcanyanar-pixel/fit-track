@@ -750,7 +750,16 @@ Kurallar:
 - Kişinin alerjisi/intoleransı olan besinleri ASLA önermezsin.
 - Tıbbi teşhis koymazsın. Emzirme, hamilelik, kronik hastalık gibi durumlarda güvenli sınırlarda kalırsın; gerekirse doktor/diyetisyene danışmasını kısaca hatırlatırsın.
 - Aşırı düşük kalori, öğün atlama, detoks/kür gibi uygulamaları önermezsin. Emzirenlerde haftada ~0,5 kg'dan hızlı kayıp hedeflemezsin.
-- Samimi, net ve kısa yazarsın; "sen" diye hitap edersin.`;
+- Samimi, net ve kısa yazarsın; "sen" diye hitap edersin.
+- Metin alanlarının tamamını yalnızca Türkçe yazarsın; cümle içine İngilizce kelime karıştırmazsın (ör. "slightly" yerine "hafif", "significantly" yerine "belirgin şekilde"). Yalnızca kcal, protein, MET gibi yerleşik birimler ve terimler kalabilir.`;
+
+/* Modelin Türkçe cümleye karıştırdığı İngilizce zarf/sıfatları düzeltir (geçmiş kayıtlar dahil, gösterirken de uygulanır) */
+const EN_TR = { slightly: "hafif", slight: "hafif", significantly: "belirgin şekilde", significant: "belirgin", somewhat: "biraz", moderately: "orta düzeyde", moderate: "orta düzeyde", relatively: "nispeten", very: "çok", quite: "oldukça", rather: "oldukça", mostly: "çoğunlukla", overall: "genel olarak", generally: "genel olarak", mildly: "hafif", markedly: "belirgin şekilde", extremely: "aşırı", considerably: "oldukça" };
+const EN_TR_RE = new RegExp("\\b(" + Object.keys(EN_TR).join("|") + ")\\b", "gi");
+function trClean(s) {
+  return typeof s !== "string" ? s : s.replace(EN_TR_RE, (m) => { const t = EN_TR[m.toLowerCase()]; return m[0] === m[0].toUpperCase() && m[0] !== m[0].toLowerCase() ? t.charAt(0).toLocaleUpperCase("tr") + t.slice(1) : t; });
+}
+function trCleanDeep(v) { return Array.isArray(v) ? v.map(trCleanDeep) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, trCleanDeep(x)])) : trClean(v); }
 
 /* ============ Durum ============ */
 const defaults = () => ({ profile: null, settings: { workerUrl: DEFAULT_WORKER }, targets: null, plan: null, days: {}, weights: [], recent: [], history: [], recipes: [], myFoods: {}, favs: [] });
@@ -1353,7 +1362,7 @@ GÖREV: Günü kişinin amacına göre değerlendir.
 - Hedefin belirgin altında kalındıysa bunun riskini (kas kaybı, süt azalması vb.) belirt.
 - Makro dengesini, su ve öğün düzenini yorumla.
 JSON: {"puan":1-10,"baslik":"kısa başlık","ozet":"2-3 cümle","fazlaKalori":number,"cikarilacaklar":[{"besin":"string","kcal":number,"neden":"string","yerine":"string"}],"iyiler":["..."],"gelistirilecekler":["..."],"eksikler":["ör. protein, lif, su"],"yarinIcin":"somut öneri"}`, 0.5, "deep");
-    d.review = { ...r, at: Date.now(), sig: daySig(d) };
+    d.review = { ...trCleanDeep(r), at: Date.now(), sig: daySig(d) };
     d.closed = true; save(); renderToday();
     setTimeout(() => $("#review")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
   } catch (e) { toast(e.message, 1); } finally { busy(); }
@@ -1853,6 +1862,7 @@ function renderToday() {
 }
 
 function reviewCard(rv, d) {
+  rv = trCleanDeep(rv);   // geçmiş değerlendirmelerdeki İngilizce kelimeler de düzelsin
   const sc = Math.max(1, Math.min(10, Math.round(num(rv.puan) || 5)));
   const scBg = sc >= 8 ? "var(--btn)" : sc >= 5 ? "linear-gradient(135deg,#f59e0b,#f97316)" : "linear-gradient(135deg,#f43f5e,#e11d48)";
   const stale = rv.sig !== daySig(d);
