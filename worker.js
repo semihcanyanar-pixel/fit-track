@@ -3,8 +3,11 @@
 //   GEMINI_API_KEY  (Secret)  : aistudio.google.com'dan alınan ücretsiz anahtar
 //   ALLOWED_ORIGIN  (Text)    : ör. https://kullaniciadi.github.io  (virgülle birden fazla yazılabilir)
 //   FDC_API_KEY     (Secret, opsiyonel) : api.data.gov'dan ücretsiz USDA FoodData Central anahtarı (besin değerleri)
+//   ADMIN_EMAIL     (Text, opsiyonel) : yönetici e-postası; aile listesini yönetir ve senin Gemini kotanı kullanır
+//   REQUIRE_KEY     (Text, opsiyonel) : "1" ise aile dışı kullanıcılar kendi Gemini anahtarını (X-Gemini-Key) göndermek zorundadır
 // Bağlantı (Settings → Bindings):
 //   AI (Workers AI) : Google yoğun olduğunda devreye giren yedek yapay zeka (ücretsiz günlük kota)
+//   FAMILY (KV namespace) : senin kotanı kullanabilecek aile üyelerinin e-postaları ("fam:<e-posta>")
 
 // mode "fast": kalori hesaplama gibi kısa işler → hızlı Lite modeller önce, düşünme kapalı
 // mode "deep": program/gün değerlendirme → gemini-flash-latest ölçümde 40 sn takılıp zaman aşımına uğradığı için lite önce
@@ -45,7 +48,7 @@ async function verifyToken(token, projectId) {
   if (!jwk) throw new Error("anahtar");
   const key = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
   if (!await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64u(s), new TextEncoder().encode(`${h}.${p}`))) throw new Error("imza");
-  return pay.sub;
+  return { uid: pay.sub, email: pay.email || null };
 }
 
 export default {
@@ -56,7 +59,7 @@ export default {
     const cors = {
       "Access-Control-Allow-Origin": okOrigin ? (origin || "*") : allowed[0],
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Gemini-Key",
       "Access-Control-Max-Age": "86400",
       "Vary": "Origin"
     };
@@ -64,14 +67,52 @@ export default {
     if (request.method !== "POST") return json({ error: "Sadece POST kabul edilir" }, 405, cors);
     if (!okOrigin) return json({ error: "Bu adresten erişim izni yok (ALLOWED_ORIGIN)" }, 403, cors);
     const bearer = (request.headers.get("Authorization") || "").match(/^Bearer (.+)$/);
-    let uid = null;
-    if (bearer) { try { uid = await verifyToken(bearer[1], env.FIREBASE_PROJECT_ID || FIREBASE_PROJECT); } catch (e) { uid = null; } }
-    if (!uid && env.REQUIRE_AUTH === "1") return json({ kind: "auth", error: "Oturum doğrulanamadı. Çıkış yapıp tekrar giriş yap." }, 401, cors);
-    if (!env.GEMINI_API_KEY) return json({ error: "Worker'da GEMINI_API_KEY tanımlı değil" }, 500, cors);
+    let user = null;
+    if (bearer) { try { user = await verifyToken(bearer[1], env.FIREBASE_PROJECT_ID || FIREBASE_PROJECT); } catch (e) { user = null; } }
+    if (!user && env.REQUIRE_AUTH === "1") return json({ kind: "auth", error: "Oturum doğrulanamadı. Çıkış yapıp tekrar giriş yap." }, 401, cors);
+
+    // Roller: yönetici (ADMIN_EMAIL) ve aile (KV "FAMILY" içindeki e-postalar) senin Gemini kotanı kullanır;
+    // diğerleri kendi anahtarını "X-Gemini-Key" ile yollar. Zorunluluk REQUIRE_KEY = "1" ile açılır.
+    const email = (user?.email || "").toLowerCase();
+    const admin = !!email && !!env.ADMIN_EMAIL && email === String(env.ADMIN_EMAIL).trim().toLowerCase();
+    const family = !!user && (admin || (!!email && !!env.FAMILY && (await env.FAMILY.get("fam:" + email)) !== null));
+    const ownKeyRaw = (request.headers.get("X-Gemini-Key") || "").trim();
+    const ownKey = /^AIza[0-9A-Za-z_-]{30,60}$/.test(ownKeyRaw) ? ownKeyRaw : "";
 
     let body;
     try { body = await request.json(); } catch { return json({ error: "Geçersiz istek" }, 400, cors); }
+
+    if (body?.me) {
+      if (!user) return json({ kind: "auth", error: "Oturum doğrulanamadı. Çıkış yapıp tekrar giriş yap." }, 401, cors);
+      let keyOk = false;
+      if (ownKey) { try { keyOk = (await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1", { headers: { "x-goog-api-key": ownKey } })).ok; } catch (e) {} }
+      return json({ email, admin, family, hasKey: keyOk }, 200, cors);
+    }
+    if (body?.fam) {
+      if (!admin) return json({ error: "Bu işlem yalnızca yönetici içindir" }, 403, cors);
+      if (!env.FAMILY) return json({ error: "Worker'da FAMILY (KV) bağlantısı yok" }, 500, cors);
+      const op = body.fam.op, target = String(body.fam.email || "").trim().toLowerCase();
+      if (op === "add" || op === "del") {
+        if (target.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) return json({ error: "Geçerli bir e-posta yaz" }, 400, cors);
+        if (op === "add") await env.FAMILY.put("fam:" + target, JSON.stringify({ t: Date.now() }));
+        else await env.FAMILY.delete("fam:" + target);
+      } else if (op !== "list") return json({ error: "Geçersiz işlem" }, 400, cors);
+      const ls = await env.FAMILY.list({ prefix: "fam:", limit: 100 });
+      let list = await Promise.all(ls.keys.map(async k => { let t = 0; try { t = JSON.parse(await env.FAMILY.get(k.name))?.t || 0; } catch (e) {} return { e: k.name.slice(4), t }; }));
+      // KV listesi birkaç saniye geriden gelebilir: son işlemi elle yansıt
+      if (op === "add" && !list.some(x => x.e === target)) list.push({ e: target, t: Date.now() });
+      if (op === "del") list = list.filter(x => x.e !== target);
+      return json({ list }, 200, cors);
+    }
+
     if (Array.isArray(body?.fdc)) return json(await fdcLookup(body.fdc.slice(0, 15), env), 200, cors);
+
+    let geminiKey = env.GEMINI_API_KEY, usingOwn = false;
+    if (!family) {
+      if (ownKey) { geminiKey = ownKey; usingOwn = true; }
+      else if (env.REQUIRE_KEY === "1") return json({ needKey: true, error: "Yapay zeka için kendi Gemini anahtarını eklemen gerekiyor (Ayarlar → Yapay zeka)." }, 403, cors);
+    }
+    if (!geminiKey) return json({ error: "Worker'da GEMINI_API_KEY tanımlı değil" }, 500, cors);
     const { system, prompt } = body || {};
     const mode = body?.mode === "deep" ? "deep" : "fast";
     const temperature = Math.min(Math.max(Number(body?.temperature ?? 0.4), 0), 1.5);
@@ -100,7 +141,7 @@ export default {
         try {
           const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
             method: "POST", signal: ctl.signal,
-            headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
+            headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
             body: JSON.stringify(payload)
           });
           const data = await r.json().catch(() => ({}));
@@ -108,6 +149,8 @@ export default {
           if (!r.ok) {
             const msg = data?.error?.message || "";
             lastErr = `${model}: ${r.status} ${msg}`.trim();
+            // Kişisel anahtar geçersizse sessizce yedek modele düşme; kullanıcıdan yenisini iste
+            if (usingOwn && (r.status === 403 || (r.status === 400 && /API key not valid|API_KEY_INVALID/i.test(msg)))) return json({ needKey: true, error: "Gemini anahtarın kabul edilmedi. Ayarlar → Yapay zeka bölümünden yenisini ekle." }, 403, cors);
             // 400: bu model düşünmeyi kapatma ayarını kabul etmiyor olabilir (mesaj her zaman "think" demiyor); ayarsız tekrar dene
             if (r.status === 400 && thinkingOff) { thinkingOff = false; attempt--; continue; }
             if (r.status === 503 || r.status === 500) {
