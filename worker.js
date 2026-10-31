@@ -74,9 +74,13 @@ export default {
           if (!r.ok) {
             const msg = data?.error?.message || "";
             lastErr = `${model}: ${r.status} ${msg}`.trim();
-            // Bu model düşünmeyi kapatmayı desteklemiyorsa aynı modeli ayarsız tekrar dene
-            if (r.status === 400 && thinkingOff && /think/i.test(msg)) { thinkingOff = false; attempt--; continue; }
-            if (r.status === 503 || r.status === 500) busy++;
+            // 400: bu model düşünmeyi kapatma ayarını kabul etmiyor olabilir (mesaj her zaman "think" demiyor); ayarsız tekrar dene
+            if (r.status === 400 && thinkingOff) { thinkingOff = false; attempt--; continue; }
+            if (r.status === 503 || r.status === 500) {
+              busy++;
+              // Yoğunluk çoğu zaman anlıktır: kısa bekleyip aynı modeli bir kez daha dene
+              if (attempt === 0 && TOTAL_BUDGET[mode] - (Date.now() - started) > 6000) { await new Promise(res => setTimeout(res, 1500)); continue; }
+            }
             if (r.status === 429) quota++;
             break;                                   // beklemeden sıradaki modele geç
           }
