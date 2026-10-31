@@ -1158,10 +1158,20 @@ function computeTargets(weekly, kcalOverride) {
   const water = Math.round((b.kg * 0.035 + (nursing ? 0.7 : 0)) * 10) / 10;
   return { kcal, protein, carb, fat, water, calc: { bmr: b.bmr, fact, extra: b.extra, maint, delta, formula, floored, kg: b.kg } };
 }
+// Model "ver" deyip pozitif sayı dönebiliyor (ör. yön ver, +0.5 → hedef +550 kcal yükselir): işareti yöne göre düzelt
+function fixWeekly(yon, w) {
+  w = num(w);
+  if (yon === "ver") return -Math.abs(w || 0.5);
+  if (yon === "al") return Math.abs(w || 0.2);
+  if (yon === "koru") return 0;
+  return w;
+}
+// Kayıtlı strateji yönüyle çelişiyorsa (eski hatadan kalma) yeniden üretilsin; hamilelikte hız zaten 0'a sabitlenir
+const strategyOk = (s, p = S.profile) => !s || p?.ozel === "hamile" || !((s.yon === "ver" && !(s.weekly < 0)) || (s.yon === "al" && !(s.weekly > 0)));
 // Stratejiyi (yön + haftalık hız) yapay zekaya sor; profil değişmediyse önceki strateji kullanılır
 async function getStrategy(force) {
   const sig = profileSig(), old = S.targets?.strategy;
-  if (!force && old && old.sig === sig) return old;
+  if (!force && old && old.sig === sig && strategyOk(old)) return old;
   let r;
   try { r = await ai(SYS, `KİŞİ BİLGİLERİ:
 ${profileText()}
@@ -1172,7 +1182,8 @@ JSON: {"hedefYon":"ver|koru|al","haftalikHedefKg":number,"gerekce":"tek cümle"}
     const hk = num(S.profile.hedefKilo), kg = baseline().kg;
     r = hk && hk < kg - 1 ? { hedefYon: "ver", haftalikHedefKg: -0.5 } : hk && hk > kg + 1 ? { hedefYon: "al", haftalikHedefKg: 0.2 } : { hedefYon: "koru", haftalikHedefKg: 0 };
   }
-  return { sig, yon: r.hedefYon || "koru", weekly: clampWeekly(r.haftalikHedefKg), why: r.gerekce || "", at: Date.now() };
+  const yon = r.hedefYon || "koru";
+  return { sig, yon, weekly: clampWeekly(fixWeekly(yon, r.haftalikHedefKg)), why: r.gerekce || "", at: Date.now() };
 }
 function applyTargets(strategy, override) {
   const prev = S.targets || {};
