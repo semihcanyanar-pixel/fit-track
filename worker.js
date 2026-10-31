@@ -52,6 +52,7 @@ export default {
 
     const started = Date.now();
     let lastErr = "", busy = 0, quota = 0;
+    const tried = [];                                // teşhis: denenen modeller, durum ve süre (ms)
     for (const model of MODELS[mode]) {
       let thinkingOff = mode === "fast";            // hızlı işlerde düşünmeyi kapat
       for (let attempt = 0; attempt < 2; attempt++) {
@@ -61,6 +62,7 @@ export default {
         if (thinkingOff) payload.generationConfig.thinkingConfig = { thinkingBudget: 0 };
         const ctl = new AbortController();
         const timer = setTimeout(() => ctl.abort(), Math.min(CALL_TIMEOUT[mode], left));
+        const t1 = Date.now();
         try {
           const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
             method: "POST", signal: ctl.signal,
@@ -68,6 +70,7 @@ export default {
             body: JSON.stringify(payload)
           });
           const data = await r.json().catch(() => ({}));
+          tried.push({ m: model, s: r.status, ms: Date.now() - t1 });
           if (!r.ok) {
             const msg = data?.error?.message || "";
             lastErr = `${model}: ${r.status} ${msg}`.trim();
@@ -80,8 +83,9 @@ export default {
           const parts = data?.candidates?.[0]?.content?.parts || [];
           const text = parts.filter(p => p.text && !p.thought).map(p => p.text).join("");
           if (!text) { lastErr = `${model}: boş yanıt`; break; }
-          return json({ model, text, ms: Date.now() - started }, 200, cors);
+          return json({ model, text, ms: Date.now() - started, tried }, 200, cors);
         } catch (e) {
+          tried.push({ m: model, s: e.name === "AbortError" ? "timeout" : "err", ms: Date.now() - t1 });
           lastErr = `${model}: ${e.name === "AbortError" ? "zaman aşımı" : e.message}`;
           if (e.name === "AbortError") busy++;
           break;
@@ -93,6 +97,7 @@ export default {
       const sys = (system ? String(system).slice(0, 10000) + "\n" : "") + "Yanıtın SADECE geçerli JSON olsun; açıklama, markdown veya ``` ekleme.";
       const dataUrl = `data:${image.mime};base64,${image.data}`;
       for (const m of CF_VISION) {
+        const t2 = Date.now();
         try {
           let out;
           if (m.includes("llama-4")) {
@@ -104,9 +109,10 @@ export default {
             catch (e) { if (/agree|licen/i.test(e.message)) { await env.AI.run(m, { prompt: "agree" }); out = await run(); } else throw e; }
           }
           const text = typeof out?.response === "string" ? out.response : out?.response ? JSON.stringify(out.response) : "";
-          if (text && /[{[]/.test(text)) return json({ model: m, text, ms: Date.now() - started, fallback: true }, 200, cors);
+          tried.push({ m, s: text ? 200 : "empty", ms: Date.now() - t2 });
+          if (text && /[{[]/.test(text)) return json({ model: m, text, ms: Date.now() - started, fallback: true, tried }, 200, cors);
           lastErr += ` | ${m}: boş yanıt`;
-        } catch (e) { lastErr += ` | ${m}: ${e.message}`; }
+        } catch (e) { tried.push({ m, s: "err", ms: Date.now() - t2 }); lastErr += ` | ${m}: ${e.message}`; }
       }
     }
     if (env.AI && !image) {
@@ -115,18 +121,21 @@ export default {
         { role: "user", content: prompt }
       ];
       for (const m of CF_MODELS) {
+        const t2 = Date.now();
         try {
           const out = await env.AI.run(m, { messages, max_tokens: mode === "deep" ? 4000 : 3000, temperature: Math.min(temperature, 1) });
           let text = typeof out?.response === "string" ? out.response : out?.response ? JSON.stringify(out.response) : "";
-          if (text && /[{[]/.test(text)) return json({ model: m, text, ms: Date.now() - started, fallback: true }, 200, cors);
+          tried.push({ m, s: text ? 200 : "empty", ms: Date.now() - t2 });
+          if (text && /[{[]/.test(text)) return json({ model: m, text, ms: Date.now() - started, fallback: true, tried }, 200, cors);
           lastErr += ` | ${m}: boş yanıt`;
-        } catch (e) { lastErr += ` | ${m}: ${e.message}`; }
+        } catch (e) { tried.push({ m, s: "err", ms: Date.now() - t2 }); lastErr += ` | ${m}: ${e.message}`; }
       }
     }
     const kind = busy ? "busy" : quota ? "quota" : "error";
     return json({
       kind,
       detail: lastErr.slice(0, 600),
+      tried,
       error: kind === "busy" ? "Yapay zeka sunucuları şu an çok yoğun" + (env.AI ? "." : " (yedek yapay zeka bağlı değil).")
         : kind === "quota" ? "Ücretsiz yapay zeka kotası şu an dolu. Birkaç dakika sonra tekrar dene."
         : "Yapay zeka şu an yanıt vermiyor. " + lastErr
