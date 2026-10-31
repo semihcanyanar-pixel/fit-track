@@ -777,7 +777,9 @@ function load(k = storeKey) {
 }
 function save() {
   recordHistory();
+  Cloud.stamp();
   try { localStorage.setItem(storeKey, JSON.stringify(S)); } catch (e) { toast("Kaydedilemedi: depolama dolu olabilir", 1); }
+  Cloud.markDirty();
   Cloud.schedule();
 }
 
@@ -2808,42 +2810,77 @@ function importData(file) {
 /* ============ Bulut (Firebase) ============ */
 const Cloud = {
   fb: null, user: null, last: { meta: null, days: {} }, timer: null, pending: false, online: navigator.onLine, unsub: [],
+  sig: null, seq: 0, offlineUid: null, connecting: false,
   statusText() { return !this.online ? "Çevrimdışı – bağlantı gelince eşitlenecek." : this.pending ? "Eşitleniyor…" : "Eşitlendi ✓"; },
   meta(s = S) { const { days, ...m } = s; return JSON.parse(JSON.stringify(m)); },
   clean(o) { return JSON.parse(JSON.stringify(o)); },
   isEmptyDay(d) { return !d || (!d.foods?.length && !d.exercises?.length && !d.waterMl && !d.review); },
 
+  /* ---- Yerel değişiklik takibi: gün başına _u, profil/hedefler için _mu damgası ---- */
+  dayStr(d) { const { _u, ...x } = d || {}; return JSON.stringify(x); },
+  metaSig(s) { const { days, _mu, ...x } = s; return JSON.stringify(x); },
+  stamp() {
+    if (!this.sig) {   // son kalıcı kayıtla karşılaştır; bulut verisi uygulanınca sig sıfırlanır
+      let prev = {}; try { prev = JSON.parse(localStorage.getItem(storeKey)) || {}; } catch (e) {}
+      this.sig = { m: this.metaSig(prev), d: {} };
+      Object.entries(prev.days || {}).forEach(([k, d]) => this.sig.d[k] = this.dayStr(d));
+    }
+    const m = this.metaSig(S); if (m !== this.sig.m) { S._mu = Date.now(); this.sig.m = m; }
+    Object.entries(S.days).forEach(([k, d]) => { const s = this.dayStr(d); if (s !== this.sig.d[k]) { d._u = Date.now(); this.sig.d[k] = s; } });
+  },
+  // Buluta gittiği doğrulanana kadar "bekleyen değişiklik var" işareti kalır (uygulama kapansa da)
+  markDirty() { if (!FIREBASE_CONFIG) return; this.seq++; try { localStorage.setItem(storeKey + "_dirty", "1"); } catch (e) {} },
+  // Bu cihazda buluta gitmemiş değişiklikleri bulut verisiyle ezmeden birleştirir (yeni damga kazanır)
+  merge(loc, m, remoteDays) {
+    const days = { ...remoteDays };
+    Object.entries(loc.days).forEach(([k, d]) => {
+      if (this.isEmptyDay(d)) return;   // boş gün (sadece görüntülenmiş) buluttaki dolu günü ezmesin
+      const r = remoteDays[k];
+      if (!r || (this.dayStr(d) !== this.dayStr(r) && (d._u || 0) > (r._u || 0))) days[k] = d;
+    });
+    const localMeta = (loc._mu || 0) > (m._mu || 0);
+    return { days, localMeta, meta: localMeta ? this.meta(loc) : m };
+  },
+
+  async connect() {
+    const base = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
+    const [appM, authM, fsM] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
+    const app = appM.initializeApp(FIREBASE_CONFIG);
+    const auth = authM.getAuth(app);
+    await authM.setPersistence(auth, authM.indexedDBLocalPersistence).catch(() => {});
+    let db;
+    try { db = fsM.initializeFirestore(app, { localCache: fsM.persistentLocalCache() }); } catch (e) { db = fsM.getFirestore(app); }
+    this.fb = { authM, fsM, auth, db };
+    authM.onAuthStateChanged(auth, u => this.onUser(u));
+  },
+
   async init() {
     if (!FIREBASE_CONFIG) { go(S.profile ? "today" : "profile"); return; }
     showAuth("loading");
-    try {
-      const base = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
-      const [appM, authM, fsM] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
-      const app = appM.initializeApp(FIREBASE_CONFIG);
-      const auth = authM.getAuth(app);
-      await authM.setPersistence(auth, authM.indexedDBLocalPersistence).catch(() => {});
-      let db;
-      try { db = fsM.initializeFirestore(app, { localCache: fsM.persistentLocalCache() }); } catch (e) { db = fsM.getFirestore(app); }
-      this.fb = { authM, fsM, auth, db };
-      authM.onAuthStateChanged(auth, u => this.onUser(u));
-    } catch (e) {
-      // Firebase yüklenemezse (ör. ilk açılış çevrimdışı) son kullanıcının yerel verisiyle aç
+    try { await this.connect(); }
+    catch (e) {
+      // Firebase yüklenemezse (ör. ilk açılış çevrimdışı) son kullanıcının yerel verisiyle aç; bağlantı gelince kendiliğinden bağlanır
       const lastUid = localStorage.getItem("fittrack_last_uid");
-      if (lastUid) { storeKey = KEY + "_" + lastUid; S = load(); hideAuth(); go(S.profile ? "today" : "profile"); toast("Çevrimdışı açıldı; bağlantı gelince yeniden aç.", 1); }
+      if (lastUid) { this.offlineUid = lastUid; storeKey = KEY + "_" + lastUid; S = load(); hideAuth(); go(S.profile ? "today" : "profile"); toast("Çevrimdışı açıldı; bağlantı gelince eşitlenecek.", 1); }
       else showAuth("login", "Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
     }
-    addEventListener("online", () => { this.online = true; this.flush(); });
+    addEventListener("online", () => {
+      this.online = true;
+      if (this.fb) return this.flush();
+      if (this.connecting) return;
+      this.connecting = true; this.connect().catch(() => {}).finally(() => this.connecting = false);
+    });
     addEventListener("offline", () => { this.online = false; });
   },
 
   async onUser(u) {
     this.unsub.forEach(f => f()); this.unsub = [];
-    this.user = u;
+    this.user = u; this.sig = null;
     if (!u) { S = defaults(); storeKey = KEY; showAuth("login"); return; }
     localStorage.setItem("fittrack_last_uid", u.uid);
     storeKey = KEY + "_" + u.uid;
-    S = load();                         // önce yerel önbellek: anında açılır
-    hideAuth(); go(S.profile ? "today" : "profile");
+    if (this.offlineUid === u.uid) this.offlineUid = null;   // çevrimdışı açılmıştı: S zaten bu kullanıcının yerel verisi, ekranı bozma
+    else { S = load(); hideAuth(); go(S.profile ? "today" : "profile"); }   // önce yerel önbellek: anında açılır
     try { await this.pull(true); } catch (e) { console.warn(e); }
     this.listen();
   },
@@ -2863,12 +2900,16 @@ const Cloud = {
       save(); await this.flush(); this.afterPull();
     } else {
       const m = mSnap.exists() ? mSnap.data() : {};
-      S = Object.assign(defaults(), m, { days: remoteDays });
+      const dirty = !!localStorage.getItem(storeKey + "_dirty");   // buluta gitmemiş yerel değişiklik var mı
+      const mg = dirty ? this.merge(S, m, remoteDays) : { meta: m, days: remoteDays, localMeta: false };
+      S = Object.assign(defaults(), mg.meta, { days: mg.days });
       if (!S.settings?.workerUrl) S.settings = { ...(S.settings || {}), workerUrl: DEFAULT_WORKER };
-      this.last.meta = JSON.stringify(this.meta());
+      this.last.meta = mg.localMeta ? null : JSON.stringify(this.meta());   // null: yerel profil buluta gönderilsin
       this.last.days = {}; Object.entries(remoteDays).forEach(([k, v]) => this.last.days[k] = JSON.stringify(v));
       try { localStorage.setItem(storeKey, JSON.stringify(S)); } catch (e) {}
+      this.sig = null;
       this.afterPull();
+      if (dirty) this.schedule();
     }
   },
   afterPull() { if (view === "profile" && S.profile && !document.activeElement?.closest?.("#pf")) go("today"); else render(); },
@@ -2880,6 +2921,7 @@ const Cloud = {
       if (snap.metadata.hasPendingWrites || !snap.exists()) return;
       const str = JSON.stringify(snap.data());
       if (str === this.last.meta) return;
+      if ((snap.data()._mu || 0) < (S._mu || 0)) return;   // yerel profil daha yeni: ezme, flush buluta yazar
       this.last.meta = str; const days = S.days; S = Object.assign(defaults(), snap.data(), { days }); this.saveLocal(); this.softRender();
     }));
     this.unsub.push(fsM.onSnapshot(this.ref("days"), snap => {
@@ -2890,12 +2932,13 @@ const Cloud = {
         if (ch.type === "removed") { if (S.days[k]) { delete S.days[k]; delete this.last.days[k]; changed = true; } return; }
         const str = JSON.stringify(ch.doc.data());
         if (str === this.last.days[k]) return;
+        if ((S.days[k]?._u || 0) > (ch.doc.data()._u || 0)) return;   // yerel gün daha yeni: ezme, flush buluta yazar
         this.last.days[k] = str; S.days[k] = ch.doc.data(); changed = true;
       });
       if (changed) { this.saveLocal(); this.softRender(); }
     }));
   },
-  saveLocal() { try { localStorage.setItem(storeKey, JSON.stringify(S)); } catch (e) {} },
+  saveLocal() { this.sig = null; try { localStorage.setItem(storeKey, JSON.stringify(S)); } catch (e) {} },
   softRender() { const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) return; render(); },
 
   schedule() {
@@ -2906,7 +2949,7 @@ const Cloud = {
   async flush() {
     if (!this.user || !this.fb) return;
     clearTimeout(this.timer);
-    const { fsM, db } = this.fb, uid = this.user.uid, ops = [];
+    const { fsM, db } = this.fb, uid = this.user.uid, ops = [], seq0 = this.seq, dirtyKey = storeKey + "_dirty";
     const m = this.meta(), ms = JSON.stringify(m);
     if (ms !== this.last.meta) { ops.push(fsM.setDoc(fsM.doc(db, "users", uid), m)); this.last.meta = ms; }
     const keys = new Set([...Object.keys(S.days), ...Object.keys(this.last.days)]);
@@ -2920,7 +2963,10 @@ const Cloud = {
       if (s !== this.last.days[k]) { ops.push(fsM.setDoc(fsM.doc(db, "users", uid, "days", k), c)); this.last.days[k] = s; }
     });
     // Çevrimdışıyken yazmalar Firestore önbelleğinde kuyruğa girer, bağlantı gelince gönderilir
-    try { await Promise.all(ops); this.pending = false; }
+    try {
+      await Promise.all(ops); this.pending = false;
+      if (seq0 === this.seq) { try { localStorage.removeItem(dirtyKey); } catch (e) {} }   // bu arada yeni değişiklik olmadıysa işareti kaldır
+    }
     catch (e) { console.warn(e); this.last.meta = null; toast("Buluta kaydedilemedi: " + (e.code || e.message), 1); }
   },
 
