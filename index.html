@@ -952,6 +952,16 @@ function render() { applyTheme(); migrateTargets(); ({ today: renderToday, plan:
 
 /* ============ Yapay zeka ============ */
 let aiCtl = null;
+// Worker'a Firebase ID token'ı eklenir; token alınamazsa (çevrimdışı vb.) başlıksız gider.
+// Ayarlardan/yedekten değişmiş başka bir adrese token SIZMASIN diye yalnızca varsayılan worker'a gönderilir.
+async function workerHeaders(url) {
+  const h = { "Content-Type": "application/json" };
+  try {
+    if (new URL(url).origin !== new URL(DEFAULT_WORKER).origin) return h;
+    const t = await Cloud.user?.getIdToken(); if (t) h.Authorization = "Bearer " + t;
+  } catch (e) {}
+  return h;
+}
 async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null) {
   const url = (S.settings.workerUrl || DEFAULT_WORKER).trim();
   const label = $("#busyTx").textContent;
@@ -963,7 +973,7 @@ async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null
     for (let i = 0; i < 2; i++) {               // yoğunlukta sadece 1 kez daha dene
       let r, d;
       try {
-        r = await fetch(url, { method: "POST", signal: aiCtl.signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system, prompt, temperature, mode, image: image || undefined }) });
+        r = await fetch(url, { method: "POST", signal: aiCtl.signal, headers: await workerHeaders(url), body: JSON.stringify({ system, prompt, temperature, mode, image: image || undefined }) });
         d = await r.json().catch(() => ({}));
       } catch (e) {
         if (aiCtl?.signal.aborted) throw new Error(aiCtl.signal.reason === "user" ? "İptal edildi." : "Yapay zeka çok geç yanıt verdi.");
@@ -1198,7 +1208,7 @@ const atwaterOff = x => x.kcal > 40 && Math.abs(x.p * 4 + x.c * 4 + x.f * 9 - x.
 async function fdcFetch(terms) {
   if (!terms.length) return [];
   const url = (S.settings.workerUrl || DEFAULT_WORKER).trim(), ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 7000);
-  try { const r = await fetch(url, { method: "POST", signal: ctl.signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fdc: terms }) }); const d = await r.json(); return arr(d.items); }
+  try { const r = await fetch(url, { method: "POST", signal: ctl.signal, headers: await workerHeaders(url), body: JSON.stringify({ fdc: terms }) }); const d = await r.json(); return arr(d.items); }
   catch (e) { return []; } finally { clearTimeout(to); }
 }
 async function resolveItems(list) {
@@ -2767,7 +2777,8 @@ document.addEventListener("click", e => {
       busy("Bağlantı deneniyor…");
       try {
         const t = Date.now();
-        const res = await fetch((S.settings.workerUrl || DEFAULT_WORKER).trim(), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: "Sadece JSON döndür.", prompt: 'Şunu döndür: {"durum":"tamam"}', temperature: 0, mode: "fast" }) });
+        const wu = (S.settings.workerUrl || DEFAULT_WORKER).trim();
+        const res = await fetch(wu, { method: "POST", headers: await workerHeaders(wu), body: JSON.stringify({ system: "Sadece JSON döndür.", prompt: 'Şunu döndür: {"durum":"tamam"}', temperature: 0, mode: "fast" }) });
         const d = await res.json().catch(() => ({}));
         if (!res.ok || d.error) throw new Error((d.error || "Hata " + res.status) + (d.detail ? " — " + d.detail.slice(0, 200) : ""));
         toast(`Bağlantı çalışıyor ✓ (${String(d.model).replace("@cf/meta/", "").replace("-instruct-fp8-fast", "")}${d.fallback ? ", yedek" : ""}, ${((Date.now() - t) / 1000).toFixed(1)} sn)`);
