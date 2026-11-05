@@ -1037,7 +1037,8 @@ function openPwSheet() {
     <label class="f"><span>Yeni şifre (tekrar)</span><input id="pwNew2" type="password" autocomplete="new-password"></label>
     <div id="pwErr" class="sm" style="color:var(--bad);min-height:20px;margin:6px 2px"></div>
     <button class="pri full" data-act="pwSave">Şifreyi değiştir</button>
-    <p class="hint">Mevcut şifreni hatırlamıyorsan çıkış yapıp giriş ekranındaki "Şifremi unuttum"a bas; e-postana sıfırlama bağlantısı gelir.</p>`);
+    <button class="ghost full" data-act="pwForgot" style="margin-top:4px">Şifremi unuttum</button>
+    <p class="hint">Mevcut şifreni hatırlamıyorsan "Şifremi unuttum"a bas; ${esc(Cloud.user?.email || "e-posta adresine")} sıfırlama bağlantısı gelir.</p>`);
 }
 function aiAccessHtml() {
   if (!Cloud.user) return "";
@@ -2876,8 +2877,16 @@ document.addEventListener("click", e => {
     goalEx: () => { const t = document.querySelector('[name="amac"]'); t.value = GOAL_EXAMPLES[+a.dataset.i]; t.focus(); },
     keyOpen: () => openKeySheet(),
     pwOpen: () => openPwSheet(),
+    pwForgot: async () => {
+      const el = $("#pwErr"), show = (m, ok) => { el.style.color = ok ? "var(--acTx)" : "var(--bad)"; el.textContent = m; };
+      try {
+        const { authM, auth } = Cloud.fb || {}; if (!auth || !Cloud.user?.email) throw new Error("Önce giriş yap");
+        await authM.sendPasswordResetEmail(auth, Cloud.user.email);
+        show(`Sıfırlama bağlantısı ${Cloud.user.email} adresine gönderildi. Gelmezse spam klasörüne bak.`, true);
+      } catch (e) { show(({ "auth/too-many-requests": "Çok fazla deneme. Biraz bekle.", "auth/network-request-failed": "İnternet bağlantısı yok." })[e.code] || e.message); }
+    },
     pwSave: async () => {
-      const cur = $("#pwCur").value, nw = $("#pwNew").value, nw2 = $("#pwNew2").value, err = m => { $("#pwErr").textContent = m; };
+      const cur = $("#pwCur").value, nw = $("#pwNew").value, nw2 = $("#pwNew2").value, err = m => { const x = $("#pwErr"); x.style.color = "var(--bad)"; x.textContent = m; };
       err("");
       if (!cur) return err("Mevcut şifreni yaz.");
       if (nw.length < 6) return err("Yeni şifre en az 6 karakter olmalı.");
