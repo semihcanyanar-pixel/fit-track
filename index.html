@@ -1628,6 +1628,7 @@ function openFC(ref, edit) {
       <div><small><i style="background:var(--f)"></i>Yağ</small><b>${fmtQ(f.f)}<em>g</em></b>${pctBar(f.f, tg.fat, "var(--f)")}</div></div>
     <div class="hint">Çubuklar günlük hedefinin ne kadarını karşıladığını gösterir.${per}${f.srcName ? ` Kaynak: ${esc(f.srcName)}.` : ""}${cx.note ? " " + cx.note : ""}</div>
     ${atwaterOff(f) ? `<div class="warnbox">Kalori ile makrolar birbirini tutmuyor (P×4 + K×4 + Y×9 = ${fmt(f.p * 4 + f.c * 4 + f.f * 9)} kcal). Düzenle'den kontrol edebilirsin.</div>` : ""}
+    ${ref.t === "day" ? `<label class="f" style="margin-top:10px"><span>Öğün</span></label><div class="seg">${MEALS.map(m => `<button class="${cx.meal === m ? "on" : ""}" data-act="fmove" data-m="${m}">${MEAL_SHORT[m]}</button>`).join("")}</div>` : ""}
     <div class="btns fc-btns">${cx.del ? `<button class="fc-del" data-act="fdel" aria-label="Sil">🗑</button>` : ""}<button data-act="fedit">Düzenle</button><button class="pri" data-act="${cx.my ? "myList" : cx.back || "closeSheet"}">Tamam</button></div>`, false);
 }
 const COUNT_U = u => u && !/^(g|gr|gram|ml|porsiyon)$/i.test(u) ? u : "adet";
@@ -1677,7 +1678,7 @@ function fcDraw() {
   const s = fcEdit; if (!s) return; const cx = s.cx;
   const my = (S.myFoods || {})[normName(s.name)];
   const mem = s.mem == null ? !!my : s.mem;
-  const inp = (id, val, unit, attrs = "") => `<label class="fc-in"><input id="${id}" type="number" inputmode="decimal" step="any" value="${val === "" || val == null ? "" : String(val).replace(",", ".")}" oninput="fcRead()" ${attrs}><em>${unit}</em></label>`;
+  const inp = (id, val, unit, attrs = "") => `<label class="fc-in"><input id="${id}" type="text" inputmode="decimal" value="${val === "" || val == null ? "" : String(val).replace(",", ".")}" oninput="fcRead()" ${attrs}><em>${unit}</em></label>`;
   const qty = cx.my ? (s.mode === "adet" ? `<div class="row" style="gap:8px;align-items:flex-end"><label class="f" style="flex:1"><span>Birim</span><input id="fcU" value="${esc(s.u)}" oninput="fcEdit.u=this.value||'adet'" placeholder="adet, dilim…"></label><label class="f" style="flex:1"><span>1 birim ≈</span>${inp("fcGpu", s.gpu, "g", 'placeholder="isteğe bağlı"')}</label></div>`
       : s.mode === "toplam" ? `<label class="f"><span>Porsiyon adı</span><input id="fcNote" value="${esc(s.note)}" placeholder="ör. 1 tabak" oninput="fcRead()"></label>` : "")
     : s.mode === "adet"
@@ -1951,7 +1952,7 @@ function renderToday() {
       <div class="hint">1 bardak = 250 ml</div>`
     : `
       <div class="wq"><button data-act="water" data-ml="250">+0,25 L</button><button data-act="water" data-ml="500">+0,5 L</button><button data-act="water" data-ml="1000">+1 L</button><button data-act="water" data-ml="-250">−0,25 L</button></div>
-      <div class="row" style="margin-top:10px"><input id="wL" type="number" inputmode="decimal" step="0.1" placeholder="Toplam litre (ör. 1,8)" class="grow"><button data-act="setWater">Ayarla</button></div>`}
+      <div class="row" style="margin-top:10px"><input id="wL" type="text" inputmode="decimal" placeholder="Toplam litre (ör. 1,8)" class="grow"><button data-act="setWater">Ayarla</button></div>`}
   </div>`;
 
   // Egzersiz
@@ -2390,9 +2391,9 @@ const PF = {
       <label class="f"><span>Cinsiyet</span><select name="cinsiyet">${optHtml({ kadin: "Kadın", erkek: "Erkek" }, p.cinsiyet)}</select></label>
       <label class="f"><span>Yaş</span><input name="yas" type="number" inputmode="numeric" min="18" max="100" required value="${esc(p.yas || "")}"></label>
       <label class="f"><span>Boy (cm)</span><input name="boy" type="number" inputmode="numeric" min="120" max="230" required value="${esc(p.boy || "")}"></label>
-      <label class="f"><span>Kilo (kg)</span><input name="kilo" type="number" inputmode="decimal" step="0.1" min="35" max="300" required value="${esc(latestWeight() || p.kilo || "")}"></label>
+      <label class="f"><span>Kilo (kg)</span><input name="kilo" type="text" inputmode="decimal" required value="${esc(latestWeight() || p.kilo || "")}"></label>
     </div>
-    <label class="f"><span>Hedef kilo (kg, isteğe bağlı)</span><input name="hedefKilo" type="number" inputmode="decimal" step="0.1" value="${esc(p.hedefKilo || "")}"></label>
+    <label class="f"><span>Hedef kilo (kg, isteğe bağlı)</span><input name="hedefKilo" type="text" inputmode="decimal" value="${esc(p.hedefKilo || "")}"></label>
     <label class="f"><span>Özel durum</span><select name="ozel">${optHtml(SPECIAL, p.ozel)}</select></label>`,
     sum: p => [p.yas, p.boy && p.boy + " cm", (latestWeight() || p.kilo) && String(latestWeight() || p.kilo).replace(".", ",") + " kg"].filter(Boolean).join(" · ") },
   amac: { t: "Amaç ve süre", ic: "🎯", tint: "var(--tint-g)", html: p => `
@@ -2482,7 +2483,8 @@ function readForm(form) {
   const fd = Object.fromEntries(new FormData(form).entries());
   if ("amac" in fd && !fd.amac.trim()) { toast("Amacını yaz", 1); return null; }
   if ("yas" in fd && num(fd.yas) < 18) { toast("Bu uygulama yetişkinler içindir", 1); return null; }
-  if ("kilo" in fd) fd.kilo = r1(fd.kilo);
+  if ("kilo" in fd) { fd.kilo = r1(fd.kilo); if (fd.kilo < 35 || fd.kilo > 300) { toast("Geçerli bir kilo gir", 1); return null; } }
+  if ("hedefKilo" in fd && String(fd.hedefKilo).trim()) fd.hedefKilo = r1(fd.hedefKilo);
   return fd;
 }
 function syncWeightFromProfile(kg) {
@@ -2841,6 +2843,7 @@ document.addEventListener("click", e => {
     food: () => openFC({ t: "day", k: a.dataset.id }),
     fc: () => openFC({ t: a.dataset.t, k: a.dataset.k }),
     fedit: () => openFC(fcRef, true),
+    fmove: () => { const r = fcRef?.t === "day" && findFood(fcRef.k); if (!r || r.f.meal === a.dataset.m) return; r.f.meal = a.dataset.m; save(); render(); openFC(fcRef); toast(`${r.f.name} → ${a.dataset.m}`); },
     fview: () => openFC(fcRef),
     fsave: () => fcSave(),
     fdel: () => fcDel(),
