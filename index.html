@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fit Track">
 <meta name="theme-color" content="#f6f4ef">
+<script>try{var d=document.documentElement,t=localStorage.getItem("fittrack_theme"),s=localStorage.getItem("fittrack_skin")||"ferah";d.dataset.theme=t==="dark"?"dark":"light";d.dataset.skin=s;if(s==="ferah")d.dataset.accent=localStorage.getItem("fittrack_accent")||"zumrut"}catch(e){}</script>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png?v=3">
 <link rel="icon" href="icon-512.png">
@@ -293,8 +294,26 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 #toast.err{background:var(--bad)}
 #busy{position:fixed;inset:0;background:rgba(0,0,0,.42);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:45;color:#fff;gap:12px;padding:20px;text-align:center;white-space:pre-line;font-weight:600}
 #busy.on{display:flex}
-.spin{width:42px;height:42px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:s 1s linear infinite}
-@keyframes s{to{transform:rotate(360deg)}}
+.bbar{position:relative;width:min(280px,78vw);height:6px;border-radius:6px;background:rgba(255,255,255,.22);overflow:hidden}
+.bfill{position:absolute;left:0;top:0;bottom:0;width:4%;border-radius:6px;background:var(--btn);overflow:hidden}
+.bfill:after{content:"";position:absolute;top:0;bottom:0;width:60px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:bsh 1.5s ease-in-out infinite}
+#busy.on .bfill{animation:bfl var(--bdur,14s) cubic-bezier(.1,.6,.2,1) forwards}
+@keyframes bfl{from{width:4%}to{width:92%}}
+@keyframes bsh{from{left:-60px}to{left:100%}}
+@media (prefers-reduced-motion:reduce){#busy.on .bfill{animation:none;width:60%}.bfill:after{animation:none}}
+.splash{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px}
+.sp-ic{position:absolute;left:50%;top:50%;width:230px;height:230px;margin:-115px 0 0 -115px;border-radius:22%;object-fit:cover;opacity:.08;filter:blur(1.5px);transform:rotate(-8deg);pointer-events:none}
+[data-theme="dark"] .sp-ic{opacity:.14}
+.sp-wm{position:relative;display:flex;align-items:baseline;gap:.5em;font-size:28px;letter-spacing:.2em;color:var(--tx);font-weight:300}
+.sp-wm b{font-weight:700;color:var(--ac)}
+.sp-wm em{font-style:normal}
+.sp-wm span{display:inline-block;opacity:0;animation:spra 3.4s cubic-bezier(.22,.8,.3,1) infinite;animation-delay:calc(var(--i)*90ms)}
+@keyframes spra{0%{opacity:0;transform:translateY(12px);filter:blur(7px)}20%{opacity:1;transform:none;filter:blur(0)}68%{opacity:1;transform:none;filter:blur(0)}88%{opacity:0;transform:translateY(-8px);filter:blur(5px)}100%{opacity:0}}
+.sp-ln{position:relative;width:110px;height:2px;border-radius:2px;background:var(--ln);overflow:hidden}
+.sp-ln:after{content:"";position:absolute;top:0;bottom:0;width:40%;border-radius:2px;background:linear-gradient(90deg,transparent,var(--ac),transparent);animation:spsl 1.6s ease-in-out infinite}
+@keyframes spsl{from{left:-40%}to{left:100%}}
+@media (prefers-reduced-motion:reduce){.sp-wm span{animation:none;opacity:1}.sp-ln:after{animation:none;left:30%}}
+#auth.out{opacity:0;pointer-events:none;transition:opacity .28s ease}
 .hint{font-size:12px;color:var(--mu);margin-top:6px}
 #auth{position:fixed;inset:0;z-index:35;display:none;align-items:center;justify-content:center;padding:20px;background-color:var(--bg);background-image:var(--hero);background-repeat:no-repeat;background-size:100% 460px}
 .aubox{width:100%;max-width:380px;background:var(--card);border-radius:28px;padding:26px 22px;box-shadow:var(--sh);border:1px solid var(--ln);text-align:center;backdrop-filter:var(--glass)}
@@ -686,6 +705,7 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 </style>
 </head>
 <body>
+<div id="auth" style="display:flex"><div class="splash"><img class="sp-ic" src="icon-512.png" alt="" onerror="this.style.display='none'"><div class="sp-wm" role="img" aria-label="Fit Track"><b aria-hidden="true"><span style="--i:0">F</span><span style="--i:1">I</span><span style="--i:2">T</span></b><em aria-hidden="true"><span style="--i:4">T</span><span style="--i:5">R</span><span style="--i:6">A</span><span style="--i:7">C</span><span style="--i:8">K</span></em></div><div class="sp-ln"></div></div></div>
 <header class="top"><h1 id="ttl">Bugün</h1><div id="hdr"></div></header>
 <main>
   <section id="v-today" class="view"></section>
@@ -706,7 +726,7 @@ nav.tabs button.plus.on{color:#fff;box-shadow:var(--btnSh),0 0 0 4px var(--ac2)}
 <div id="sheet"></div>
 <input type="file" id="impFile" accept="application/json,.json" hidden>
 <input type="file" id="photoIn" accept="image/*" hidden>
-<div id="busy"><div class="spin"></div><div id="busyTx"></div><button id="busyCancel" style="background:rgba(255,255,255,.18);color:#fff;margin-top:6px">Vazgeç</button></div>
+<div id="busy"><div class="bbar"><div class="bfill"></div></div><div id="busyTx" aria-live="polite"></div><button id="busyCancel" style="background:rgba(255,255,255,.18);color:#fff;margin-top:6px">Vazgeç</button></div>
 
 <script>
 "use strict";
@@ -933,7 +953,9 @@ function adaptiveText() {
 /* ============ UI yardımcıları ============ */
 let tt;
 function toast(msg, err) { const t = $("#toast"); t.textContent = msg; t.className = "on" + (err ? " err" : ""); clearTimeout(tt); tt = setTimeout(() => t.className = "", err ? 4200 : 2200); }
-function busy(msg) { $("#busy").className = msg ? "on" : ""; $("#busyTx").textContent = msg || ""; $("#busyCancel").style.display = "none"; if (msg) setTimeout(() => { if ($("#busy").className === "on" && aiCtl) $("#busyCancel").style.display = ""; }, 5000); }
+// Bekleme çubuğunun dolma süresi (sn): kısa işlerde 14, uzun işlerde 40; çubuk hiç %100'e varıp takılmaz. Sayaç yok.
+function busyDur(s) { const b = $("#busy"); b.style.setProperty("--bdur", s + "s"); if (b.className === "on") { b.className = ""; void b.offsetWidth; b.className = "on"; } }
+function busy(msg) { if (!msg) $("#busy").style.removeProperty("--bdur"); $("#busy").className = msg ? "on" : ""; $("#busyTx").textContent = msg || ""; $("#busyCancel").style.display = "none"; if (msg) setTimeout(() => { if ($("#busy").className === "on" && aiCtl) $("#busyCancel").style.display = ""; }, 5000); }
 document.addEventListener("click", e => { if (e.target.id === "busyCancel" && aiCtl) aiCtl.abort("user"); });
 
 function go(v) {
@@ -1025,9 +1047,8 @@ function aiAccessHtml() {
 }
 async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null) {
   const url = (S.settings.workerUrl || DEFAULT_WORKER).trim();
-  const label = $("#busyTx").textContent;
   const t0 = Date.now();
-  const tick = setInterval(() => { const s = Math.round((Date.now() - t0) / 1000); if (s >= 4) $("#busyTx").textContent = `${label} ${s} sn`; }, 1000);
+  busyDur(mode === "deep" ? 40 : 14);
   aiCtl = new AbortController();
   const hardStop = setTimeout(() => aiCtl.abort(), mode === "deep" ? 80000 : 60000);
   try {
@@ -1051,7 +1072,7 @@ async function ai(system, prompt, temperature = 0.4, mode = "fast", image = null
     }
   } catch (e) {
     throw new Error(e.message + (e.message === "İptal edildi." ? "" : " Yazdığın metin silinmedi; tekrar dene ya da 'Elle gir'i kullan."));
-  } finally { clearInterval(tick); clearTimeout(hardStop); aiCtl = null; }
+  } finally { clearTimeout(hardStop); aiCtl = null; }
 }
 // Yarıda kesilmiş JSON'u son tam kaleme kadar kurtar
 function repairJSON(t) {
@@ -1215,7 +1236,7 @@ function setTargetKcal(v, note, withPlan) {
 }
 async function makePlan() {
   if (!S.profile) { go("profile"); return toast("Önce profilini doldur", 1); }
-  busy("Programın hazırlanıyor…\n(20-40 sn sürebilir)");
+  busy("Programın hazırlanıyor…");
   try {
     const sig = profileSig();
     const keepOverride = S.targets?.override && S.targets?.strategy?.sig === sig ? S.targets.override : null;
@@ -2954,7 +2975,7 @@ const Cloud = {
   },
 
   async init() {
-    if (!FIREBASE_CONFIG) { go(S.profile ? "today" : "profile"); return; }
+    if (!FIREBASE_CONFIG) { hideAuth(); go(S.profile ? "today" : "profile"); return; }
     showAuth("loading");
     try { await this.connect(); }
     catch (e) {
@@ -3098,13 +3119,16 @@ const Cloud = {
   async logout() { await this.flush(); await this.fb.authM.signOut(this.fb.auth); }
 };
 
+let authT = 0;
 function showAuth(mode, msg) {
   applyTheme();
   let el = $("#auth");
   if (!el) { el = document.createElement("div"); el.id = "auth"; document.body.appendChild(el); }
+  clearTimeout(authT); el.classList.remove("out");
   el.style.display = "flex";
+  if (mode === "loading" && el.querySelector(".splash")) return;   // sayfadaki açılış ekranı zaten görünüyor; animasyonu yeniden başlatma
   el.innerHTML = mode === "loading"
-    ? `<div class="spin" style="border-color:var(--ac2);border-top-color:var(--ac)"></div>`
+    ? `<div class="splash"><img class="sp-ic" src="icon-512.png" alt="" onerror="this.style.display='none'"><div class="sp-wm" role="img" aria-label="Fit Track"><b aria-hidden="true"><span style="--i:0">F</span><span style="--i:1">I</span><span style="--i:2">T</span></b><em aria-hidden="true"><span style="--i:4">T</span><span style="--i:5">R</span><span style="--i:6">A</span><span style="--i:7">C</span><span style="--i:8">K</span></em></div><div class="sp-ln"></div></div>`
     : `<div class="aubox">
         <div class="aulogo">🥗</div><h2>Fit Track</h2><p class="mu sm" style="margin:0 0 14px">Beslenme programın ve kalori takibin, tüm cihazlarında.</p>
         <input id="auEmail" type="email" placeholder="E-posta" autocomplete="username" autocapitalize="off">
@@ -3116,7 +3140,11 @@ function showAuth(mode, msg) {
         <p class="mu sm" style="margin:14px 2px 0;text-align:left">Yapay zeka: Yönetici seni aile listesine eklemediyse ücretsiz bir Google Gemini anahtarı gerekir. Giriş yaptıktan sonra Profil → Yapay zeka → "Gemini anahtarı ekle" bölümünden 1 dakikada ekleyebilirsin.</p>
       </div>`;
 }
-function hideAuth() { const el = $("#auth"); if (el) el.style.display = "none"; }
+function hideAuth() {
+  const el = $("#auth"); if (!el) return;
+  clearTimeout(authT); el.classList.add("out");
+  authT = setTimeout(() => { el.style.display = "none"; el.classList.remove("out"); }, 300);   // yumuşak kapanış
+}
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "auPass") Cloud.auth("login"); });
 
 /* ============ Başlat ============ */
