@@ -1183,7 +1183,9 @@ function computeTargets(weekly, kcalOverride) {
   const kcal = kcalOverride ? Math.max(b.floor, Math.round(kcalOverride)) : formula;
   const nursing = String(p.ozel).startsWith("emzirme");
   const refKg = b.bmi > 30 ? Math.min(b.kg, 25 * Math.pow(num(p.boy) / 100, 2) * 1.1) : b.kg;   // obezite durumunda proteini şişirmemek için
-  const protein = Math.round(refKg * (weekly < 0 ? 1.9 : weekly > 0 ? 1.8 : 1.6) + (nursing ? 20 : 0));
+  // g/kg: spor yapmayanlar için düşük, haftada 4+ gün spor yapanlar için yüksek katsayı
+  const sp = +p.sporSiklik || 0, K = sp >= 4 ? [1.9, 1.6, 1.8] : sp >= 1 ? [1.6, 1.3, 1.6] : [1.3, 1.1, 1.4];
+  const protein = Math.round(refKg * (weekly < 0 ? K[0] : weekly > 0 ? K[2] : K[1]) + (nursing ? 20 : 0));
   const fat = Math.round(kcal * 0.28 / 9);
   const carb = Math.max(50, Math.round((kcal - protein * 4 - fat * 9) / 4));
   const water = Math.round((b.kg * 0.035 + (nursing ? 0.7 : 0)) * 10) / 10;
@@ -1219,11 +1221,15 @@ JSON: {"hedefYon":"ver|koru|al","haftalikHedefKg":number,"gerekce":"tek cümle"}
 function applyTargets(strategy, override) {
   const prev = S.targets || {};
   const t = computeTargets(strategy.weekly, override?.kcal);
-  S.targets = { ...prev, ...t, v2: true, strategy, override: override || null, yon: strategy.yon, haftalikHedefKg: strategy.weekly, kg: t.calc.kg, at: Date.now(), history: arr(prev.history) };
+  S.targets = { ...prev, ...t, v2: true, pv: 2, strategy, override: override || null, yon: strategy.yon, haftalikHedefKg: strategy.weekly, kg: t.calc.kg, at: Date.now(), history: arr(prev.history) };
   return S.targets;
 }
 // Eski (yapay zekanın belirlediği) hedefleri formüle taşı
 function migrateTargets() {
+  if (S.profile && S.targets?.v2 && S.targets.strategy && S.targets.pv !== 2) {   // yeni protein katsayıları: kcal ve yağ sabit, protein/karb. yeniden hesaplanır
+    const tg = S.targets, protein = computeTargets(tg.strategy.weekly, tg.override?.kcal).protein;
+    tg.protein = protein; tg.carb = Math.max(50, Math.round((tg.kcal - protein * 4 - tg.fat * 9) / 4)); tg.pv = 2; save();
+  }
   if (!S.profile || !S.targets || S.targets.v2) return;
   const old = S.targets.kcal;
   const w = clampWeekly(S.targets.haftalikHedefKg ?? 0);
