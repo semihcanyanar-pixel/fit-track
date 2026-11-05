@@ -1030,6 +1030,15 @@ function openKeySheet() {
     <button class="pri full" data-act="keySave">Kaydet</button>
     <p class="hint">Anahtar yalnızca bu cihazda saklanır; buluta ve yedeğe yazılmaz. Başka cihazda ayrıca eklemelisin. Ücretsiz anahtarda Google, gönderilen metinleri model geliştirmek için kullanabilir.</p>`);
 }
+function openPwSheet() {
+  sheetShell("Şifreyi değiştir", "🔒", "var(--tint-b)", `
+    <label class="f"><span>Mevcut şifre</span><input id="pwCur" type="password" autocomplete="current-password"></label>
+    <label class="f"><span>Yeni şifre (en az 6 karakter)</span><input id="pwNew" type="password" autocomplete="new-password"></label>
+    <label class="f"><span>Yeni şifre (tekrar)</span><input id="pwNew2" type="password" autocomplete="new-password"></label>
+    <div id="pwErr" class="sm" style="color:var(--bad);min-height:20px;margin:6px 2px"></div>
+    <button class="pri full" data-act="pwSave">Şifreyi değiştir</button>
+    <p class="hint">Mevcut şifreni hatırlamıyorsan çıkış yapıp giriş ekranındaki "Şifremi unuttum"a bas; e-postana sıfırlama bağlantısı gelir.</p>`);
+}
 function aiAccessHtml() {
   if (!Cloud.user) return "";
   let h = `<div class="card lst" style="margin:0 0 12px">`;
@@ -2459,7 +2468,7 @@ function openSheet(k) {
       <div class="btns"><button class="grow" data-act="saveUrl">Kaydet</button><button class="pri grow" data-act="testAi">Bağlantıyı test et</button></div>
       <p class="hint">Önce Google Gemini denenir; yoğunsa Cloudflare'in yedek yapay zekası devreye girer.</p>${(() => { let x = null; try { x = JSON.parse(localStorage.getItem("fittrack_lastraw")); } catch (e) {} return x ? `<details style="margin-top:14px"><summary class="sm mu" style="font-weight:700">Son okunamayan yanıt (${new Date(x.at).toLocaleString("tr-TR")}, ${esc(x.model)}${x.fallback ? ", yedek" : ""}${x.ms ? `, ${Math.round(x.ms / 1000)} sn` : ""})</summary><pre style="white-space:pre-wrap;font-size:11px;max-height:220px;overflow:auto;background:var(--in);padding:10px;border-radius:10px">${esc(x.text)}</pre></details>` : ""; })()}`; }
   else if (k === "hesap") { title = "☁️ Hesap"; body = Cloud.user ? `<p style="margin:6px 0 4px"><b>${esc(Cloud.user.email)}</b></p><p class="sm mu" style="margin:0 0 14px">Kayıtların buluta kaydediliyor; başka cihazdan aynı hesapla girince hepsi gelir. ${esc(Cloud.statusText())}</p>
-      <button class="full" data-act="logout">Çıkış yap</button>` : `<p class="sm mu">Tüm kayıtların sadece bu cihazda saklanıyor. Cihaz değiştirirken yedek al.</p>`; }
+      <button class="full" data-act="pwOpen" style="margin-bottom:8px">Şifreyi değiştir</button><button class="full" data-act="logout">Çıkış yap</button>` : `<p class="sm mu">Tüm kayıtların sadece bu cihazda saklanıyor. Cihaz değiştirirken yedek al.</p>`; }
   else if (k === "veri") { title = "🗂️ Veriler"; body = `<p class="sm mu" style="margin:4px 0 12px">Tüm kayıtlarını dosya olarak yedekleyebilir ya da yedekten geri yükleyebilirsin.</p>
       <div class="btns"><button class="grow" data-act="export">Yedek al</button><button class="grow" data-act="import">Yedekten yükle</button></div>
       <button class="dan full" style="margin-top:18px;background:transparent" data-act="reset">Tüm verileri sil</button>`; }
@@ -2866,6 +2875,22 @@ document.addEventListener("click", e => {
     delW: () => { if (!confirm("Bu ölçüm silinsin mi?")) return; S.weights = S.weights.filter(w => w.date !== a.dataset.d); wStep = null; save(); renderWeight(); },
     goalEx: () => { const t = document.querySelector('[name="amac"]'); t.value = GOAL_EXAMPLES[+a.dataset.i]; t.focus(); },
     keyOpen: () => openKeySheet(),
+    pwOpen: () => openPwSheet(),
+    pwSave: async () => {
+      const cur = $("#pwCur").value, nw = $("#pwNew").value, nw2 = $("#pwNew2").value, err = m => { $("#pwErr").textContent = m; };
+      err("");
+      if (!cur) return err("Mevcut şifreni yaz.");
+      if (nw.length < 6) return err("Yeni şifre en az 6 karakter olmalı.");
+      if (nw !== nw2) return err("Yeni şifreler aynı değil.");
+      if (nw === cur) return err("Yeni şifre mevcut şifreyle aynı olamaz.");
+      busy("Şifre değiştiriliyor…");
+      try { await Cloud.changePassword(cur, nw); closeSheet(); toast("Şifren değiştirildi ✓"); }
+      catch (e) {
+        err(({ "auth/invalid-credential": "Mevcut şifre hatalı.", "auth/wrong-password": "Mevcut şifre hatalı.", "auth/weak-password": "Yeni şifre çok zayıf; en az 6 karakter olmalı.",
+          "auth/too-many-requests": "Çok fazla deneme. Biraz bekle.", "auth/network-request-failed": "İnternet bağlantısı yok.", "auth/requires-recent-login": "Güvenlik için çıkış yapıp tekrar giriş yap, sonra dene." })[e.code] || e.message);
+      }
+      finally { busy(); }
+    },
     keySave: async () => {
       const k = $("#gkIn").value.trim();
       if (!/^AIza[0-9A-Za-z_-]{30,60}$/.test(k)) return toast("Anahtar AIza ile başlamalı; tamamını yapıştır", 1);
@@ -3116,7 +3141,14 @@ const Cloud = {
       err(M[e.code] || e.message);
     } finally { busy(); }
   },
-  async logout() { await this.flush(); await this.fb.authM.signOut(this.fb.auth); }
+  async logout() { await this.flush(); await this.fb.authM.signOut(this.fb.auth); },
+  // Şifre değiştirme: önce mevcut şifreyle yeniden doğrula (Firebase yakın zamanda giriş ister), sonra güncelle
+  async changePassword(cur, next) {
+    const { authM, auth } = this.fb || {}, u = auth?.currentUser;
+    if (!u || !u.email) throw new Error("Önce giriş yap");
+    await authM.reauthenticateWithCredential(u, authM.EmailAuthProvider.credential(u.email, cur));
+    await authM.updatePassword(u, next);
+  }
 };
 
 let authT = 0;
