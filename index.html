@@ -2479,6 +2479,8 @@ function openSheet(k) {
       <button class="full" data-act="pwOpen" style="margin-bottom:8px">Şifreyi değiştir</button><button class="full" data-act="logout">Çıkış yap</button>` : `<p class="sm mu">Tüm kayıtların sadece bu cihazda saklanıyor. Cihaz değiştirirken yedek al.</p>`; }
   else if (k === "veri") { title = "🗂️ Veriler"; body = `<p class="sm mu" style="margin:4px 0 12px">Tüm kayıtlarını dosya olarak yedekleyebilir ya da yedekten geri yükleyebilirsin.</p>
       <div class="btns"><button class="grow" data-act="export">Yedek al</button><button class="grow" data-act="import">Yedekten yükle</button></div>
+      <p class="sm mu" style="margin:18px 0 8px">Uzun bir aradan sonra ilk günmüş gibi başlamak için: yemek kayıtları, kilo geçmişi ve program sıfırlanır; profilin, kayıtlı besinlerin, favorilerin ve tariflerin kalır.</p>
+      <button class="full" data-act="fresh">Yeni başlangıç</button>
       <button class="dan full" style="margin-top:18px;background:transparent" data-act="reset">Tüm verileri sil</button>`; }
   sh.innerHTML = `<div class="bd" data-act="closeSheet"></div><div class="pn" role="dialog" aria-modal="true"><div class="grab"></div><div class="sh"><b>${title}</b><button class="x" data-act="closeSheet" aria-label="Kapat">×</button></div>${body}</div>`;
   sh.className = "on";
@@ -2940,6 +2942,15 @@ document.addEventListener("click", e => {
     export: exportData,
     import: () => $("#impFile").click(),
     reset: () => { if (confirm("Tüm kayıtların silinecek" + (Cloud.user ? " (buluttakiler dahil)" : "") + ". Emin misin?") && confirm("Geri alınamaz. Siliyorum?")) { const st = S.settings; S = defaults(); S.settings = { ...S.settings, workerUrl: st.workerUrl, theme: st.theme, accent: st.accent, skin: st.skin }; save(); go("profile"); } },
+    fresh: async () => {
+      if (!S.profile) return toast("Önce profilini doldur", 1);
+      if (!confirm("Yemek kayıtların, kilo geçmişin ve programın silinecek" + (Cloud.user ? " (buluttakiler dahil)" : "") + ". Profilin, kayıtlı besinlerin, favorilerin ve tariflerin kalacak. Devam edilsin mi?")) return;
+      if (confirm("Silmeden önce yedek dosyası alınsın mı?")) await exportData();
+      const v = prompt("Şu anki kilon (kg)", String(latestWeight() || S.profile.kilo || "").replace(".", ",")); if (v === null) return;
+      const kg = r1(v); if (kg < 30 || kg > 350) return toast("Geçerli bir kilo gir", 1);
+      S.days = {}; S.weights = [{ date: ymd(new Date()), kg }]; S.profile.kilo = kg; wStep = null; curDate = ymd(new Date()); planDay = 0;
+      save(); closeSheet(); go("today"); makePlan();
+    },
     logout: () => { if (confirm("Çıkış yapılsın mı? Kayıtların bulutta kalır.")) Cloud.logout(); },
     login: () => Cloud.auth("login"), signup: () => Cloud.auth("signup"), forgot: () => Cloud.auth("forgot"),
   };
